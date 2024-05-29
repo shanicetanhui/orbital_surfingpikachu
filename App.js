@@ -5,8 +5,10 @@ import { init, exec, read } from './test' ;
 export default function App() {
   init();
   exec();
-  read();
-  const data = [1];
+  // trying to grab data from server to iterate on
+  // currently error: data.map is not a function (?)
+  let data = read();
+  // const data = [1,2,3];
   return (
     <View style={styles.container}>
       <Text>PLEASE please!</Text>
