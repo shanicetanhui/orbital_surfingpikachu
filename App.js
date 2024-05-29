@@ -1,32 +1,9 @@
-// App.js
-/*
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomeScreen from './HomeScreen';
-import HydrationTab from './HydrationTab';
-
-const Tab = createBottomTabNavigator();
-
-export default function App() {
-  return (
-    <NavigationContainer>
-      <Tab.Navigator>
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Settings" component={HydrationTab} />
-      </Tab.Navigator>
-    </NavigationContainer>
-  );
-}
-*/
-
-// HomeScreen.js
-import * as React from 'react';
-import { SafeAreaView, SectionList, View, Text, StyleSheet, StatusBar, Button } from 'react-native';
+import React, { useState } from 'react';
+import { SafeAreaView, SectionList, View, Text, StyleSheet, StatusBar, Button, TextInput } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-const DATA = [
+const initialData = [
   {
     title: 'title placeholder',
     subtitle: 'subtitle placeholder',
@@ -61,45 +38,107 @@ const DATA = [
   },
 ];
 
-const HomeScreen = ({ navigation }) => (
+const HomeScreen = ({ navigation }) => {
+  const [data, setData] = useState(initialData);
+
+  const addNewItem = () => {
+    const newItem = { title: 'New Item', details: ['Detail 1', 'Detail 2'] };
+    setData(prevData => [...prevData, { title: 'New Section', data: [newItem] }]);
+  };
+
+  const [newDrinkName, setNewDrinkName] = useState('');
+
+  const addNewDrink = () => {
+    if (newDrinkName.trim() !== '') {
+      const newDrink = { title: newDrinkName };
+      setData(prevData => {
+        const updatedData = prevData.map(section => {
+          if (section.title === 'Drinks') {
+            return { ...section, data: [...section.data, newDrink] };
+          }
+          return section;
+        });
+        return updatedData;
+      });
+      setNewDrinkName('');
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <SectionList
+        sections={data}
+        keyExtractor={(item, index) => item.title + index}
+        renderItem={({ item }) => (
+          <View style={styles.item}>
+            <Text style={styles.title}>{item.title}</Text>
+            {item.details && (
+              <View style={styles.detailsContainer}>
+                {item.details.map((detail, index) => (
+                  <Text key={index} style={styles.detail}>{detail}</Text>
+                ))}
+              </View>
+            )}
+            <Button
+              title={`Go to ${item.title} details`}
+              onPress={() => navigation.navigate('Details', { title: item.title, details: item.details })}
+            />
+          </View>
+        )}
+        renderSectionHeader={({ section: { title, subtitle } }) => (
+          <View style={styles.headerContainer}>
+            <Text style={styles.headerTitle}>{title}</Text>
+            {subtitle && <Text style={styles.headerSubtitle}>{subtitle}</Text>}
+          </View>
+        )}
+      /> 
+      <View style={styles.buttonContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter new drink name"
+          value={newDrinkName}
+          onChangeText={text => setNewDrinkName(text)}
+        />
+        <Button title="Add New Drink" onPress={addNewDrink} />
+      </View>
+      <View style={styles.buttonContainer}>
+        <Button title="Add New Section" onPress={addNewItem} />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+
+const ProfileScreen = ({ route }) => (
   <SafeAreaView style={styles.container}>
-    <Button
-      title="Go to Jane's profile"
-      onPress={() => navigation.navigate('Profile', { name: 'Jane' })}
-    />
-    <SectionList
-      sections={DATA}
-      keyExtractor={(item, index) => item.title + index}
-      renderItem={({ item }) => (
-        <View style={styles.item}>
-          <Text style={styles.title}>{item.title}</Text>
-          {item.details && (
-            <View style={styles.detailsContainer}>
-              {item.details.map((detail, index) => (
-                <Text key={index} style={styles.detail}>{detail}</Text>
-              ))}
-            </View>
-          )}
-        </View>
-      )}
-      renderSectionHeader={({ section: { title, subtitle } }) => (
-        <View style={styles.headerContainer}>
-          <Text style={styles.headerTitle}>{title}</Text>
-          {subtitle && <Text style={styles.headerSubtitle}>{subtitle}</Text>}
-        </View>
-      )}
-    />
+    <Text>This is {route.params.name}'s profile</Text>
   </SafeAreaView>
 );
 
-
-const ProfileScreen = ({ route }) => {
+const DetailsScreen = ({ route }) => {
+  const { item, additionalDetails } = route.params;
+  if (!item) {
+    return null; // or display a loading indicator or error message
+  }
   return (
-    <View style={styles.container}>
-      <Text>This is {route.params.name}'s profile</Text>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.title}>{item.title}</Text>
+      {item.details && (
+        <View style={styles.detailsContainer}>
+          {item.details.map((detail, index) => (
+            <Text key={index} style={styles.detail}>{detail}</Text>
+          ))}
+        </View>
+      )}
+      <View style={styles.additionalDetailsContainer}>
+        <Text style={styles.additionalDetailsTitle}>Additional Details:</Text>
+        <Text>{additionalDetails}</Text>
+        {taegdgdg}
+      </View>
+    </SafeAreaView>
   );
 };
+
 
 const Stack = createNativeStackNavigator();
 
@@ -109,6 +148,7 @@ function App() {
       <Stack.Navigator initialRouteName="Home">
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="Details" component={DetailsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -118,23 +158,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginTop: StatusBar.currentHeight || 0,
-    marginHorizontal: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#ffffff', // Set background color for the entire screen
+    paddingHorizontal: 16, // Add horizontal padding to the entire screen
+    paddingTop: 16, // Add top padding to the entire screen
+    paddingBottom: 16, // Add bottom padding to the entire screen
   },
   item: {
     backgroundColor: 'rgba(249, 194, 255, 0.5)',
     padding: 20,
     marginVertical: 8,
     borderRadius: 20,
+    marginHorizontal: 16, // Add horizontal margin to the items
   },
   title: {
     fontSize: 24,
   },
   headerContainer: {
     backgroundColor: '#fff',
-    padding: 20,
-    marginTop: 10,
+    paddingHorizontal: 20,
+    paddingVertical:5,
+    marginTop: 0,
+    borderRadius: 8,
   },
   headerTitle: {
     fontSize: 32,
@@ -152,7 +196,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'gray',
   },
+  buttonContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 20,
+  },
+  additionalDetailsContainer: {
+    backgroundColor: '#f0f0f0',
+    padding: 20,
+    borderRadius: 10,
+    marginTop: 20, // Adjust the margin top to create space between the item details and additional details
+  },
+  additionalDetailsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    width: '80%',
+    marginVertical: 10,
+    paddingHorizontal: 10,
+  },
 });
+
 
 export default App;
 
