@@ -55,4 +55,16 @@ export async function read_habits() {
     return allRows;
 }
 
-// export async function 
+export async function add_habit(name, description) {
+    if (description===undefined){
+        description = '';
+    }
+    const database = await openDatabase();
+    database.runAsync('INSERT INTO Habits (habit, description) VALUES (?, ?)', name, description);
+    console.log("ADDED HABIT");
+}
+
+// export async function fetch_one_habit() {
+//     const database = await openDatabase();
+//     const 
+// }

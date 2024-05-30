@@ -3,7 +3,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { init, fakedata, read_habits } from './db';
+import { init, fakedata, read_habits, add_habit} from './db';
 
 // how should this work? we need to start with SOME data
 // start from the init SQL statements
@@ -112,45 +112,37 @@ const styles = StyleSheet.create({
   },
 });
 
-export const HomeScreen = ({ navigation }) => {
+init();
 
-  const initialData = [
-    {
-      title: 'widgets',
-      subtitle: 'your habits',
-      data: [],
-    },
-  ];
-  
-  async function read_initialData() {
-    const rows = await read_habits();
-    console.log("read initialdata");
-    console.log(rows);
-    for (const row of rows) {
-      initialData[0].data.push(
-        { title: row.habit, details: [row.description]}
-      );
-    }
-    console.log("done reading initial");
+const initialData = [
+  {
+    title: 'widgets',
+    subtitle: 'your habits',
+    data: [],
+  },
+];
+
+async function read_initialData() {
+  const rows = await read_habits();
+  console.log("read initialdata");
+  console.log(rows);
+  for (const row of rows) {
+    initialData[0].data.push(
+      { title: row.habit, details: [row.description]}
+    );
   }
-  
-  read_initialData();
+  console.log("done reading initial");
+}
 
+read_initialData();
+
+export const HomeScreen = ({ navigation }) => {
+  
   const [data, setData] = useState(initialData);
   const [modalVisible, setModalVisible] = useState(false);
   const [newItemName, setNewItemName] = useState('');
   const [dailyGoal, setDailyGoal] = useState('');
   const [currentSection, setCurrentSection] = useState('');
-
-  // useEffect(() => {
-  //   const setupDatabase = async () => {
-  //     await init(); // clear/init every table
-  //     const fetchedData = await read_habits(); // read the data
-  //     setData(fetchedData);
-  //   };
-
-  //   setupDatabase();
-  // }, []);
 
   const openModal = (sectionTitle) => {
     setCurrentSection(sectionTitle);
@@ -160,6 +152,8 @@ export const HomeScreen = ({ navigation }) => {
   const addNewItem = () => {
     if (newItemName.trim() !== '' && dailyGoal.trim() !== '') {
       const newItem = { title: newItemName, details: [`Daily goal: ${dailyGoal}`] };
+      add_habit(newItem.title, newItem.details[0]);
+      console.log(read_habits());
       setData((prevData) => {
         const updatedData = prevData.map((section) => {
           if (section.title === currentSection) {
@@ -174,7 +168,6 @@ export const HomeScreen = ({ navigation }) => {
       setModalVisible(false);
     }
   };
-
 
   const renderSectionFooter = (section) => (
     <View style={styles.footerContainer}>
