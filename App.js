@@ -1,27 +1,36 @@
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
-// import { Suspense } from 'react';
-// MAYBE!
-import { init, exec, read } from './db' ;
+import { init, fakedata, read } from './db';
 
 export default function App() {
-  init();
-  exec();
-  // trying to grab data from server to iterate on
-  // currently error: data.map is not a function (?)
-  let data = read();
-  console.log("main function data return val");
-  console.log(data);
-  // const data = [1,2,3];
+  // app will refresh when data changes
+  console.log("===START===")
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const setupDatabase = async () => {
+      await init(); // clear/init every table
+      await fakedata(); // populating with fake data at first
+      const fetchedData = await read(); // read the data
+      setData(fetchedData);
+    };
+
+    setupDatabase();
+  }, []);
+
+  // what to do if data changes?
+  useEffect(() => {
+    console.log("===useEffect===");
+    console.log(data);
+  }, [data]);
+
   return (
     <View style={styles.container}>
       <Text>PLEASE please!</Text>
-
-      {/* {data.map((item, index) => {
-        const k = `${item}_${index}`;
-        return (<Text key={k}> hello {item}</Text>)
-      })} */}
-
+      {data.map((item) => (
+        <Text key={item.id}>{item.day}: {item.cups} cups</Text>
+      ))}
       <StatusBar style="auto" />
     </View>
   );

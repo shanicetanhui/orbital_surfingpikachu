@@ -11,17 +11,18 @@ export const openDatabase = async () => {
 
 export async function init(){
     const database = await openDatabase();
-    await database.execAsync(`DELETE FROM water`);
-    console.log("init");
+    await database.execAsync(`
+    DROP TABLE IF EXISTS water;
+    CREATE TABLE water (id INTEGER PRIMARY KEY NOT NULL, day TEXT NOT NULL, cups INTEGER NOT NULL);
+    `);
+    console.log("init done");
 }
 
-export async function exec() {
+export async function fakedata() {
+    // populate with fake data first
     const database = await openDatabase();
-    // jus to prove that we can execute
-    // TODO: figure out the proper way to do this!!
     await database.execAsync(`
     PRAGMA journal_mode = WAL;
-    CREATE TABLE IF NOT EXISTS water (id INTEGER PRIMARY KEY NOT NULL, day TEXT NOT NULL, cups INTEGER NOT NULL);
     INSERT INTO water (day, cups) VALUES ('mon', 3);
     INSERT INTO water (day, cups) VALUES ('tue', 4);
     INSERT INTO water (day, cups) VALUES ('wed', 5);
@@ -32,7 +33,7 @@ export async function exec() {
 export async function read() {
     const database = await openDatabase();
     const allRows = await database.getAllAsync('SELECT * FROM water');
-    console.log(allRows);
+    // console.log(allRows);
     // currently trying to grab data from server so that it can be passed to App.js
     // const data = [];
     // console.log(data);
