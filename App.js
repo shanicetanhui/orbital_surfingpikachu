@@ -171,9 +171,20 @@ const ProfileScreen = ({ route }) => (
 
 const DetailsScreen = ({ route }) => {
   const { item, additionalDetails } = route.params;
+  const [counter, setCounter] = useState(0);
+
+  const incrementCounter = () => {
+    setCounter(counter + 1);
+  };
+
+  const decrementCounter = () => {
+    setCounter(counter - 1);
+  };
+
   if (!item) {
     return null; // or display a loading indicator or error message
   }
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>{item.title}</Text>
@@ -189,6 +200,12 @@ const DetailsScreen = ({ route }) => {
         <Text>{additionalDetails}</Text>
       </View>
       <Text style={styles.title}>This page is to track your daily goals.</Text>
+      
+      <View style={styles.counterContainer}>
+        <Button title="-" onPress={decrementCounter} />
+        <Text style={styles.counterText}>{counter}</Text>
+        <Button title="+" onPress={incrementCounter} />
+      </View>
     </SafeAreaView>
   );
 };
@@ -375,6 +392,16 @@ const styles = StyleSheet.create({
   },
   buttonClose: {
     backgroundColor: '#f44336',
+  },
+  counterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  counterText: {
+    fontSize: 24,
+    marginHorizontal: 20,
   },
 });
 
