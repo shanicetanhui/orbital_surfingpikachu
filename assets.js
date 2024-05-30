@@ -113,6 +113,7 @@ const styles = StyleSheet.create({
 });
 
 init();
+fakedata();
 
 const initialData = [
   {

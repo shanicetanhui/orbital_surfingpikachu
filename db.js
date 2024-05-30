@@ -1,6 +1,8 @@
 import * as SQLite from 'expo-sqlite';
 let db ;
 
+const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
 // this means we don't have to reopen the database every time
 export const openDatabase = async () => {
     if (!db) {
@@ -36,15 +38,19 @@ export async function fakedata() {
     // populate with fake data first
     const database = await openDatabase();
 
+    today = new Date();
+    const day = days[today.getDay()];
+
     // await database.execAsync(`
     // INSERT INTO water (day, cups) VALUES ('mon', 3);
     // INSERT INTO water (day, cups) VALUES ('tue', 4);
     // INSERT INTO water (day, cups) VALUES ('wed', 5);
     // `);
 
-    // await database.execAsync();
+    await database.runAsync(`INSERT INTO HabitEntries (habitid, day, num) VALUES (?, ?, ?)`, 1, day, 3423);
+    await database.runAsync(`INSERT INTO HabitEntries (habitid, day, num) VALUES (?, ?, ?)`, 2, day, 323);
 
-    console.log("data inserted");
+    console.log("fake data inserted");
 }
 
 export async function read_habits() {
