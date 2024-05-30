@@ -1,6 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
-import { init, exec, read } from './test' ;
+// import { Suspense } from 'react';
+// MAYBE!
+import { init, exec, read } from './db' ;
 
 export default function App() {
   init();
@@ -8,15 +10,17 @@ export default function App() {
   // trying to grab data from server to iterate on
   // currently error: data.map is not a function (?)
   let data = read();
+  console.log("main function data return val");
+  console.log(data);
   // const data = [1,2,3];
   return (
     <View style={styles.container}>
       <Text>PLEASE please!</Text>
 
-      {data.map((item, index) => {
+      {/* {data.map((item, index) => {
         const k = `${item}_${index}`;
         return (<Text key={k}> hello {item}</Text>)
-      })}
+      })} */}
 
       <StatusBar style="auto" />
     </View>
