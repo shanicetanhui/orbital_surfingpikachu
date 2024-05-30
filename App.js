@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { AntDesign } from '@expo/vector-icons';
-import {Picker} from '@react-native-picker/picker';
+import { Picker } from '@react-native-picker/picker';
 
 const Tab = createBottomTabNavigator();
 
@@ -43,9 +43,7 @@ const initialData = [
   },
 ];
 
-
-
-const ColorPicker = ({ selectedColor, onColorChange }) => {
+const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for now
   const colors = [
     { label: 'Default', value: 'rgba(252, 223, 202, 0.7)' },
     { label: 'Light Green', value: 'rgba(144, 238, 144, 0.7)' },
@@ -77,8 +75,6 @@ const ColorPicker = ({ selectedColor, onColorChange }) => {
     </View>
   );
 };
-
-
 
 const HomeScreen = ({ navigation }) => {
   const [data, setData] = useState(initialData);
@@ -228,27 +224,27 @@ const DetailsScreen = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>{item.title}</Text>
-      {item.details && (
-        <View style={styles.detailsContainer}>
-          {item.details.map((detail, index) => (
-            <Text key={index} style={styles.detail}>{detail}</Text>
-          ))}
-        </View>
-      )}
+      <View style={styles.additionalDetailsContainer}>
+        <Text style={styles.additionalDetailsTitle}>{item.title}</Text>
+        {item.details && item.details.map((detail, index) => (
+          <Text key={index} style={styles.detail}>{detail}</Text>
+        ))}
+      </View>
       <View style={styles.additionalDetailsContainer}>
         <Text style={styles.additionalDetailsTitle}>Additional Details:</Text>
         <Text>{additionalDetails}</Text>
       </View>
-      <Text style={styles.title}>This counter is to track your daily goals:</Text>
-
+      <View style={styles.additionalDetailsContainer}>
+        <Text style={styles.additionalDetailsTitle}>This counter is to track your daily goals:</Text>
+      </View>
       <View style={styles.counterContainer}>
         <Button title="-" onPress={decrementCounter} />
         <Text style={styles.counterText}>{counter}</Text>
         <Button title="+" onPress={incrementCounter} />
       </View>
-      <View>
+      <View style={styles.additionalDetailsContainer}>
         <Text style={styles.additionalDetailsTitle}>Table to see your data in the past days:</Text>
+        {/* Add table component here */}
       </View>
     </SafeAreaView>
   );
@@ -362,7 +358,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   headerContainer: {
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(173, 216, 230, 0.7)',
     padding: 20,
     marginBottom: 8,
     borderRadius: 20,
@@ -429,7 +425,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '50%', // Set top to 50% of the screen height
     left: '50%', // Set left to 50% of the screen width
-    transform: [{ translateX: -170 }, { translateY: -170 }], // Move the modal back half of its own width and height
+    transform: [{ translateX: -170 }, { translateY: -200 }], // Move the modal
   },
   modalText: {
     marginBottom: 15,
