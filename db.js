@@ -11,36 +11,48 @@ export const openDatabase = async () => {
 
 export async function init(){
     const database = await openDatabase();
+
     await database.execAsync(`
-    DROP TABLE IF EXISTS water;
-    CREATE TABLE water (id INTEGER PRIMARY KEY NOT NULL, day TEXT NOT NULL, cups INTEGER NOT NULL);
+    DROP TABLE IF EXISTS Habits;
+    CREATE TABLE Habits (
+        habitid INTEGER PRIMARY KEY NOT NULL, 
+        habit TEXT NOT NULL,
+        description TEXT);
+    DROP TABLE IF EXISTS HabitEntries;
+    CREATE TABLE HabitEntries (
+        entryid INTEGER PRIMARY KEY NOT NULL, 
+        habitid INTEGER NOT NULL, 
+        day TEXT NOT NULL, 
+        num INTEGER NOT NULL, 
+        FOREIGN KEY (habitid) REFERENCES Habits(habitid));
+    INSERT INTO Habits (habit, description) VALUES ('Water', 'water placeholder desc');
+    INSERT INTO Habits (habit, description) VALUES ('Fruits', 'fruits placeholder desc');
     `);
+
     console.log("init done");
 }
 
 export async function fakedata() {
     // populate with fake data first
     const database = await openDatabase();
-    await database.execAsync(`
-    PRAGMA journal_mode = WAL;
-    INSERT INTO water (day, cups) VALUES ('mon', 3);
-    INSERT INTO water (day, cups) VALUES ('tue', 4);
-    INSERT INTO water (day, cups) VALUES ('wed', 5);
-    `);
+
+    // await database.execAsync(`
+    // INSERT INTO water (day, cups) VALUES ('mon', 3);
+    // INSERT INTO water (day, cups) VALUES ('tue', 4);
+    // INSERT INTO water (day, cups) VALUES ('wed', 5);
+    // `);
+
+    // await database.execAsync();
+
     console.log("data inserted");
 }
 
-export async function read() {
+export async function read_habits() {
     const database = await openDatabase();
-    const allRows = await database.getAllAsync('SELECT * FROM water');
-    // console.log(allRows);
-    // currently trying to grab data from server so that it can be passed to App.js
-    // const data = [];
-    // console.log(data);
-    // for (const row of allRows) {
-    //     console.log(typeof(row));
-    //     // console.log(row.id, row.day, row.cups);
-    // }
-    // console.log("uve been read");
+    const allRows = await database.getAllAsync('SELECT * FROM Habits');
+    console.log("readhabits");
+    console.log(allRows);
     return allRows;
 }
+
+// export async function 

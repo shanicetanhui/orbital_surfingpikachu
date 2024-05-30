@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { init, fakedata, read_habits } from './db';
+
+// how should this work? we need to start with SOME data
+// start from the init SQL statements
+// but how to fetch from there reliably?
 
 const styles = StyleSheet.create({
   container: {
@@ -107,23 +112,45 @@ const styles = StyleSheet.create({
   },
 });
 
-export const initialData = [
-  {
-    title: 'widgets',
-    subtitle: 'your habits',
-    data: [
-      { title: 'water', details: ['detail1 placeholder', 'detail2 placeholder', 'detail3 placeholder'] },
-      { title: 'fruits', details: ['detail placeholder', 'detail placeholder', 'detail placeholder'] },
-    ],
-  },
-];
-
 export const HomeScreen = ({ navigation }) => {
+
+  const initialData = [
+    {
+      title: 'widgets',
+      subtitle: 'your habits',
+      data: [],
+    },
+  ];
+  
+  async function read_initialData() {
+    const rows = await read_habits();
+    console.log("read initialdata");
+    console.log(rows);
+    for (const row of rows) {
+      initialData[0].data.push(
+        { title: row.habit, details: [row.description]}
+      );
+    }
+    console.log("done reading initial");
+  }
+  
+  read_initialData();
+
   const [data, setData] = useState(initialData);
   const [modalVisible, setModalVisible] = useState(false);
   const [newItemName, setNewItemName] = useState('');
   const [dailyGoal, setDailyGoal] = useState('');
   const [currentSection, setCurrentSection] = useState('');
+
+  // useEffect(() => {
+  //   const setupDatabase = async () => {
+  //     await init(); // clear/init every table
+  //     const fetchedData = await read_habits(); // read the data
+  //     setData(fetchedData);
+  //   };
+
+  //   setupDatabase();
+  // }, []);
 
   const openModal = (sectionTitle) => {
     setCurrentSection(sectionTitle);
