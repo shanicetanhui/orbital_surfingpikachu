@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
 import { init, fakedata, read } from './db';
 import { SafeAreaView, SectionList, View, Text, StyleSheet, StatusBar, Button, TextInput, Modal, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
