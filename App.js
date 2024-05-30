@@ -4,25 +4,26 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { AntDesign } from '@expo/vector-icons';
+import {Picker} from '@react-native-picker/picker';
 
 const Tab = createBottomTabNavigator();
 
 const initialData = [
   {
-    title: 'title placeholder',
-    subtitle: 'subtitle placeholder',
+    title: 'Habits',
+    subtitle: 'Small habits, big changes',
     data: [
-      { title: 'data1 placeholder', details: ['detail1 placeholder', 'detail2 placeholder', 'detail3 placeholder'] },
-      { title: 'data2 placeholder', details: ['detail placeholder', 'detail placeholder', 'detail placeholder'] },
-      { title: 'data3 placeholder', details: ['detail placeholder', 'detail placeholder'] },
+      { title: 'Placeholder', color: 'rgba(252, 223, 202, 0.7)', details: ['Detail Placeholder', 'Detail 2', 'Detail 3'] },
+      { title: 'Hydration', color: 'rgba(252, 223, 202, 0.7)', details: ['Goal: 8 cups', 'Current: 6 cups', 'Good Luck!'] }, // Set default color to orange
+      { title: 'Fruits', color: 'rgba(252, 223, 202, 0.7)', details: ['Goal: 2 fruits', 'Current: 2 fruits', 'Well Done!'] }, // Set default color to orange
     ],
   },
   {
     title: 'Sides',
     data: [
-      { title: 'French Fries', details: ['potatoes', 'salt'] },
-      { title: 'Onion Rings', details: ['onions', 'breadcrumbs'] },
-      { title: 'Fried Shrimps', details: ['shrimps', 'flour', 'oil'] },
+      { title: 'French Fries', color: 'rgba(252, 223, 202, 0.7)', details: ['potatoes', 'salt'] }, // Set default color to orange
+      { title: 'Onion Rings', color: 'rgba(252, 223, 202, 0.7)', details: ['onions', 'breadcrumbs'] }, // Set default color to orange
+      { title: 'Fried Shrimps', color: 'rgba(252, 223, 202, 0.7)', details: ['shrimps', 'flour', 'oil'] }, // Set default color to orange
     ],
   },
   {
@@ -36,11 +37,48 @@ const initialData = [
   {
     title: 'Desserts',
     data: [
-      { title: 'Cheese Cake', details: ['cream cheese', 'sugar', 'vanilla'] },
-      { title: 'Ice Cream', details: ['milk', 'sugar', 'flavoring'] },
+      { title: 'Cheese Cake', color: 'rgba(252, 223, 202, 0.7)', details: ['cream cheese', 'sugar', 'vanilla'] }, // Set default color to orange
+      { title: 'Ice Cream', color: 'rgba(252, 223, 202, 0.7)', details: ['milk', 'sugar', 'flavoring'] }, // Set default color to orange
     ],
   },
 ];
+
+
+
+const ColorPicker = ({ selectedColor, onColorChange }) => {
+  const colors = [
+    { label: 'Default', value: 'rgba(252, 223, 202, 0.7)' },
+    { label: 'Light Green', value: 'rgba(144, 238, 144, 0.7)' },
+    { label: 'Pink', value: 'rgba(255, 192, 203, 0.7)' },
+    { label: 'Light Blue', value: 'rgba(175, 238, 238, 0.7)' },
+    { label: 'Peach', value: 'rgba(255, 218, 185, 0.7)' },
+    { label: 'Light Orange', value: 'rgba(255, 165, 0, 0.7)' },
+    { label: 'Honeydew', value: 'rgba(240, 255, 240, 0.7)' },
+    { label: 'Alice Blue', value: 'rgba(240, 248, 255, 0.7)' },
+    { label: 'Antique White', value: 'rgba(250, 235, 215, 0.7)' },
+    { label: 'Lemon Chiffon', value: 'rgba(255, 250, 205, 0.7)' },
+    { label: 'Bisque', value: 'rgba(255, 228, 196, 0.7)' },
+    { label: 'Sandy Brown', value: 'rgba(244, 164, 96, 0.7)' },
+    { label: 'Orchid', value: 'rgba(218, 112, 214, 0.7)' },
+    { label: 'Light Pink', value: 'rgba(255, 182, 193, 0.7)' },
+    // Add more colors as needed
+  ];
+
+  return (
+    <View style={{ marginBottom: 15 }}>
+      <Picker
+        selectedValue={selectedColor}
+        onValueChange={(itemValue, itemIndex) => onColorChange(itemValue)}
+      >
+        {colors.map((color, index) => (
+          <Picker.Item key={index} label={color.label} value={color.value} />
+        ))}
+      </Picker>
+    </View>
+  );
+};
+
+
 
 const HomeScreen = ({ navigation }) => {
   const [data, setData] = useState(initialData);
@@ -48,15 +86,21 @@ const HomeScreen = ({ navigation }) => {
   const [newItemName, setNewItemName] = useState('');
   const [dailyGoal, setDailyGoal] = useState('');
   const [currentSection, setCurrentSection] = useState('');
+  const [selectedColor, setSelectedColor] = useState('rgba(252, 223, 202, 0.7)'); // Default color
 
   const openModal = (sectionTitle) => {
     setCurrentSection(sectionTitle);
     setModalVisible(true);
   };
 
+  const addNewSection = () => {
+    const newSection = { title: 'New Section', color: 'rgba(252, 223, 202, 0.7)', details: ['Detail 1', 'Detail 2'] };
+    setData(prevData => [...prevData, { title: 'New Section', data: [newSection] }]);
+  };
+
   const addNewItem = () => {
     if (newItemName.trim() !== '' && dailyGoal.trim() !== '') {
-      const newItem = { title: newItemName, details: [`Daily goal: ${dailyGoal}`] };
+      const newItem = { title: newItemName, color: selectedColor, details: [`Daily goal: ${dailyGoal}`] };
       setData((prevData) => {
         const updatedData = prevData.map((section) => {
           if (section.title === currentSection) {
@@ -72,27 +116,13 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-
-  const renderSectionFooter = (section) => (
-    <View style={styles.footerContainer}>
-      <TextInput
-        style={styles.input}
-        placeholder={`Enter new ${section.title.toLowerCase()} name`}
-        value={currentSection === section.title ? newItemName : ''}
-        onFocus={() => setCurrentSection(section.title)}
-        onChangeText={text => setNewItemName(text)}
-      />
-      <Button title="Add New Item" onPress={() => addNewItem(section.title)} />
-    </View>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       <SectionList
         sections={data}
         keyExtractor={(item, index) => item.title + index}
         renderItem={({ item }) => (
-          <View style={styles.item}>
+          <View style={[styles.item, { backgroundColor: item.color }]}>
             <Text style={styles.title}>{item.title}</Text>
             {item.details && (
               <View style={styles.detailsContainer}>
@@ -107,12 +137,17 @@ const HomeScreen = ({ navigation }) => {
             />
           </View>
         )}
-        renderSectionHeader={({ section: { title, subtitle } }) => (
-          <View style={styles.headerContainer}>
-            <Text style={styles.headerTitle}>{title}</Text>
-            {subtitle && <Text style={styles.headerSubtitle}>{subtitle}</Text>}
-          </View>
-        )}
+        renderSectionHeader={({ section }) => {
+          if (!section || !section.title) {
+            return null; // Render nothing if section or title is undefined
+          }
+          return (
+            <View style={[styles.headerContainer, { backgroundColor: section.color }]}>
+              <Text style={styles.headerTitle}>{section.title}</Text>
+              {section.subtitle && <Text style={styles.headerSubtitle}>{section.subtitle}</Text>}
+            </View>
+          );
+        }}
         renderSectionFooter={({ section: { title } }) => (
           <View style={styles.buttonContainer}>
             <Button title={`Add New ${title}`} onPress={() => openModal(title)} />
@@ -131,6 +166,7 @@ const HomeScreen = ({ navigation }) => {
           <Text style={styles.modalText}>Enter new {currentSection.toLowerCase()} name</Text>
           <TextInput
             style={styles.input}
+            placeholderTextColor="grey"
             placeholder={`Enter new ${currentSection.toLowerCase()} name`}
             value={newItemName}
             onChangeText={text => setNewItemName(text)}
@@ -138,10 +174,16 @@ const HomeScreen = ({ navigation }) => {
           <Text style={styles.modalText}>What is your daily goal?</Text>
           <TextInput
             style={styles.input}
+            placeholderTextColor="grey"
             placeholder="Enter daily goal"
             value={dailyGoal}
             keyboardType="numeric"
             onChangeText={text => setDailyGoal(text)}
+          />
+          <Text style={styles.modalText}>Select item color:</Text>
+          <ColorPicker
+            selectedColor={selectedColor}
+            onColorChange={(color) => setSelectedColor(color)}
           />
           <TouchableOpacity style={styles.button} onPress={addNewItem}>
             <Text style={styles.buttonText}>Add Item</Text>
@@ -160,7 +202,6 @@ const HomeScreen = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
 
 
 const ProfileScreen = ({ route }) => (
@@ -199,12 +240,15 @@ const DetailsScreen = ({ route }) => {
         <Text style={styles.additionalDetailsTitle}>Additional Details:</Text>
         <Text>{additionalDetails}</Text>
       </View>
-      <Text style={styles.title}>This page is to track your daily goals.</Text>
-      
+      <Text style={styles.title}>This counter is to track your daily goals:</Text>
+
       <View style={styles.counterContainer}>
         <Button title="-" onPress={decrementCounter} />
         <Text style={styles.counterText}>{counter}</Text>
         <Button title="+" onPress={incrementCounter} />
+      </View>
+      <View>
+        <Text style={styles.additionalDetailsTitle}>Table to see your data in the past days:</Text>
       </View>
     </SafeAreaView>
   );
@@ -250,14 +294,14 @@ function TabNavigator() {
       }}
     >
       <Tab.Screen
-      name="Homescreen"
-      component={HomeScreen}
-      options={{
-        tabBarIcon: ({size, color }) => (
-          <AntDesign name="home" size={size} color={color} />
-        ),
+        name="Homescreen"
+        component={HomeScreen}
+        options={{
+          tabBarIcon: ({ size, color }) => (
+            <AntDesign name="home" size={size} color={color} />
+          ),
         }}
-        />
+      />
       <Tab.Screen
         name="Reminder"
         component={ReminderScreen}
@@ -296,7 +340,7 @@ function App() {
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Details" component={DetailsScreen} />
-        <Stack.Screen name="MainTabs" component={TabNavigator} /> 
+        <Stack.Screen name="MainTabs" component={TabNavigator} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -312,21 +356,20 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   item: {
-    backgroundColor: 'rgba(249, 194, 255, 0.5)',
     padding: 20,
     marginVertical: 8,
     borderRadius: 20,
     marginHorizontal: 16,
   },
+  headerContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    marginBottom: 8,
+    borderRadius: 20,
+    marginHorizontal: 16,
+  },
   title: {
     fontSize: 24,
-  },
-  headerContainer: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 5,
-    marginTop: 0,
-    borderRadius: 8,
   },
   headerTitle: {
     fontSize: 32,
@@ -341,8 +384,18 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   detail: {
+    padding: 10,
+    justifyContent: 'center',
     fontSize: 16,
     color: 'gray',
+  },
+  additionalDetailsContainer: {
+    marginTop: 20,
+    padding: 10,
+  },
+  additionalDetailsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   buttonContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
@@ -360,7 +413,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   modalView: {
-    margin: 20,
+    width: '80%',
     backgroundColor: 'white',
     borderRadius: 20,
     padding: 35,
@@ -373,6 +426,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    position: 'absolute',
+    top: '50%', // Set top to 50% of the screen height
+    left: '50%', // Set left to 50% of the screen width
+    transform: [{ translateX: -170 }, { translateY: -170 }], // Move the modal back half of its own width and height
   },
   modalText: {
     marginBottom: 15,
