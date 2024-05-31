@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { init, fakedata, read_habits, add_habit, fetch_one_habit, today_date } from './db';
+import { init, fakedata, read_habits, add_habit, fetch_one_habit, today_date, add_entry, update_entry } from './db';
 import { Picker } from '@react-native-picker/picker';
 
 const styles = StyleSheet.create({
@@ -466,51 +466,75 @@ export const HomeScreen = ({ navigation }) => {
 export const DetailsScreen = ({ route }) => {
   const { item, additionalDetails } = route.params;
   const [habitData, setHabitData] = useState([]);
-  const [counter, setCounter] = useState(initialCounter);
+  const [counter, setCounter] = useState(0);
+  const counterRef = useRef(counter);
 
-  var data_exists = true;
+  const day = today_date();
 
-  // Function to fetch habits
+  // changes habitData
   const fetchHabits = async () => {
     const data = await fetch_one_habit(item.title);
-    console.log("HABITDATA FETCHED");
+    // console.log(data);
     setHabitData(data);
   };
-  
-  const initialCounter = () => {  
-    // to extract today's count
-    const day = today_date();
-    // console.log("found todays date");
-    // console.log("setting initital counter");
-    // console.log(habitData)
-    const entry = habitData.find(item => item.day === day);
-    if (entry===undefined) {
-      data_exists = false ;
-      return 0;
-    } else {
-      // console.log(entry);
-      return entry.num;
-    }
-    // return entry ? entry.num : 0; // returns 0 if the day is not found, meaning entry not made
-  }
 
+  // calls fetchHabits on load
   useEffect(() => {
     fetchHabits();
-  }, []); // Dependency array ensures this runs when item.title changes
+  }, []);
 
-  // UseEffect to set the counter once habitData is updated
+  // extracts number from data
+  const initialCounter = () => {
+    const entry = habitData.find(item => item.day == day);
+    console.log(entry);
+    if (entry) {
+      return entry.num;
+    } else {
+      return 0;
+    }
+  }
+
+  // calls initialCounter, triggered by habitData
   useEffect(() => {
-    setCounter(initialCounter(habitData));
+    setCounter(initialCounter);
   }, [habitData]);
+
+  // let dataExists = false ;
+  
+  // const initialCounter = (habitData) => {  
+  //   const entry = habitData.find(item => item.day === day);
+  //   console.log(entry);
+  //   if (entry===undefined) {
+  //     console.log("data didnt exist");
+  //     dataExists = false;
+  //     return 0;
+  //   } else {
+  //     console.log("data exists!!");
+  //     dataExists = true ;
+  //     // console.log(dataExists);
+  //     return entry.num;
+  //   }
+  // }
+
+  // // UseEffect to set the counter once habitData is updated
+  // useEffect(() => {
+  //   const num = initialCounter(habitData);
+  //   setCounter(num);
+  // }, [habitData]);
 
   // const [counter, setCounter] = useState(0);
 
-  const incrementCounter = () => {
-    setCounter(counter + 1);
-  };
+  useEffect(() => {
+    console.log(counter);
+    counterRef.current = counter;
+  }, [counter]);
 
+  const incrementCounter = () => {
+    setCounter(prevCounter => prevCounter + 1);
+  };
+  
   const decrementCounter = () => {
-    setCounter(counter - 1);
+    setCounter(prevCounter => prevCounter - 1);
   };
 
   if (!item) {
@@ -520,9 +544,24 @@ export const DetailsScreen = ({ route }) => {
   // we will only change the data entry once we exit details
   useFocusEffect(
     React.useCallback(() => {
+      // this function. this function.
       return () => {
-        console.log("EXITED DETAILS");
-        console.log(counter);
+        // if (dataExists) {
+        //   // need to update, we have date and habit
+        //   console.log("new counter val is");
+        //   console.log(counter);
+        //   update_entry(item.title, day, counter);
+        //   console.log("updating entry");
+        // }
+        // else {
+        //   // need to create new entry
+        //   console.log("new counter val is");
+        //   console.log(counter);
+        //   add_entry(item.title, day, counter);
+        //   console.log("adding new entry");
+        // }
+        console.log(counterRef.current);
+        console.log("i am a broken person");
       };
     }, [])
   );

@@ -51,6 +51,7 @@ export async function fakedata() {
     const database = await openDatabase();
 
     today = today_date();
+    console.log(today);
 
     await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Water', today, 3423);
     await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Fruits', today, 323);
@@ -69,9 +70,9 @@ export async function add_habit(name, description) {
     console.log("ADDED HABIT");
 }
 
-export async function add_entry(habitname, num) {
+export async function add_entry(habitname, today, num) {
     const database = await openDatabase();
-    today = today_date();
+    // today = today_date();
     const result = await database.runAsync('INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)', habitname, today, num);
     console.log(result);
 }
@@ -94,7 +95,12 @@ export async function fetch_one_habit(habit) {
 
 // UPDATE
 
-// export async function update_one_entry(){}
+export async function update_entry(habitname, day, newnum){
+    const database = await openDatabase();
+    console.log("update attempt");
+    const result = await database.runAsync('UPDATE HabitEntries SET num = ? WHERE habit = ? AND day = ?', newnum, habitname, day);
+    console.log(result);
+}
 
 // DELETE
 
