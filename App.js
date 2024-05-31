@@ -14,16 +14,16 @@ const initialData = [
     subtitle: 'Small habits, big changes',
     data: [
       { title: 'Placeholder', color: 'rgba(252, 223, 202, 0.7)', details: ['Detail Placeholder', 'Detail 2', 'Detail 3'] },
-      { title: 'Hydration', color: 'rgba(252, 223, 202, 0.7)', details: ['Goal: 8 cups', 'Current: 6 cups', 'Good Luck!'] }, // Set default color to orange
-      { title: 'Fruits', color: 'rgba(252, 223, 202, 0.7)', details: ['Goal: 2 fruits', 'Current: 2 fruits', 'Well Done!'] }, // Set default color to orange
+      { title: 'Hydration', color: 'rgba(252, 223, 202, 0.7)', details: ['Goal: 8 cups', 'Current: 6 cups', 'Good Luck!'] },
+      { title: 'Fruits', color: 'rgba(252, 223, 202, 0.7)', details: ['Goal: 2 fruits', 'Current: 2 fruits', 'Well Done!'] },
     ],
   },
   {
     title: 'Sides',
     data: [
-      { title: 'French Fries', color: 'rgba(252, 223, 202, 0.7)', details: ['potatoes', 'salt'] }, // Set default color to orange
-      { title: 'Onion Rings', color: 'rgba(252, 223, 202, 0.7)', details: ['onions', 'breadcrumbs'] }, // Set default color to orange
-      { title: 'Fried Shrimps', color: 'rgba(252, 223, 202, 0.7)', details: ['shrimps', 'flour', 'oil'] }, // Set default color to orange
+      { title: 'French Fries', color: 'rgba(252, 223, 202, 0.7)', details: ['potatoes', 'salt'] },
+      { title: 'Onion Rings', color: 'rgba(252, 223, 202, 0.7)', details: ['onions', 'breadcrumbs'] },
+      { title: 'Fried Shrimps', color: 'rgba(252, 223, 202, 0.7)', details: ['shrimps', 'flour', 'oil'] },
     ],
   },
   {
@@ -37,13 +37,13 @@ const initialData = [
   {
     title: 'Desserts',
     data: [
-      { title: 'Cheese Cake', color: 'rgba(252, 223, 202, 0.7)', details: ['cream cheese', 'sugar', 'vanilla'] }, // Set default color to orange
-      { title: 'Ice Cream', color: 'rgba(252, 223, 202, 0.7)', details: ['milk', 'sugar', 'flavoring'] }, // Set default color to orange
+      { title: 'Cheese Cake', color: 'rgba(252, 223, 202, 0.7)', details: ['cream cheese', 'sugar', 'vanilla'] },
+      { title: 'Ice Cream', color: 'rgba(252, 223, 202, 0.7)', details: ['milk', 'sugar', 'flavoring'] },
     ],
   },
 ];
 
-const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for now
+const ColorPicker = ({ selectedColor, onColorChange }) => {
   const colors = [
     { label: 'Default', value: 'rgba(252, 223, 202, 0.7)' },
     { label: 'Light Green', value: 'rgba(144, 238, 144, 0.7)' },
@@ -59,7 +59,6 @@ const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for 
     { label: 'Sandy Brown', value: 'rgba(244, 164, 96, 0.7)' },
     { label: 'Orchid', value: 'rgba(218, 112, 214, 0.7)' },
     { label: 'Light Pink', value: 'rgba(255, 182, 193, 0.7)' },
-    // Add more colors as needed
   ];
 
   return (
@@ -82,7 +81,7 @@ const HomeScreen = ({ navigation }) => {
   const [newItemName, setNewItemName] = useState('');
   const [dailyGoal, setDailyGoal] = useState('');
   const [currentSection, setCurrentSection] = useState('');
-  const [selectedColor, setSelectedColor] = useState('rgba(252, 223, 202, 0.7)'); // Default color
+  const [selectedColor, setSelectedColor] = useState('rgba(252, 223, 202, 0.7)');
 
   const openModal = (sectionTitle) => {
     setCurrentSection(sectionTitle);
@@ -128,6 +127,7 @@ const HomeScreen = ({ navigation }) => {
               </View>
             )}
             <Button
+
               title={`Go to ${item.title} details`}
               onPress={() => navigation.navigate('Details', { item, additionalDetails: 'Some additional details here' })}
             />
@@ -135,7 +135,7 @@ const HomeScreen = ({ navigation }) => {
         )}
         renderSectionHeader={({ section }) => {
           if (!section || !section.title) {
-            return null; // Render nothing if section or title is undefined
+            return null;
           }
           return (
             <View style={[styles.headerContainer, { backgroundColor: section.color }]}>
@@ -146,7 +146,9 @@ const HomeScreen = ({ navigation }) => {
         }}
         renderSectionFooter={({ section: { title } }) => (
           <View style={styles.buttonContainer}>
-            <Button title={`Add New ${title}`} onPress={() => openModal(title)} />
+            <TouchableOpacity onPress={() => openModal(title)} style={styles.addButton}>
+              <Text style={styles.addButtonIcon}>+</Text>
+            </TouchableOpacity>
           </View>
         )}
       />
@@ -199,13 +201,6 @@ const HomeScreen = ({ navigation }) => {
   );
 };
 
-
-const ProfileScreen = ({ route }) => (
-  <SafeAreaView style={styles.container}>
-    <Text>This is {route.params.name}'s profile</Text>
-  </SafeAreaView>
-);
-
 const DetailsScreen = ({ route }) => {
   const { item, additionalDetails } = route.params;
   const [counter, setCounter] = useState(0);
@@ -219,7 +214,7 @@ const DetailsScreen = ({ route }) => {
   };
 
   if (!item) {
-    return null; // or display a loading indicator or error message
+    return null;
   }
 
   return (
@@ -250,15 +245,9 @@ const DetailsScreen = ({ route }) => {
   );
 };
 
-const ReminderScreen = () => (
+const ProfileScreen = () => (
   <View>
-    <Text>Reminder Screen</Text>
-  </View>
-);
-
-const BirthdayScreen = () => (
-  <View>
-    <Text>Birthday Screen</Text>
+    <Text>Profile Screen</Text>
   </View>
 );
 
@@ -299,20 +288,11 @@ function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Reminder"
-        component={ReminderScreen}
+        name="Profile"
+        component={ProfileScreen}
         options={{
           tabBarIcon: ({ size, color }) => (
-            <AntDesign name="clockcircleo" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Birthday"
-        component={BirthdayScreen}
-        options={{
-          tabBarIcon: ({ size, color }) => (
-            <AntDesign name="gift" size={size} color={color} />
+            <AntDesign name="user" size={size} color={color} />
           ),
         }}
       />
@@ -332,15 +312,21 @@ function TabNavigator() {
 function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="MainTabs">
+      <Stack.Navigator initialRouteName="Back">
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Details" component={DetailsScreen} />
-        <Stack.Screen name="MainTabs" component={TabNavigator} />
+        <Stack.Screen
+          name="Back"
+          component={TabNavigator}
+          options={{ headerShown: false }} // Hide header for Back screen
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -380,7 +366,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   detail: {
-    padding: 10,
+    padding: 2,
     justifyContent: 'center',
     fontSize: 16,
     color: 'gray',
@@ -423,9 +409,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     position: 'absolute',
-    top: '50%', // Set top to 50% of the screen height
-    left: '50%', // Set left to 50% of the screen width
-    transform: [{ translateX: -170 }, { translateY: -200 }], // Move the modal
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -170 }, { translateY: -200 }],
   },
   modalText: {
     marginBottom: 15,
@@ -456,10 +442,18 @@ const styles = StyleSheet.create({
     fontSize: 24,
     marginHorizontal: 20,
   },
+  addButton: {
+    backgroundColor: 'lightgrey', // Set background color to grey
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 360, // Set the width of the button
+    height: 50, // Set the height of the button 
+    borderRadius: 20,
+  },
+  addButtonIcon: {
+    fontSize: 30, // Increase the font size of the "+"
+    color: 'black', // Set color of the "+" sign
+  },
 });
 
 export default App;
-
-
-
-
