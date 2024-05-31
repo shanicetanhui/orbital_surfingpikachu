@@ -62,7 +62,7 @@ export async function fakedata() {
 
 // CREATE
 
-export async function add_habit(name, description) {
+export async function add_habit(name, description, color) {
     if (description===undefined){
         description = '';
     }

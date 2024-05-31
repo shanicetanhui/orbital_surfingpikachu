@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   detail: {
-    padding: 10,
+    padding: 2,
     justifyContent: 'center',
     fontSize: 16,
     color: 'gray',
@@ -88,9 +88,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     position: 'absolute',
-    top: '50%', // Set top to 50% of the screen height
-    left: '50%', // Set left to 50% of the screen width
-    transform: [{ translateX: -170 }, { translateY: -200 }], // Move the modal
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -170 }, { translateY: -200 }],
   },
   modalText: {
     marginBottom: 15,
@@ -121,111 +121,19 @@ const styles = StyleSheet.create({
     fontSize: 24,
     marginHorizontal: 20,
   },
+  addButton: {
+    backgroundColor: 'lightgrey', // Set background color to grey
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 360, // Set the width of the button
+    height: 50, // Set the height of the button 
+    borderRadius: 20,
+  },
+  addButtonIcon: {
+    fontSize: 30, // Increase the font size of the "+"
+    color: 'black', // Set color of the "+" sign
+  },
 });
-
-// const styles from before legendary pullmerge
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     marginTop: StatusBar.currentHeight || 0,
-//     backgroundColor: '#ffffff',
-//     paddingHorizontal: 16,
-//     paddingTop: 16,
-//     paddingBottom: 16,
-//   },
-//   item: {
-//     backgroundColor: 'rgba(249, 194, 255, 0.5)',
-//     padding: 20,
-//     marginVertical: 8,
-//     borderRadius: 20,
-//     marginHorizontal: 16,
-//   },
-//   title: {
-//     fontSize: 24,
-//   },
-//   headerContainer: {
-//     backgroundColor: '#fff',
-//     paddingHorizontal: 20,
-//     paddingVertical: 5,
-//     marginTop: 0,
-//     borderRadius: 8,
-//   },
-//   headerTitle: {
-//     fontSize: 32,
-//     fontWeight: 'bold',
-//   },
-//   headerSubtitle: {
-//     fontSize: 16,
-//     marginTop: 8,
-//     color: 'gray',
-//   },
-//   detailsContainer: {
-//     marginTop: 10,
-//   },
-//   detail: {
-//     fontSize: 16,
-//     color: 'gray',
-//   },
-//   buttonContainer: {
-//     backgroundColor: 'rgba(255, 255, 255, 0.5)',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//     marginVertical: 20,
-//   },
-//   input: {
-//     height: 40,
-//     borderColor: 'gray',
-//     borderWidth: 1,
-//     borderRadius: 5,
-//     width: '80%',
-//     marginVertical: 10,
-//     paddingHorizontal: 10,
-//   },
-//   modalView: {
-//     margin: 20,
-//     backgroundColor: 'white',
-//     borderRadius: 20,
-//     padding: 35,
-//     alignItems: 'center',
-//     shadowColor: '#000',
-//     shadowOffset: {
-//       width: 0,
-//       height: 2,
-//     },
-//     shadowOpacity: 0.25,
-//     shadowRadius: 4,
-//     elevation: 5,
-//   },
-//   modalText: {
-//     marginBottom: 15,
-//     textAlign: 'center',
-//     fontSize: 18,
-//   },
-//   button: {
-//     backgroundColor: '#2196F3',
-//     borderRadius: 20,
-//     padding: 10,
-//     elevation: 2,
-//     marginVertical: 5,
-//   },
-//   buttonText: {
-//     color: 'white',
-//     textAlign: 'center',
-//   },
-//   buttonClose: {
-//     backgroundColor: '#f44336',
-//   },
-//   counterContainer: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//     marginTop: 20,
-//   },
-//   counterText: {
-//     fontSize: 24,
-//     marginHorizontal: 20,
-//   },
-// });
 
 init();
 fakedata();
@@ -311,7 +219,7 @@ export const HomeScreen = ({ navigation }) => {
     if (newItemName.trim() !== '' && dailyGoal.trim() !== '') {
       const newItem = { title: newItemName, color: selectedColor, details: [`Daily goal: ${dailyGoal}`] };
       // console.log("adding new item")
-      add_habit(newItem.title, newItem.details[0]);
+      add_habit(newItem.title, newItem.details[0], newItem.color);
       // console.log(read_habits());
       setData((prevData) => {
         const updatedData = prevData.map((section) => {
@@ -375,7 +283,9 @@ export const HomeScreen = ({ navigation }) => {
         }}
         renderSectionFooter={({ section: { title } }) => (
           <View style={styles.buttonContainer}>
-            <Button title={`Add New ${title}`} onPress={() => openModal(title)} />
+            <TouchableOpacity onPress={() => openModal(title)} style={styles.addButton}>
+              <Text style={styles.addButtonIcon}>+</Text>
+            </TouchableOpacity>
           </View>
         )}
       />
@@ -526,21 +436,15 @@ export const DetailsScreen = ({ route }) => {
   );
 };
 
-export const ReminderScreen = () => (
-  <View>
-    <Text>Reminder Screen</Text>
-  </View>
-);
-
-export const BirthdayScreen = () => (
-  <View>
-    <Text>Birthday Screen</Text>
-  </View>
-);
-
 export const SettingsScreen = () => (
   <View>
     <Text>Settings Screen</Text>
+  </View>
+);
+
+export const ProfileScreen = () => (
+  <View>
+    <Text>Profile Screen</Text>
   </View>
 );
 
@@ -577,20 +481,11 @@ export function TabNavigator() {
         }}
         />
       <Tab.Screen
-        name="Reminder"
-        component={ReminderScreen}
+        name="Profile"
+        component={ProfileScreen}
         options={{
           tabBarIcon: ({ size, color }) => (
-            <AntDesign name="clockcircleo" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Birthday"
-        component={BirthdayScreen}
-        options={{
-          tabBarIcon: ({ size, color }) => (
-            <AntDesign name="gift" size={size} color={color} />
+            <AntDesign name="user" size={size} color={color} />
           ),
         }}
       />
@@ -606,9 +501,3 @@ export function TabNavigator() {
     </Tab.Navigator>
   );
 }
-
-export const ProfileScreen = ({ route }) => (
-  <SafeAreaView style={styles.container}>
-    <Text>This is {route.params.name}'s profile</Text>
-  </SafeAreaView>
-);
