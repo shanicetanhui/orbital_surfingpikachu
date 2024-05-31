@@ -29,7 +29,8 @@ export async function init(){
     DROP TABLE IF EXISTS Habits;
     CREATE TABLE Habits (
         habit TEXT NOT NULL,
-        description TEXT);
+        description TEXT,
+        color TEXT);
     DROP TABLE IF EXISTS HabitEntries;
     CREATE TABLE HabitEntries (
         entryid INTEGER PRIMARY KEY NOT NULL, 
@@ -38,8 +39,8 @@ export async function init(){
         num INTEGER NOT NULL, 
         FOREIGN KEY (habit) REFERENCES Habits(habit),
         unique(habit, day));
-    INSERT INTO Habits (habit, description) VALUES ('Water', 'water placeholder desc');
-    INSERT INTO Habits (habit, description) VALUES ('Fruits', 'fruits placeholder desc');
+    INSERT INTO Habits (habit, description, color) VALUES ('Water', 'water placeholder desc', 'rgba(252, 223, 202, 0.7)');
+    INSERT INTO Habits (habit, description, color) VALUES ('Fruits', 'fruits placeholder desc', 'rgba(252, 223, 202, 0.7)');
     `);
 
     console.log("init done");
@@ -64,7 +65,7 @@ export async function add_habit(name, description) {
         description = '';
     }
     const database = await openDatabase();
-    database.runAsync('INSERT INTO Habits (habit, description) VALUES (?, ?)', name, description);
+    database.runAsync('INSERT INTO Habits (habit, description, color) VALUES (?, ?, ?)', name, description, color);
     console.log("ADDED HABIT");
 }
 
@@ -93,4 +94,7 @@ export async function fetch_one_habit(habit) {
 
 // UPDATE
 
+// export async function update_one_entry(){}
+
 // DELETE
+

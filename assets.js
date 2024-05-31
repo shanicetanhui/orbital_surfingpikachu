@@ -233,24 +233,27 @@ fakedata();
 const initialData = [
   {
     title: 'Habits',
-    subtitle: 'Your habits!',
-    data: [],
+    subtitle: 'Small habits, big changes',
+    data: [
+      { title: 'Water', details: ['water placeholder desc', 'goals', 'current'], color:'rgba(252, 223, 202, 0.7)'},
+      { title: 'Fruits', details: ['fruits placeholder desc', 'goals', 'current'], color:'rgba(252, 223, 202, 0.7)'}
+    ],
   },
 ];
 
-async function read_initialData() {
-  const rows = await read_habits();
-  console.log("read initialdata");
-  console.log(rows);
-  for (const row of rows) {
-    initialData[0].data.push(
-      { title: row.habit, details: [row.description]}
-    );
-  }
-  console.log("done reading initial");
-}
+// async function read_initialData() {
+//   const rows = await read_habits();
+//   console.log("read initialdata");
+//   console.log(rows);
+//   for (const row of rows) {
+//     initialData[0].data.push(
+//       { title: row.habit, details: [row.description], color:'rgba(252, 223, 202, 0.7)'}
+//     );
+//   }
+//   console.log("done reading initial");
+// }
 
-read_initialData();
+// read_initialData();
 
 // const initialData = [
 //   {
@@ -342,8 +345,9 @@ export const HomeScreen = ({ navigation }) => {
   const addNewItem = () => {
     if (newItemName.trim() !== '' && dailyGoal.trim() !== '') {
       const newItem = { title: newItemName, color: selectedColor, details: [`Daily goal: ${dailyGoal}`] };
+      // console.log("adding new item")
       add_habit(newItem.title, newItem.details[0]);
-      console.log(read_habits());
+      // console.log(read_habits());
       setData((prevData) => {
         const updatedData = prevData.map((section) => {
           if (section.title === currentSection) {
@@ -461,34 +465,45 @@ export const HomeScreen = ({ navigation }) => {
 
 export const DetailsScreen = ({ route }) => {
   const { item, additionalDetails } = route.params;
+  const [habitData, setHabitData] = useState([]);
+  const [counter, setCounter] = useState(initialCounter);
 
-  // var habit_data;
+  var data_exists = true;
 
-  // async function fetch_habits() {
-  //   habit_data = await fetch_one_habit(item.title);
-  //   console.log("HABIT_DATA FETCHED");
-  // }
-
-  // // fetch total data for data vis
-  // fetch_habits();
-  // console.log(habit_data);
-
-  // // to extract today's count
-  // const day = today_date();
-  // console.log("found todays date");
+  // Function to fetch habits
+  const fetchHabits = async () => {
+    const data = await fetch_one_habit(item.title);
+    console.log("HABITDATA FETCHED");
+    setHabitData(data);
+  };
   
-  // const initialCounter = () => {  
-  //   console.log("setting initital counter");
-  //   console.log(habit_data)
-  //   // const entry = habit_data.find(item => item.day === day);
-  //   // return entry ? entry.num : 0; // returns 0 if the day is not found, meaning entry not made
-  // }
+  const initialCounter = () => {  
+    // to extract today's count
+    const day = today_date();
+    // console.log("found todays date");
+    // console.log("setting initital counter");
+    // console.log(habitData)
+    const entry = habitData.find(item => item.day === day);
+    if (entry===undefined) {
+      data_exists = false ;
+      return 0;
+    } else {
+      // console.log(entry);
+      return entry.num;
+    }
+    // return entry ? entry.num : 0; // returns 0 if the day is not found, meaning entry not made
+  }
 
-  // // set counter
-  // const [counter, setCounter] = useState(initialCounter);
+  useEffect(() => {
+    fetchHabits();
+  }, []); // Dependency array ensures this runs when item.title changes
 
+  // UseEffect to set the counter once habitData is updated
+  useEffect(() => {
+    setCounter(initialCounter(habitData));
+  }, [habitData]);
 
-  const [counter, setCounter] = useState(0);
+  // const [counter, setCounter] = useState(0);
 
   const incrementCounter = () => {
     setCounter(counter + 1);
