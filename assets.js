@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { init, fakedata, read_habits, add_habit} from './db';
-
-// how should this work? we need to start with SOME data
-// start from the init SQL statements
-// but how to fetch from there reliably?
+import { init, fakedata, read_habits, add_habit, fetch_one_habit, today_date } from './db';
 
 const styles = StyleSheet.create({
   container: {
@@ -117,8 +114,8 @@ fakedata();
 
 const initialData = [
   {
-    title: 'widgets',
-    subtitle: 'your habits',
+    title: 'Habits',
+    subtitle: 'Your habits!',
     data: [],
   },
 ];
@@ -260,6 +257,33 @@ export const HomeScreen = ({ navigation }) => {
 
 export const DetailsScreen = ({ route }) => {
   const { item, additionalDetails } = route.params;
+
+  // var habit_data;
+
+  // async function fetch_habits() {
+  //   habit_data = await fetch_one_habit(item.title);
+  //   console.log("HABIT_DATA FETCHED");
+  // }
+
+  // // fetch total data for data vis
+  // fetch_habits();
+  // console.log(habit_data);
+
+  // // to extract today's count
+  // const day = today_date();
+  // console.log("found todays date");
+  
+  // const initialCounter = () => {  
+  //   console.log("setting initital counter");
+  //   console.log(habit_data)
+  //   // const entry = habit_data.find(item => item.day === day);
+  //   // return entry ? entry.num : 0; // returns 0 if the day is not found, meaning entry not made
+  // }
+
+  // // set counter
+  // const [counter, setCounter] = useState(initialCounter);
+
+
   const [counter, setCounter] = useState(0);
 
   const incrementCounter = () => {
@@ -273,6 +297,16 @@ export const DetailsScreen = ({ route }) => {
   if (!item) {
     return null; // or display a loading indicator or error message
   }
+
+  // we will only change the data entry once we exit details
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        console.log("EXITED DETAILS");
+        console.log(counter);
+      };
+    }, [])
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -295,6 +329,11 @@ export const DetailsScreen = ({ route }) => {
         <Text style={styles.counterText}>{counter}</Text>
         <Button title="+" onPress={incrementCounter} />
       </View>
+
+      <View>
+        <Text> Data vis should go here </Text>
+      </View>
+
     </SafeAreaView>
   );
 };

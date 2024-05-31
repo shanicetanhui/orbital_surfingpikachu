@@ -1,7 +1,18 @@
 import * as SQLite from 'expo-sqlite';
 let db ;
 
-const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+// get date in ddmmyy format
+export function today_date(){
+    const today = new Date();
+
+    const year = String(today.getFullYear()).slice(-2); // Last two digits of the year
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Month (0-11, so add 1)
+    const day = String(today.getDate()).padStart(2, '0');   // Day of the month (1-31)
+
+    const formattedDate = `${year}${month}${day}`;
+    return formattedDate;
+    // console.log(formattedDate);
+}
 
 // this means we don't have to reopen the database every time
 export const openDatabase = async () => {
@@ -17,16 +28,16 @@ export async function init(){
     await database.execAsync(`
     DROP TABLE IF EXISTS Habits;
     CREATE TABLE Habits (
-        habitid INTEGER PRIMARY KEY NOT NULL, 
         habit TEXT NOT NULL,
         description TEXT);
     DROP TABLE IF EXISTS HabitEntries;
     CREATE TABLE HabitEntries (
         entryid INTEGER PRIMARY KEY NOT NULL, 
-        habitid INTEGER NOT NULL, 
+        habit INTEGER NOT NULL, 
         day TEXT NOT NULL, 
         num INTEGER NOT NULL, 
-        FOREIGN KEY (habitid) REFERENCES Habits(habitid));
+        FOREIGN KEY (habit) REFERENCES Habits(habit),
+        unique(habit, day));
     INSERT INTO Habits (habit, description) VALUES ('Water', 'water placeholder desc');
     INSERT INTO Habits (habit, description) VALUES ('Fruits', 'fruits placeholder desc');
     `);
@@ -38,28 +49,15 @@ export async function fakedata() {
     // populate with fake data first
     const database = await openDatabase();
 
-    today = new Date();
-    const day = days[today.getDay()];
+    today = today_date();
 
-    // await database.execAsync(`
-    // INSERT INTO water (day, cups) VALUES ('mon', 3);
-    // INSERT INTO water (day, cups) VALUES ('tue', 4);
-    // INSERT INTO water (day, cups) VALUES ('wed', 5);
-    // `);
-
-    await database.runAsync(`INSERT INTO HabitEntries (habitid, day, num) VALUES (?, ?, ?)`, 1, day, 3423);
-    await database.runAsync(`INSERT INTO HabitEntries (habitid, day, num) VALUES (?, ?, ?)`, 2, day, 323);
+    await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Water', today, 3423);
+    await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Fruits', today, 323);
 
     console.log("fake data inserted");
 }
 
-export async function read_habits() {
-    const database = await openDatabase();
-    const allRows = await database.getAllAsync('SELECT * FROM Habits');
-    console.log("readhabits");
-    console.log(allRows);
-    return allRows;
-}
+// CREATE
 
 export async function add_habit(name, description) {
     if (description===undefined){
@@ -70,7 +68,29 @@ export async function add_habit(name, description) {
     console.log("ADDED HABIT");
 }
 
-// export async function fetch_one_habit() {
-//     const database = await openDatabase();
-//     const 
-// }
+export async function add_entry(habitname, num) {
+    const database = await openDatabase();
+    today = today_date();
+    const result = await database.runAsync('INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)', habitname, today, num);
+    console.log(result);
+}
+
+// READ
+
+export async function read_habits() {
+    const database = await openDatabase();
+    const allRows = await database.getAllAsync('SELECT * FROM Habits');
+    console.log("readhabits");
+    console.log(allRows);
+    return allRows;
+}
+
+export async function fetch_one_habit(habit) {
+    const database = await openDatabase();
+    const allRows = await database.getAllAsync('SELECT * FROM HabitEntries WHERE habit = ?', habit);
+    return allRows;
+}
+
+// UPDATE
+
+// DELETE
