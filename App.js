@@ -10,7 +10,7 @@ function App() {
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Details" component={DetailsScreen} />
-        <Stack.Screen name="MainTabs" component={TabNavigator} /> 
+        <Stack.Screen name="MainTabs" component={TabNavigator} />
       </Stack.Navigator>
     </NavigationContainer>
   );
