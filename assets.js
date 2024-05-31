@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { init, fakedata, read_habits, add_habit, fetch_one_habit, today_date, add_entry, update_entry } from './db';
+import { init, fakedata, read_habits, add_habit, fetch_one_habit, today_date, create_or_update} from './db';
 import { Picker } from '@react-native-picker/picker';
 
 const styles = StyleSheet.create({
@@ -487,42 +487,13 @@ export const DetailsScreen = ({ route }) => {
   const initialCounter = () => {
     const entry = habitData.find(item => item.day == day);
     console.log(entry);
-    if (entry) {
-      return entry.num;
-    } else {
-      return 0;
-    }
+    return entry ? entry.num : 0;
   }
 
   // calls initialCounter, triggered by habitData
   useEffect(() => {
     setCounter(initialCounter);
   }, [habitData]);
-
-  // let dataExists = false ;
-  
-  // const initialCounter = (habitData) => {  
-  //   const entry = habitData.find(item => item.day === day);
-  //   console.log(entry);
-  //   if (entry===undefined) {
-  //     console.log("data didnt exist");
-  //     dataExists = false;
-  //     return 0;
-  //   } else {
-  //     console.log("data exists!!");
-  //     dataExists = true ;
-  //     // console.log(dataExists);
-  //     return entry.num;
-  //   }
-  // }
-
-  // // UseEffect to set the counter once habitData is updated
-  // useEffect(() => {
-  //   const num = initialCounter(habitData);
-  //   setCounter(num);
-  // }, [habitData]);
-
-  // const [counter, setCounter] = useState(0);
 
   useEffect(() => {
     console.log(counter);
@@ -541,27 +512,13 @@ export const DetailsScreen = ({ route }) => {
     return null; // or display a loading indicator or error message
   }
 
-  // we will only change the data entry once we exit details
+  // this function triggers when we exit the details page
+  // since it would be costly to keep making statements for every increment or decrement
   useFocusEffect(
     React.useCallback(() => {
-      // this function. this function.
       return () => {
-        // if (dataExists) {
-        //   // need to update, we have date and habit
-        //   console.log("new counter val is");
-        //   console.log(counter);
-        //   update_entry(item.title, day, counter);
-        //   console.log("updating entry");
-        // }
-        // else {
-        //   // need to create new entry
-        //   console.log("new counter val is");
-        //   console.log(counter);
-        //   add_entry(item.title, day, counter);
-        //   console.log("adding new entry");
-        // }
         console.log(counterRef.current);
-        console.log("i am a broken person");
+        create_or_update(item.title, day, counterRef.current);
       };
     }, [])
   );

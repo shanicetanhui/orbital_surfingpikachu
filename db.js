@@ -102,5 +102,15 @@ export async function update_entry(habitname, day, newnum){
     console.log(result);
 }
 
+export async function create_or_update(habitname, day, newnum) {
+    const database = await openDatabase();
+    await database.runAsync(`
+    INSERT INTO HabitEntries (habit, day, num) 
+    VALUES (?, ?, ?) 
+    ON CONFLICT(habit, day) DO UPDATE SET 
+    num = ?
+    `, [habitname, day, newnum, newnum]);
+}
+
 // DELETE
 
