@@ -30,17 +30,18 @@ export async function init(){
     CREATE TABLE Habits (
         habit TEXT NOT NULL,
         description TEXT,
+        goal REAL NOT NULL,
         color TEXT);
     DROP TABLE IF EXISTS HabitEntries;
     CREATE TABLE HabitEntries (
         entryid INTEGER PRIMARY KEY NOT NULL, 
         habit INTEGER NOT NULL, 
         day TEXT NOT NULL, 
-        num INTEGER NOT NULL, 
+        num REAL NOT NULL, 
         FOREIGN KEY (habit) REFERENCES Habits(habit),
         unique(habit, day));
-    INSERT INTO Habits (habit, description, color) VALUES ('Water', 'water placeholder desc', 'rgba(252, 223, 202, 0.7)');
-    INSERT INTO Habits (habit, description, color) VALUES ('Fruits', 'fruits placeholder desc', 'rgba(252, 223, 202, 0.7)');
+    INSERT INTO Habits (habit, description, goal, color) VALUES ('Water', 'water placeholder desc', 10, 'rgba(252, 223, 202, 0.7)');
+    INSERT INTO Habits (habit, description, goal, color) VALUES ('Fruits', 'fruits placeholder desc', 10, 'rgba(252, 223, 202, 0.7)');
     `);
 
     console.log("init done");
@@ -53,8 +54,8 @@ export async function fakedata() {
     today = today_date();
     console.log(today);
 
-    await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Water', today, 3423);
-    await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Fruits', today, 323);
+    await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Water', today, 2);
+    await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Fruits', today, 221);
 
     console.log("fake data inserted");
 }

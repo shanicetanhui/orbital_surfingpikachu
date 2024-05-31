@@ -234,61 +234,22 @@ const initialData = [
   {
     title: 'Habits',
     subtitle: 'Small habits, big changes',
-    data: [
-      { title: 'Water', details: ['water placeholder desc', 'goals', 'current'], color:'rgba(252, 223, 202, 0.7)'},
-      { title: 'Fruits', details: ['fruits placeholder desc', 'goals', 'current'], color:'rgba(252, 223, 202, 0.7)'}
-    ],
-  },
+    data: []
+  }
 ];
 
-// async function read_initialData() {
-//   const rows = await read_habits();
-//   console.log("read initialdata");
-//   console.log(rows);
-//   for (const row of rows) {
-//     initialData[0].data.push(
-//       { title: row.habit, details: [row.description], color:'rgba(252, 223, 202, 0.7)'}
-//     );
-//   }
-//   console.log("done reading initial");
-// }
-
-// read_initialData();
-
-// const initialData = [
-//   {
-//     title: 'Habits',
-//     subtitle: 'Small habits, big changes',
-//     data: [
-//       { title: 'Placeholder', color: 'rgba(252, 223, 202, 0.7)', details: ['Detail Placeholder', 'Detail 2', 'Detail 3'] },
-//       { title: 'Hydration', color: 'rgba(252, 223, 202, 0.7)', details: ['Goal: 8 cups', 'Current: 6 cups', 'Good Luck!'] }, // Set default color to orange
-//       { title: 'Fruits', color: 'rgba(252, 223, 202, 0.7)', details: ['Goal: 2 fruits', 'Current: 2 fruits', 'Well Done!'] }, // Set default color to orange
-//     ],
-//   },
-//   {
-//     title: 'Sides',
-//     data: [
-//       { title: 'French Fries', color: 'rgba(252, 223, 202, 0.7)', details: ['potatoes', 'salt'] }, // Set default color to orange
-//       { title: 'Onion Rings', color: 'rgba(252, 223, 202, 0.7)', details: ['onions', 'breadcrumbs'] }, // Set default color to orange
-//       { title: 'Fried Shrimps', color: 'rgba(252, 223, 202, 0.7)', details: ['shrimps', 'flour', 'oil'] }, // Set default color to orange
-//     ],
-//   },
-//   {
-//     title: 'Drinks',
-//     data: [
-//       { title: 'Water' },
-//       { title: 'Coke' },
-//       { title: 'Beer' },
-//     ],
-//   },
-//   {
-//     title: 'Desserts',
-//     data: [
-//       { title: 'Cheese Cake', color: 'rgba(252, 223, 202, 0.7)', details: ['cream cheese', 'sugar', 'vanilla'] }, // Set default color to orange
-//       { title: 'Ice Cream', color: 'rgba(252, 223, 202, 0.7)', details: ['milk', 'sugar', 'flavoring'] }, // Set default color to orange
-//     ],
-//   },
-// ];
+async function read_initialData(setData) {
+  const rows = await read_habits();
+  console.log("read initialdata");
+  console.log(rows);
+  const newData = [...initialData];
+  for (const row of rows) {
+    newData[0].data.push(
+      { title: row.habit, details: [row.description, row.goal], color:row.color}
+    );
+  }
+  setData(newData);
+}
 
 const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for now
   const colors = [
@@ -324,13 +285,17 @@ const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for 
 };
 
 export const HomeScreen = ({ navigation }) => {
-  
+
   const [data, setData] = useState(initialData);
   const [modalVisible, setModalVisible] = useState(false);
   const [newItemName, setNewItemName] = useState('');
   const [dailyGoal, setDailyGoal] = useState('');
   const [currentSection, setCurrentSection] = useState('');
   const [selectedColor, setSelectedColor] = useState('rgba(252, 223, 202, 0.7)'); // Default color
+
+  useEffect(()=>{
+    read_initialData(setData);
+  }, [])
 
   const openModal = (sectionTitle) => {
     setCurrentSection(sectionTitle);
