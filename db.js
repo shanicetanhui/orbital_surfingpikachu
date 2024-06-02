@@ -1,7 +1,8 @@
-import * as SQLite from 'expo-sqlite';
+import * as SQLite from 'expo-sqlite'; //using expo's sqlite
 let db ;
 
-// get date in ddmmyy format
+// generate date in ddmmyy format
+// to use in HabitEntries table
 export function today_date(){
     const today = new Date();
 
@@ -22,6 +23,8 @@ export const openDatabase = async () => {
     return db;
 }
 
+// set up database with two tables
+// insert two habits to start
 export async function init(){
     const database = await openDatabase();
 
@@ -47,13 +50,14 @@ export async function init(){
     console.log("init done");
 }
 
+// populate tables with fake data first for debug purposes
 export async function fakedata() {
-    // populate with fake data first
     const database = await openDatabase();
 
     today = today_date();
-    console.log(today);
-
+    // console.log(today);
+  
+    // 4 entries for habits for now
     await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Water', today, 2);
     await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Fruits', today, 5);
     await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Water', 240601, 3);
@@ -68,15 +72,17 @@ export async function fakedata() {
 
 // CREATE
 
-export async function add_habit(name, description, color) {
+// add new habit
+export async function add_habit(name, description, color, goal) {
     if (description===undefined){
         description = '';
     }
     const database = await openDatabase();
-    database.runAsync('INSERT INTO Habits (habit, description, color) VALUES (?, ?, ?)', name, description, color);
+    database.runAsync('INSERT INTO Habits (habit, description, color, goal) VALUES (?, ?, ?, ?)', name, description, color, goal);
     console.log("ADDED HABIT");
 }
 
+// add new entry
 export async function add_entry(habitname, today, num) {
     const database = await openDatabase();
     // today = today_date();
@@ -86,6 +92,7 @@ export async function add_entry(habitname, today, num) {
 
 // READ
 
+// get entries of habits
 export async function read_habits() {
     const database = await openDatabase();
     const allRows = await database.getAllAsync('SELECT * FROM Habits');
@@ -94,6 +101,7 @@ export async function read_habits() {
     return allRows;
 }
 
+// fetch all entries for one habit
 export async function fetch_one_habit(habit) {
     const database = await openDatabase();
     const allRows = await database.getAllAsync('SELECT * FROM HabitEntries WHERE habit = ?', habit);
@@ -102,13 +110,18 @@ export async function fetch_one_habit(habit) {
 
 // UPDATE
 
-export async function update_entry(habitname, day, newnum){
-    const database = await openDatabase();
-    console.log("update attempt");
-    const result = await database.runAsync('UPDATE HabitEntries SET num = ? WHERE habit = ? AND day = ?', newnum, habitname, day);
-    console.log(result);
-}
+// export async function update_entry(habitname, day, newnum){
+//     const database = await openDatabase();
+//     console.log("update attempt");
+//     const result = await database.runAsync('UPDATE HabitEntries SET num = ? WHERE habit = ? AND day = ?', newnum, habitname, day);
+//     console.log(result);
+// }
 
+// function specially used for the counters in the details page
+// explanation: the user can change today's value through the counter
+// the app will only make a call to the database once the user exits the details page
+// it makes a new entry for today for that habit in the database
+// BUT if there is already an entry for that habit for today (on conflict), that entry is updated
 export async function create_or_update(habitname, day, newnum) {
     const database = await openDatabase();
     await database.runAsync(`
@@ -118,6 +131,3 @@ export async function create_or_update(habitname, day, newnum) {
     num = ?
     `, [habitname, day, newnum, newnum]);
 }
-
-// DELETE
-

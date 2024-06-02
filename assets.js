@@ -7,6 +7,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { init, fakedata, read_habits, add_habit, fetch_one_habit, today_date, create_or_update} from './db';
 import { Picker } from '@react-native-picker/picker';
 
+// stylesheet
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -157,9 +158,10 @@ const styles = StyleSheet.create({
   }
 });
 
-init();
-fakedata();
+init(); //initialise database
+fakedata(); //populate with fake data
 
+// front end purposes
 const initialData = [
   {
     title: 'Habits',
@@ -168,6 +170,7 @@ const initialData = [
   }
 ];
 
+// read fake data (for now) into front-end initialData
 async function read_initialData(setData) {
   const rows = await read_habits();
   console.log("read initialdata");
@@ -175,12 +178,13 @@ async function read_initialData(setData) {
   const newData = [...initialData];
   for (const row of rows) {
     newData[0].data.push(
-      { title: row.habit, details: [row.description, row.goal], color:row.color}
+      { title: row.habit, details: [row.description], color:row.color, goal:row.goal}
     );
   }
   setData(newData);
 }
 
+// colour picker for habit
 const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for now
   const colors = [
     { label: 'Default', value: 'rgba(252, 223, 202, 0.7)' },
@@ -214,8 +218,10 @@ const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for 
   );
 };
 
+// home screen
 export const HomeScreen = ({ navigation }) => {
 
+  // Hooks for variables
   const [data, setData] = useState(initialData);
   const [modalVisible, setModalVisible] = useState(false);
   const [newItemName, setNewItemName] = useState('');
@@ -223,10 +229,12 @@ export const HomeScreen = ({ navigation }) => {
   const [currentSection, setCurrentSection] = useState('');
   const [selectedColor, setSelectedColor] = useState('rgba(252, 223, 202, 0.7)'); // Default color
 
+  // read Habita data from database on render
   useEffect(()=>{
     read_initialData(setData);
   }, [])
 
+  // modal -> popups like in 'add new habit/section' 
   const openModal = (sectionTitle) => {
     setCurrentSection(sectionTitle);
     setModalVisible(true);
@@ -239,9 +247,9 @@ export const HomeScreen = ({ navigation }) => {
 
   const addNewItem = () => {
     if (newItemName.trim() !== '' && dailyGoal.trim() !== '') {
-      const newItem = { title: newItemName, color: selectedColor, details: [`Daily goal: ${dailyGoal}`] };
+      const newItem = { title: newItemName, color: selectedColor, details: [`Daily goal: ${dailyGoal}`], goal: dailyGoal };
       // console.log("adding new item")
-      add_habit(newItem.title, newItem.details[0], newItem.color);
+      add_habit(newItem.title, newItem.details[0], newItem.color, newItem.goal);
       // console.log(read_habits());
       setData((prevData) => {
         const updatedData = prevData.map((section) => {
@@ -258,6 +266,7 @@ export const HomeScreen = ({ navigation }) => {
     }
   };
 
+  // not yet implemented
   const renderSectionFooter = (section) => (
     <View style={styles.footerContainer}>
       <TextInput
@@ -360,6 +369,7 @@ export const HomeScreen = ({ navigation }) => {
   );
 };
 
+// following 3 tables are for the table
 const TableRow = ({ data, headers }) => (
   <View style={styles.row}>
     {headers.map((header, index) => (
@@ -393,14 +403,21 @@ const DataTable = (props) => {
   )
 }
 
+// details screen
 export const DetailsScreen = ({ route }) => {
   const { item, additionalDetails } = route.params;
+  // Hooks for habitData and counter
   const [habitData, setHabitData] = useState([]);
   const [counter, setCounter] = useState(0);
   const counterRef = useRef(counter);
   const habitDataRef = useRef(habitData);
 
+  // for fetching data!
   const day = today_date();
+
+  // overall effect of the following functions (fetchHabits to second useEffect):
+  // reliably grab details of one habit once the details screen is rendered
+  // use all data for data vis!
 
   // changes habitData
   const fetchHabits = async () => {
@@ -421,16 +438,19 @@ export const DetailsScreen = ({ route }) => {
     return entry ? entry.num : 0;
   }
 
-  // calls initialCounter, triggered by habitData
+  // calls initialCounter, triggered by habitData changing
   useEffect(() => {
     setCounter(initialCounter);
     habitDataRef.current = habitData;
   }, [habitData]);
 
+  // triggered by counter changing
   useEffect(() => {
     console.log(counter);
     counterRef.current = counter;
   }, [counter]);
+
+  // for counters
 
   const incrementCounter = () => {
     setCounter(prevCounter => prevCounter + 1);
@@ -445,7 +465,7 @@ export const DetailsScreen = ({ route }) => {
   }
 
   // this function triggers when we exit the details page
-  // since it would be costly to keep making statements for every increment or decrement
+  // since it would be costly to keep making SQL statements for every increment or decrement
   useFocusEffect(
     React.useCallback(() => {
       return () => {
@@ -458,28 +478,33 @@ export const DetailsScreen = ({ route }) => {
   return (
     <SafeAreaView style={styles.container}>
       
+      {/* text */}
        <View style={styles.additionalDetailsContainer}>
         <Text style={styles.additionalDetailsTitle}>{item.title}</Text>
         {item.details && item.details.map((detail, index) => (
-          <Text key={index} style={styles.detail}>{detail}</Text>
+          <Text key={index} style={styles.detail}> {detail}</Text>
         ))}
       </View>
 
+      {/* additional details */}
       <View style={styles.additionalDetailsContainer}>
         <Text style={styles.additionalDetailsTitle}>Additional Details:</Text>
         <Text>{additionalDetails}</Text>
       </View>
-
+      
+      {/* today's data */}
       <View style={styles.additionalDetailsContainer}>
         <Text style={styles.additionalDetailsTitle}>Today's number</Text>
       </View>
 
+      {/* counter */}
       <View style={styles.counterContainer}>
         <Button title="-" onPress={decrementCounter} />
         <Text style={styles.counterText}>{counter}</Text>
         <Button title="+" onPress={incrementCounter} />
       </View>
-
+      
+      {/* data vis! */}
       <View style={styles.tableContainer}>
         <Text style={styles.additionalDetailsTitle}>Table to see your data in the past days:</Text>
         <DataTable data={habitDataRef.current}/>
@@ -489,18 +514,21 @@ export const DetailsScreen = ({ route }) => {
   );
 };
 
+// settings
 export const SettingsScreen = () => (
   <View>
     <Text>Settings Screen</Text>
   </View>
 );
 
+// profile screen
 export const ProfileScreen = () => (
   <View>
     <Text>Profile Screen</Text>
   </View>
 );
 
+// colours
 const colors = {
   background: '#ffffff',
   tab: '#f8f8f8',
@@ -512,6 +540,7 @@ export const Stack = createNativeStackNavigator();
 
 export const Tab = createBottomTabNavigator();
 
+// tab navigation
 export function TabNavigator() {
   return (
     <Tab.Navigator
