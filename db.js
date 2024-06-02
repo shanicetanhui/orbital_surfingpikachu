@@ -55,7 +55,13 @@ export async function fakedata() {
     console.log(today);
 
     await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Water', today, 2);
-    await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Fruits', today, 221);
+    await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Fruits', today, 5);
+    await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Water', 240601, 3);
+    await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Fruits', 240601, 6);
+    await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Water', 240531, 4);
+    await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Fruits', 240531, 5);
+    await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Water', 240530, 2);
+    await database.runAsync(`INSERT INTO HabitEntries (habit, day, num) VALUES (?, ?, ?)`, 'Fruits', 240530, 4);
 
     console.log("fake data inserted");
 }

@@ -133,6 +133,28 @@ const styles = StyleSheet.create({
     fontSize: 30, // Increase the font size of the "+"
     color: 'black', // Set color of the "+" sign
   },
+  tableContainer: {
+    flex: 1,
+    marginTop: 20,
+    paddingHorizontal: 16,
+    backgroundColor: '#ffffff',
+  },
+  table: {
+    flexDirection: 'column',
+    borderWidth: 1,
+    borderColor: '#000',
+    marginBottom: 10,
+  },
+  row: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderColor: '#000',
+  },
+  cell: {
+    flex: 1,
+    padding: 10,
+    textAlign: 'center'
+  }
 });
 
 init();
@@ -338,19 +360,53 @@ export const HomeScreen = ({ navigation }) => {
   );
 };
 
+const TableRow = ({ data, headers }) => (
+  <View style={styles.row}>
+    {headers.map((header, index) => (
+      <Text key={index} style={styles.cell}>{data[header]}</Text>
+    ))}
+  </View>
+);
+
+const Table = ({ headers, rows }) => (
+  <View style={styles.table}>
+    <View style={styles.row}>
+      {headers.map((header, index) => (
+        <Text key={index} style={styles.headerCell}>{header}</Text>
+      ))}
+    </View>
+    {rows.map((rowData, index) => (
+      <TableRow key={index} data={rowData} headers={headers} />
+    ))}
+  </View>
+);
+
+const DataTable = (props) => {
+
+  const data = props.data;
+  console.log(data);
+
+  return (
+    <View style={styles.container}>
+      <Table headers={["day", "num"]} rows={data}></Table>
+    </View>
+  )
+}
+
 export const DetailsScreen = ({ route }) => {
   const { item, additionalDetails } = route.params;
   const [habitData, setHabitData] = useState([]);
   const [counter, setCounter] = useState(0);
   const counterRef = useRef(counter);
+  const habitDataRef = useRef(habitData);
 
   const day = today_date();
 
   // changes habitData
   const fetchHabits = async () => {
     const data = await fetch_one_habit(item.title);
-    // console.log(data);
     setHabitData(data);
+    console.log(data);
   };
 
   // calls fetchHabits on load
@@ -368,6 +424,7 @@ export const DetailsScreen = ({ route }) => {
   // calls initialCounter, triggered by habitData
   useEffect(() => {
     setCounter(initialCounter);
+    habitDataRef.current = habitData;
   }, [habitData]);
 
   useEffect(() => {
@@ -414,7 +471,7 @@ export const DetailsScreen = ({ route }) => {
       </View>
 
       <View style={styles.additionalDetailsContainer}>
-        <Text style={styles.additionalDetailsTitle}>This counter is to track your daily goals:</Text>
+        <Text style={styles.additionalDetailsTitle}>Today's number</Text>
       </View>
 
       <View style={styles.counterContainer}>
@@ -423,13 +480,9 @@ export const DetailsScreen = ({ route }) => {
         <Button title="+" onPress={incrementCounter} />
       </View>
 
-      <View>
-        <Text> Data vis should go here </Text>
-      </View>
-
-      <View style={styles.additionalDetailsContainer}>
+      <View style={styles.tableContainer}>
         <Text style={styles.additionalDetailsTitle}>Table to see your data in the past days:</Text>
-        {/* Add table component here */}
+        <DataTable data={habitDataRef.current}/>
       </View>
 
     </SafeAreaView>
