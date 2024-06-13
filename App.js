@@ -1,9 +1,10 @@
 import React from 'react';
-import { ProfileScreen, HomeScreen, DetailsScreen, Stack, TabNavigator} from './assets'
+import { Test, ProfileScreen, HomeScreen, DetailsScreen, Stack, TabNavigator} from './assets'
+import "./firebaseConfig"
 import { NavigationContainer } from '@react-navigation/native';
 
 function App() {
-
+  console.log("top level");
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Back">
@@ -18,6 +19,7 @@ function App() {
         />
       </Stack.Navigator>
     </NavigationContainer>
+    // <Test></Test>
   );
 }
 

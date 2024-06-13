@@ -4,7 +4,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { init, fakedata, read_habits, add_habit, fetch_one_habit, today_date, create_or_update} from './db';
+// import { init, fakedata, read_habits, add_habit, fetch_one_habit, today_date, create_or_update} from './db';
+import { init, display } from "./db" ;
 import { Picker } from '@react-native-picker/picker';
 
 // stylesheet
@@ -158,8 +159,13 @@ const styles = StyleSheet.create({
   }
 });
 
-init(); //initialise database
-fakedata(); //populate with fake data
+// init(); //initialise database
+// fakedata(); //populate with fake data
+
+export const Test = () => {
+  console.log("test component");
+  display();
+}
 
 // front end purposes
 const initialData = [

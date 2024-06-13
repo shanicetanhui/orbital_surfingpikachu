@@ -24,6 +24,7 @@
     "expo-sqlite": "~14.0.3",
     "expo-status-bar": "~1.12.1",
     "firebase": "^10.12.2",
+    "firebase-admin": "^12.1.1",
     "firebase-tools": "^13.10.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
