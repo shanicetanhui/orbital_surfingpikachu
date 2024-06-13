@@ -4,8 +4,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-// import { init, fakedata, read_habits, add_habit, fetch_one_habit, today_date, create_or_update} from './db';
-import { init, display } from "./db" ;
+import { init, fakedata, display, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update} from './db';
+// import { init, display, add_habit } from "./db" ;
 import { Picker } from '@react-native-picker/picker';
 
 // stylesheet
@@ -159,10 +159,8 @@ const styles = StyleSheet.create({
   }
 });
 
-// init(); //initialise database
-// fakedata(); //populate with fake data
-
 export const Test = () => {
+  add_habit("sleep", "", 'rgba(252, 223, 202, 0.7)', 1000);
   console.log("test component");
   display();
 }
@@ -191,6 +189,7 @@ async function read_initialData(setData) {
 }
 
 // colour picker for habit
+// TODO: preview colours?
 const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for now
   const colors = [
     { label: 'Default', value: 'rgba(252, 223, 202, 0.7)' },
@@ -288,6 +287,7 @@ export const HomeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Test></Test>
       <SectionList
         sections={data}
         keyExtractor={(item, index) => item.title + index}
@@ -427,7 +427,7 @@ export const DetailsScreen = ({ route }) => {
 
   // changes habitData
   const fetchHabits = async () => {
-    const data = await fetch_one_habit(item.title);
+    const data = await fetch_entries_habit(item.title);
     setHabitData(data);
     console.log(data);
   };
