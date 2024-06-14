@@ -1,5 +1,5 @@
 import React from 'react';
-import { Test, ProfileScreen, HomeScreen, DetailsScreen, Stack, TabNavigator} from './assets'
+import { ProfileScreen, HomeScreen, DetailsScreen, Stack, TabNavigator} from './assets'
 import "./firebaseConfig"
 import { NavigationContainer } from '@react-navigation/native';
 

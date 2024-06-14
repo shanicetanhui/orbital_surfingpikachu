@@ -1,17 +1,22 @@
 import { db } from "./firebaseConfig";
-import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, setDoc, query, where, addDoc, updateDoc } from "firebase/firestore";
 // checklist {  read_habits, add_habit, fetch_one_habit, today_date, create_or_update} from './db';
 
 // debug purposes. called in <Test> component
 export async function display() {
+    console.log("=== display function ===");
+
     const querySnapshot = await getDocs(collection(db, 'habits'));
     querySnapshot.forEach((doc) => {
         console.log(doc.id, " = ", doc.data());
     })
+
     const querySnapshot2 = await getDocs(collection(db, 'habitEntries'));
     querySnapshot2.forEach((doc) => {
         console.log(doc.id, " = ", doc.data());
     })
+
+    console.log("========================");
 }
 
 // generate date in ddmmyy format
@@ -30,15 +35,15 @@ export function today_date(){
 
 // CREATE
 
-// create a document under the collection 'habit'
+// create a document under the collection 'habits'
 export async function add_habit(name, description, color, goal) {
-    await setDoc(doc(db, 'habit', name), {
+    console.log("ADDED HABIT");
+    await setDoc(doc(db, "habits", name), {
         display_name: name,
         description: description,
-        colour: color,
+        color: color,
         goal: goal
-    });
-    console.log("ADDED HABIT");
+    })
 }
 
 // TODO: FIGURE OUT FORMAT OF day
@@ -60,44 +65,48 @@ export async function add_entry(habitname, today, num) {
 
 export async function read_habits() {
     const querySnapshot = await getDocs(collection(db, 'habits'));
-    // querySnapshot.forEach((doc) => {
-    //     console.log(doc.id, " = ", doc.data());
-    // })
-    console.log(querySnapshot);
-    return querySnapshot;
+    var to_return = [];
+    querySnapshot.forEach((doc) => {
+        console.log(doc.id, " = ", doc.data());
+        to_return.push(doc.data());
+    })
+    return to_return;
 }
 
 export async function fetch_entries_habit(habit) {
     const q = query(collection(db, "habitEntries"), where("habit", "==", habit));
     const querySnapshot = await getDocs(q);
+    var to_return = [];
     querySnapshot.forEach((doc) => {
-        // doc.data() is never undefined for query doc snapshots
-        console.log(doc.id, " => ", doc.data());
-      })
-    return querySnapshot;
+        to_return.push(doc.data());
+    })
+    return to_return;
 }
 
 // UPDATE
 
-export async function create_or_update(habit, day, newnum){
-    // query to see if exists
-    // if exists, update
-    // if not exists, create
-    const habitEntriesRef = collection(db, "habitEntries");
-    const q = query(habitEntriesRef, where("habit", "==", habit), where("day", "==", day));
-    const entrySnapshot = await getDoc(q);
+// for today's entry
+export async function create_or_update(habit, day, newnum) {
 
-    if (entrySnapshot.exists()) {
-        await setDoc(doc(db, "habitEntries", entrySnapshot.id()), {
-            ...entrySnapshot.data(),
-            num: newnum
-        })
-    } else {
-        await setDoc(doc(db, "habitEntries"), {
+    // query to see if today's entry exists
+    const q = query(collection(db, "habitEntries"), where("habit", "==", habit), where("day", "==", day));
+    const entrySnapshot = await getDocs(q);
+
+    var entry = ''
+    entrySnapshot.forEach((doc) => {
+        entry = doc;
+    })
+
+    if (entry==='') {
+        // entry doesn't exist, must create
+        await addDoc(collection(db, "habitEntries"), {
             habit: habit,
             day: day,
             num: newnum
         })
+    } else {
+        // entry exists, update it
+        await updateDoc(doc(db, "habitEntries", entry.id), {num: newnum});
     }
 }
 
