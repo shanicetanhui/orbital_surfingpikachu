@@ -177,14 +177,13 @@ const initialData = [
 // read fake data (for now) into front-end initialData
 async function read_initialData(setData) {
   const rows = await read_habits();
-  console.log("read initialdata");
-  console.log(rows);
   const newData = [...initialData];
-  for (const row of rows) {
+  rows.forEach((row) => {
     newData[0].data.push(
-      { title: row.habit, details: [row.description], color:row.color, goal:row.goal}
-    );
-  }
+      { title: row.display_name, details: [row.description], color:row.color, goal:row.goal}
+    )
+  });
+  console.log(newData);
   setData(newData);
 }
 
@@ -412,70 +411,68 @@ const DataTable = (props) => {
 // details screen
 export const DetailsScreen = ({ route }) => {
   const { item, additionalDetails } = route.params;
+
   // Hooks for habitData and counter
   const [habitData, setHabitData] = useState([]);
   const [counter, setCounter] = useState(0);
+
+  // the Refs are necessary for the useFocusEffect function
   const counterRef = useRef(counter);
   const habitDataRef = useRef(habitData);
 
   // for fetching data!
   const day = today_date();
 
-  // overall effect of the following functions (fetchHabits to second useEffect):
+  // overall effect of the following functions:
   // reliably grab details of one habit once the details screen is rendered
   // use all data for data vis!
 
-  // changes habitData
+  // fetch data from backend
   const fetchHabits = async () => {
-    const data = await fetch_entries_habit(item.title);
-    setHabitData(data);
-    console.log(data);
+    try {
+      // fetch all entries for the current habit
+      const data = await fetch_entries_habit(item.title);
+      setHabitData(data);
+      habitDataRef.current = data;
+      // look through the entries to see if there is an entry for today
+      const entry = data.find(item => item.day === day);
+      // if there is an entry for today, grab today's number for counter
+      // if there isn't an entry, set the counter to 0
+      setCounter(entry ? entry.num : 0);
+    } catch (error) {
+      console.error("Error fetching habits:", error);
+    }
   };
-
   // calls fetchHabits on load
   useEffect(() => {
     fetchHabits();
   }, []);
-
-  // extracts number from data
-  const initialCounter = () => {
-    const entry = habitData.find(item => item.day == day);
-    console.log(entry);
-    return entry ? entry.num : 0;
-  }
-
-  // calls initialCounter, triggered by habitData changing
-  useEffect(() => {
-    setCounter(initialCounter);
-    habitDataRef.current = habitData;
-  }, [habitData]);
-
   // triggered by counter changing
   useEffect(() => {
-    console.log(counter);
     counterRef.current = counter;
   }, [counter]);
 
   // for counters
-
   const incrementCounter = () => {
     setCounter(prevCounter => prevCounter + 1);
   };
-  
   const decrementCounter = () => {
     setCounter(prevCounter => prevCounter - 1);
   };
 
   if (!item) {
-    return null; // or display a loading indicator or error message
+    return null;
   }
 
   // this function triggers when we exit the details page
-  // since it would be costly to keep making SQL statements for every increment or decrement
+  // since it would be costly to keep making noSQL statements for every increment or decrement
   useFocusEffect(
     React.useCallback(() => {
       return () => {
-        console.log(counterRef.current);
+        // console.log("create or update");
+        // console.log(item.title);
+        // console.log(day);
+        // console.log(counterRef.current);
         create_or_update(item.title, day, counterRef.current);
       };
     }, [])
