@@ -215,7 +215,7 @@ const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for 
         onValueChange={(itemValue, itemIndex) => onColorChange(itemValue)}
       >
         {colors.map((color, index) => (
-          <Picker.Item key={index} label={color.label} value={color.value} />
+          <Picker.Item key={index} label={color.label} value={color.value} color={color.color}/>
         ))}
       </Picker>
     </View>
