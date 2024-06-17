@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity } from 'react-native';
+import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { init, fakedata, display, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update} from './db';
-// import { init, display, add_habit } from "./db" ;
+import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
 import { Picker } from '@react-native-picker/picker';
 
 // stylesheet
@@ -447,6 +447,7 @@ export const DetailsScreen = ({ route }) => {
   useEffect(() => {
     fetchHabits();
   }, []);
+
   // triggered by counter changing
   useEffect(() => {
     counterRef.current = counter;
@@ -463,6 +464,31 @@ export const DetailsScreen = ({ route }) => {
   if (!item) {
     return null;
   }
+
+
+  // DATA VISUALISATION
+
+  const linechartdata = {
+    labels: ["January", "February", "March", "April", "May", "June"],
+    datasets: [
+      {
+        data: [20, 45, 28, 80, 99, 43],
+        color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // optional
+        strokeWidth: 2 // optional
+      }
+    ],
+    legend: ["Rainy Days"] // optional
+  };
+
+  const screenWidth = Dimensions.get("window").width;
+
+  const chartConfig = {
+    color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
+    strokeWidth: 2, // optional, default 3
+    barPercentage: 0.5,
+    useShadowColorFromDataset: false // optional
+  };
+
 
   // this function triggers when we exit the details page
   // since it would be costly to keep making noSQL statements for every increment or decrement
@@ -512,6 +538,13 @@ export const DetailsScreen = ({ route }) => {
         <Text style={styles.additionalDetailsTitle}>Table to see your data in the past days:</Text>
         <DataTable data={habitDataRef.current}/>
       </View>
+
+      <LineChart
+        data={linechartdata}
+        width={screenWidth}
+        height={220}
+        chartConfig={chartConfig}
+      />
 
     </SafeAreaView>
   );
