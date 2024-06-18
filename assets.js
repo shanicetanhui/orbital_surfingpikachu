@@ -6,6 +6,7 @@ import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, T
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { init, fakedata, read_habits, add_habit, fetch_one_habit, today_date, create_or_update} from './db';
 import { Picker } from '@react-native-picker/picker';
+import * as Notifications from 'expo-notifications';
 
 const styles = StyleSheet.create({
   container: {
@@ -77,20 +78,29 @@ const styles = StyleSheet.create({
     width: '80%',
     backgroundColor: 'white',
     borderRadius: 20,
-    padding: 35,
+    padding: 20,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
     position: 'absolute',
     top: '50%',
     left: '50%',
-    transform: [{ translateX: -170 }, { translateY: -200 }],
+    transform: [{ translateX: '-50%' }, { translateY: '-50%' }],
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 20,
   },
   modalText: {
     marginBottom: 15,
@@ -132,6 +142,24 @@ const styles = StyleSheet.create({
   addButtonIcon: {
     fontSize: 30, // Increase the font size of the "+"
     color: 'black', // Set color of the "+" sign
+  },
+  deleteButton: {
+    position: 'absolute',
+    right: 1,
+    top: -50,
+    padding: 5,
+  },
+  deleteButtonText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  gotoDetailsButton: {
+
+  },
+  gotoDetailsText: {
+    fontSize: 18,
+    textAlign: 'center', 
+    color: 'blue',
   },
 });
 
@@ -193,34 +221,28 @@ const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for 
 };
 
 export const HomeScreen = ({ navigation }) => {
-
   const [data, setData] = useState(initialData);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
   const [newItemName, setNewItemName] = useState('');
   const [dailyGoal, setDailyGoal] = useState('');
   const [currentSection, setCurrentSection] = useState('');
-  const [selectedColor, setSelectedColor] = useState('rgba(252, 223, 202, 0.7)'); // Default color
+  const [selectedColor, setSelectedColor] = useState('rgba(252, 223, 202, 0.7)');
 
-  useEffect(()=>{
+  useEffect(() => {
     read_initialData(setData);
-  }, [])
+  }, []);
 
   const openModal = (sectionTitle) => {
     setCurrentSection(sectionTitle);
-    setModalVisible(true);
-  };
-
-  const addNewSection = () => {
-    const newSection = { title: 'New Section', color: 'rgba(252, 223, 202, 0.7)', details: ['Detail 1', 'Detail 2'] };
-    setData(prevData => [...prevData, { title: 'New Section', data: [newSection] }]);
+    setAddModalVisible(true);
   };
 
   const addNewItem = () => {
     if (newItemName.trim() !== '' && dailyGoal.trim() !== '') {
       const newItem = { title: newItemName, color: selectedColor, details: [`Daily goal: ${dailyGoal}`] };
-      // console.log("adding new item")
       add_habit(newItem.title, newItem.details[0], newItem.color);
-      // console.log(read_habits());
       setData((prevData) => {
         const updatedData = prevData.map((section) => {
           if (section.title === currentSection) {
@@ -232,22 +254,21 @@ export const HomeScreen = ({ navigation }) => {
       });
       setNewItemName('');
       setDailyGoal('');
-      setModalVisible(false);
+      setAddModalVisible(false);
     }
   };
 
-  const renderSectionFooter = (section) => (
-    <View style={styles.footerContainer}>
-      <TextInput
-        style={styles.input}
-        placeholder={`Enter new ${section.title.toLowerCase()} name`}
-        value={currentSection === section.title ? newItemName : ''}
-        onFocus={() => setCurrentSection(section.title)}
-        onChangeText={text => setNewItemName(text)}
-      />
-      <Button title="Add New Item" onPress={() => addNewItem(section.title)} />
-    </View>
-  );
+  const handleDelete = () => {
+    if (itemToDelete) {
+      const updatedData = data.map(section => ({
+        ...section,
+        data: section.data.filter(item => item.title !== itemToDelete.title),
+      }));
+      setData(updatedData);
+      setDeleteModalVisible(false);
+      setItemToDelete(null);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -262,25 +283,31 @@ export const HomeScreen = ({ navigation }) => {
                 {item.details.map((detail, index) => (
                   <Text key={index} style={styles.detail}>{detail}</Text>
                 ))}
+                <TouchableOpacity
+                  onPress={() => {
+                    setItemToDelete(item);
+                    setDeleteModalVisible(true);
+                  }}
+                  style={styles.deleteButton}
+                >
+                  <Text style={styles.deleteButtonText}>...</Text>
+                </TouchableOpacity>
               </View>
             )}
-            <Button
-              title={`Go to ${item.title} details`}
-              onPress={() => navigation.navigate('Details', { item, additionalDetails: 'Some additional details here' })}
-            />
+            <TouchableOpacity 
+      style={styles.gotoDetailsButton} 
+      onPress={() => navigation.navigate('Details', { item, additionalDetails: 'Some additional details here' })}
+    >
+      <Text style={styles.gotoDetailsText}>Go to {item.title} details</Text>
+    </TouchableOpacity>
           </View>
         )}
-        renderSectionHeader={({ section }) => {
-          if (!section || !section.title) {
-            return null; // Render nothing if section or title is undefined
-          }
-          return (
-            <View style={[styles.headerContainer, { backgroundColor: section.color }]}>
-              <Text style={styles.headerTitle}>{section.title}</Text>
-              {section.subtitle && <Text style={styles.headerSubtitle}>{section.subtitle}</Text>}
-            </View>
-          );
-        }}
+        renderSectionHeader={({ section }) => (
+          <View style={[styles.headerContainer, { backgroundColor: section.color }]}>
+            <Text style={styles.headerTitle}>{section.title}</Text>
+            {section.subtitle && <Text style={styles.headerSubtitle}>{section.subtitle}</Text>}
+          </View>
+        )}
         renderSectionFooter={({ section: { title } }) => (
           <View style={styles.buttonContainer}>
             <TouchableOpacity onPress={() => openModal(title)} style={styles.addButton}>
@@ -289,12 +316,13 @@ export const HomeScreen = ({ navigation }) => {
           </View>
         )}
       />
+
       <Modal
         animationType="slide"
         transparent={true}
-        visible={modalVisible}
+        visible={addModalVisible}
         onRequestClose={() => {
-          setModalVisible(!modalVisible);
+          setAddModalVisible(!addModalVisible);
         }}
       >
         <View style={styles.modalView}>
@@ -325,15 +353,29 @@ export const HomeScreen = ({ navigation }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, styles.buttonClose]}
-            onPress={() => setModalVisible(!modalVisible)}
+            onPress={() => setAddModalVisible(!addModalVisible)}
           >
             <Text style={styles.buttonText}>Cancel</Text>
           </TouchableOpacity>
         </View>
       </Modal>
-      <View style={styles.buttonContainer}>
-        <Button title="Add New Section" onPress={() => addNewSection()} />
-      </View>
+
+      <Modal
+        transparent={true}
+        animationType="slide"
+        visible={deleteModalVisible}
+        onRequestClose={() => setDeleteModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalView}>
+            <Text>Are you sure you want to delete this item?</Text>
+            <View style={styles.modalButtons}>
+              <Button title="Cancel" onPress={() => setDeleteModalVisible(false)} />
+              <Button title="Delete" onPress={handleDelete} />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -432,6 +474,10 @@ export const DetailsScreen = ({ route }) => {
         {/* Add table component here */}
       </View>
 
+      <View style={styles.additionalDetailsContainer}>
+        <Text> insert reminders here </Text>
+      </View>
+
     </SafeAreaView>
   );
 };
@@ -449,10 +495,10 @@ export const ProfileScreen = () => (
 );
 
 const colors = {
-  background: '#ffffff',
-  tab: '#f8f8f8',
-  accent: '#ff6347',
-  primary: '#000000'
+  background: '#f8f8f8', //light grey
+  tab: '#ff6347', //orange
+  accent: '#000000', //black
+  primary: '#ffffff' //white
 };
 
 export const Stack = createNativeStackNavigator();
@@ -501,3 +547,11 @@ export function TabNavigator() {
     </Tab.Navigator>
   );
 }
+
+Notifications.setNotificationHandler({ //sets up how notifications will be handled when receieved
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
