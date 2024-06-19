@@ -416,10 +416,75 @@ export const DetailsScreen = ({ route }) => {
   // Hooks for habitData and counter
   const [habitData, setHabitData] = useState([]);
   const [counter, setCounter] = useState(0);
+  const [linechartdata, setLinechartdata] = useState({
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // optional
+        strokeWidth: 2 // optional
+      }
+    ],
+    legend: [] // optional
+  });
+
+  // const [linechartdata, setLinechartdata] = useState({
+  //   // labels: ["January", "February", "March", "April", "May", "June"],
+  //   labels: [],
+  //   datasets: [
+  //     {
+  //       // data: [20, 45, 28, 80, 99, 43],
+  //       data: [],
+  //       color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // optional
+  //       strokeWidth: 2 // optional
+  //     }
+  //   ],
+  //   legend: [] // optional
+  // });
 
   // the Refs are necessary for the useFocusEffect function
   const counterRef = useRef(counter);
   const habitDataRef = useRef(habitData);
+
+  // DATA VISUALISATION
+
+  // var linechartdata = {
+  //   // labels: ["January", "February", "March", "April", "May", "June"],
+  //   labels: [],
+  //   datasets: [
+  //     {
+  //       // data: [20, 45, 28, 80, 99, 43],
+  //       data: [],
+  //       color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // optional
+  //       strokeWidth: 2 // optional
+  //     }
+  //   ],
+  //   legend: [] // optional
+  // };
+
+  const screenWidth = Dimensions.get("window").width;
+
+  const chartConfig = {
+    color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
+    strokeWidth: 2, // optional, default 3
+    barPercentage: 0.5,
+    useShadowColorFromDataset: false // optional
+  };
+
+  const updateLinechartdata = (data) => {
+    const newLinechartdata = {
+      labels: data.map(entry => entry.day),
+      datasets: [
+        {
+          data: data.map(entry => entry.num),
+          color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // optional
+          strokeWidth: 2 // optional
+        }
+      ],
+      legend: [] // optional
+    };
+    setLinechartdata(newLinechartdata);
+  };
 
   // for fetching data!
   const day = today_date();
@@ -433,8 +498,13 @@ export const DetailsScreen = ({ route }) => {
     try {
       // fetch all entries for the current habit
       const data = await fetch_entries_habit(item.title);
+      data.sort((a, b) => {
+        return a.day.localeCompare(b.day);
+      });
       setHabitData(data);
       habitDataRef.current = data;
+      // update linechartdata
+      updateLinechartdata(data);
       // look through the entries to see if there is an entry for today
       const entry = data.find(item => item.day === day);
       // if there is an entry for today, grab today's number for counter
@@ -444,6 +514,7 @@ export const DetailsScreen = ({ route }) => {
       console.error("Error fetching habits:", error);
     }
   };
+
   // calls fetchHabits on load
   useEffect(() => {
     fetchHabits();
@@ -465,31 +536,6 @@ export const DetailsScreen = ({ route }) => {
   if (!item) {
     return null;
   }
-
-
-  // DATA VISUALISATION
-
-  const linechartdata = {
-    labels: ["January", "February", "March", "April", "May", "June"],
-    datasets: [
-      {
-        data: [20, 45, 28, 80, 99, 43],
-        color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // optional
-        strokeWidth: 2 // optional
-      }
-    ],
-    legend: ["Rainy Days"] // optional
-  };
-
-  const screenWidth = Dimensions.get("window").width;
-
-  const chartConfig = {
-    color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
-    strokeWidth: 2, // optional, default 3
-    barPercentage: 0.5,
-    useShadowColorFromDataset: false // optional
-  };
-
 
   // this function triggers when we exit the details page
   // since it would be costly to keep making noSQL statements for every increment or decrement
@@ -535,10 +581,11 @@ export const DetailsScreen = ({ route }) => {
       </View>
       
       {/* data vis! */}
-      <View style={styles.tableContainer}>
+
+      {/* <View style={styles.tableContainer}>
         <Text style={styles.additionalDetailsTitle}>Table to see your data in the past days:</Text>
         <DataTable data={habitDataRef.current}/>
-      </View>
+      </View> */}
 
       <LineChart
         data={linechartdata}

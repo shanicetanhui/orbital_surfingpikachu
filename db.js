@@ -47,7 +47,7 @@ export async function add_habit(name, description, color, goal) {
 // TODO: FIGURE OUT FORMAT OF day
 // create a document under the collection 'habitEntries'
 export async function add_entry(habit, day, num) {
-    await setDoc(doc(db, 'habitEntries'), {
+    await setDoc(collection(db, "habitEntries"), {
         day: day,
         habit: habit,
         num: num
@@ -115,17 +115,20 @@ export async function fetch_habit_id(habit) {
 // today's entry
 export async function create_or_update(habit, day, newnum) {
     // query to see if today's entry exists
-    var entry_id = fetch_entry_id(habit, day);
+    var entry_id = await fetch_entry_id(habit, day);
     if (entry_id==='') { // entry doesn't exist, must create
+        console.log("creating entry");
         add_entry(habit, day, newnum); 
     } else { // entry exists, update it
+        console.log(entry_id);
+        console.log(new_num);
         updateDoc(doc(db, "habitEntries", entry_id), {num: newnum}); 
     }
 }
 
 // for past entry
 export async function update_entry(habit, day, newnum) {
-    const doc_id = fetch_entry_id(habit, day);
+    const doc_id = await fetch_entry_id(habit, day);
     if (doc_id==='') {
         console.log("cannot UPDATE past entry of ", habit, " ", day, " doesnt exist");
     } else {
@@ -138,7 +141,7 @@ export async function update_entry(habit, day, newnum) {
 // delete entry
 export async function delete_habit_entry(habit, day) {
 
-    const doc_id = fetch_entry_id(habit, day);
+    const doc_id = await fetch_entry_id(habit, day);
     if (doc_id==='') {
         console.log("cannot DELETE entry of ", habit, " ", day, " doesnt exist");
     } else {
@@ -159,7 +162,7 @@ export async function delete_habit(habit) {
     })
 
     // delete the habit itself from habits
-    const doc_id = fetch_habit_id(habit)
+    const doc_id = await fetch_habit_id(habit)
     if (doc_id==='') {
         console.log("cannot delete habit ", habit, " id doesnt exist");
     } else {
