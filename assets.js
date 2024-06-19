@@ -183,6 +183,7 @@ async function read_initialData(setData) {
       { title: row.display_name, details: [row.description], color:row.color, goal:row.goal}
     )
   });
+  console.log("read initial data");
   console.log(newData);
   setData(newData);
 }

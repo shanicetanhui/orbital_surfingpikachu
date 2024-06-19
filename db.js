@@ -70,10 +70,15 @@ export async function read_habits() {
 
 // get all entries for one habit
 export async function fetch_entries_habit(habit) {
-    const q = query(collection(db, "habitEntries"), where("habit", "===", habit));
+    const habit_id = await fetch_habit_id(habit);
+    console.log(habit_id);
+    const q = query(collection(db, "habitEntries"), where("habit", "==", habit_id));
+
     const querySnapshot = await getDocs(q);
     var to_return = [];
+
     querySnapshot.forEach((doc) => {
+        // console.log(data.data());
         to_return.push(doc.data());
     })
     return to_return;
@@ -82,7 +87,7 @@ export async function fetch_entries_habit(habit) {
 // if the entry exists, returns id based on habit and day
 // ELSE returns ''
 export async function fetch_entry_id(habit, day) {
-    const q = query(collection(db, "habitEntries"), where("habit", "===", habit), where("day", "===", day));
+    const q = query(collection(db, "habitEntries"), where("habit", "==", habit), where("day", "==", day));
     const entrySnapshot = await getDocs(q);
 
     const doc_id = ''
@@ -95,14 +100,13 @@ export async function fetch_entry_id(habit, day) {
 // if the habit exists, returns id based on display_name
 // ELSE returns ''
 export async function fetch_habit_id(habit) {
-    const q = query(collection(db, "habits"), where("display_name", "===", habit));
-    const querySnapshot = getDocs(q);
-
-    const habit_id = ''
+    const q = query(collection(db, "habits"), where("display_name", "==", habit));
+    const querySnapshot = await getDocs(q);
+    var habit_id = ''
+    console.log(querySnapshot);
     querySnapshot.forEach((doc) => {
         habit_id = doc.id;
     })
-
     return habit_id;
 }
 
@@ -147,7 +151,7 @@ export async function delete_habit(habit) {
     // habit means the display name of the habit
 
     // delete all entries for the habit from habitEntries
-    const habitentries_q = query(collection(db, "habitEntries"), where("habit", "===", habit));
+    const habitentries_q = query(collection(db, "habitEntries"), where("habit", "==", habit));
     const habitentriesSnapshot = await getDocs(habitentries_q);
 
     habitentriesSnapshot.forEach(async (doc) => {
