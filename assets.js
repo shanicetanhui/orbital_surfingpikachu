@@ -421,26 +421,12 @@ export const DetailsScreen = ({ route }) => {
     datasets: [
       {
         data: [],
-        color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // optional
+        color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`, // optional
         strokeWidth: 2 // optional
       }
     ],
     legend: [] // optional
   });
-
-  // const [linechartdata, setLinechartdata] = useState({
-  //   // labels: ["January", "February", "March", "April", "May", "June"],
-  //   labels: [],
-  //   datasets: [
-  //     {
-  //       // data: [20, 45, 28, 80, 99, 43],
-  //       data: [],
-  //       color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // optional
-  //       strokeWidth: 2 // optional
-  //     }
-  //   ],
-  //   legend: [] // optional
-  // });
 
   // the Refs are necessary for the useFocusEffect function
   const counterRef = useRef(counter);
@@ -448,27 +434,13 @@ export const DetailsScreen = ({ route }) => {
 
   // DATA VISUALISATION
 
-  // var linechartdata = {
-  //   // labels: ["January", "February", "March", "April", "May", "June"],
-  //   labels: [],
-  //   datasets: [
-  //     {
-  //       // data: [20, 45, 28, 80, 99, 43],
-  //       data: [],
-  //       color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // optional
-  //       strokeWidth: 2 // optional
-  //     }
-  //   ],
-  //   legend: [] // optional
-  // };
-
   const screenWidth = Dimensions.get("window").width;
 
   const chartConfig = {
-    color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
-    strokeWidth: 2, // optional, default 3
+    color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`,
+    // strokeWidth: 2, // optional, default 3
     barPercentage: 0.5,
-    useShadowColorFromDataset: false // optional
+    // useShadowColorFromDataset: false // optional
   };
 
   const updateLinechartdata = (data) => {
@@ -477,7 +449,7 @@ export const DetailsScreen = ({ route }) => {
       datasets: [
         {
           data: data.map(entry => entry.num),
-          color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // optional
+          color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`, // optional
           strokeWidth: 2 // optional
         }
       ],
@@ -570,7 +542,7 @@ export const DetailsScreen = ({ route }) => {
       
       {/* today's data */}
       <View style={styles.additionalDetailsContainer}>
-        <Text style={styles.additionalDetailsTitle}>Today's number</Text>
+        <Text style={styles.additionalDetailsTitle}>Today's number:</Text>
       </View>
 
       {/* counter */}
@@ -582,10 +554,9 @@ export const DetailsScreen = ({ route }) => {
       
       {/* data vis! */}
 
-      {/* <View style={styles.tableContainer}>
-        <Text style={styles.additionalDetailsTitle}>Table to see your data in the past days:</Text>
-        <DataTable data={habitDataRef.current}/>
-      </View> */}
+      <View style={styles.tableContainer}>
+        <Text style={styles.additionalDetailsTitle}>Your data in the past days:</Text>
+      </View>
 
       <LineChart
         data={linechartdata}
