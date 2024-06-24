@@ -593,12 +593,6 @@ export const DetailsScreen = ({ route }) => {
           <Text key={index} style={styles.detail}> {detail}</Text>
         ))}
       </View>
-
-      {/* additional details */}
-      <View style={styles.additionalDetailsContainer}>
-        <Text style={styles.additionalDetailsTitle}>Additional Details:</Text>
-        <Text>{additionalDetails}</Text>
-      </View>
       
       {/* today's data */}
       <View style={styles.additionalDetailsContainer}>
