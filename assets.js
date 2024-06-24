@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { init, fakedata, display, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update} from './db';
+import { init, fakedata, display, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
 import { Picker } from '@react-native-picker/picker';
 import * as Notifications from 'expo-notifications';
@@ -315,6 +315,8 @@ export const HomeScreen = ({ navigation }) => {
         data: section.data.filter(item => item.title !== itemToDelete.title),
       }));
       setData(updatedData);
+      console.log("calling delete_habit");
+      delete_habit(itemToDelete.title);
       setDeleteModalVisible(false);
       setItemToDelete(null);
     }

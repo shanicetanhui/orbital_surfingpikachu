@@ -36,7 +36,7 @@ export function today_date(){
 // create a document under the collection 'habits'
 export async function add_habit(name, description, color, goal) {
     console.log("ADDED HABIT");
-    await setDoc(doc(db, "habits", name), {
+    await addDoc(collection(db, "habits"), {
         display_name: name,
         description: description,
         color: color,
@@ -170,21 +170,21 @@ export async function delete_habit_entry(habit, day) {
 
 // delete habit and all its entries too
 export async function delete_habit(habit) {
-    // habit means the display name of the habit
-
-    // delete all entries for the habit from habitEntries
-    const habitentries_q = query(collection(db, "habitEntries"), where("habit", "==", habit));
-    const habitentriesSnapshot = await getDocs(habitentries_q);
-
-    habitentriesSnapshot.forEach(async (doc) => {
-        await deleteDoc(doc(db, "habitEntries", doc.id));
-    })
-
-    // delete the habit itself from habits
-    const doc_id = await fetch_habit_id(habit)
-    if (doc_id==='') {
+    // habit means the display name of the habit so first convert to habit_id
+    const habit_id = await fetch_habit_id(habit);
+    // check if can
+    if (habit_id==='') {
         console.log("cannot delete habit ", habit, " id doesnt exist");
     } else {
-        await deleteDoc(doc(db, "habits", doc_id));
+        // delete all entries for the habit from habitEntries
+        const habitentries_q = query(collection(db, "habitEntries"), where("habit", "==", habit_id));
+        const habitentriesSnapshot = await getDocs(habitentries_q);
+
+        habitentriesSnapshot.forEach(async (docu) => {
+            await deleteDoc(doc(db, "habitEntries", docu.id));
+        })
+
+        // delete habit itself
+        await deleteDoc(doc(db, "habits", habit_id));
     }
 }
