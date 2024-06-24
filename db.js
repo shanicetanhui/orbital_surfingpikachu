@@ -46,13 +46,15 @@ export async function add_habit(name, description, color, goal) {
 
 // TODO: FIGURE OUT FORMAT OF day
 // create a document under the collection 'habitEntries'
-export async function add_entry(habit, day, num) {
-    await setDoc(collection(db, "habitEntries"), {
+export async function add_entry(habit_id, day, num) {
+    // console.log("cry");
+    // console.log(habit_id);
+    await addDoc(collection(db, "habitEntries"), {
         day: day,
-        habit: habit,
+        habit: habit_id,
         num: num
     });
-    console.log("ADDED ENTRY");
+    // console.log("ADDED ENTRY");
 }
 
 // READ
@@ -62,7 +64,7 @@ export async function read_habits() {
     const querySnapshot = await getDocs(collection(db, 'habits'));
     var to_return = [];
     querySnapshot.forEach((doc) => {
-        console.log(doc.id, " = ", doc.data());
+        // console.log(doc.id, " = ", doc.data());
         to_return.push(doc.data());
     })
     return to_return;
@@ -71,7 +73,7 @@ export async function read_habits() {
 // get all entries for one habit
 export async function fetch_entries_habit(habit) {
     const habit_id = await fetch_habit_id(habit);
-    console.log(habit_id);
+    // console.log(habit_id);
     const q = query(collection(db, "habitEntries"), where("habit", "==", habit_id));
 
     const querySnapshot = await getDocs(q);
@@ -89,9 +91,11 @@ export async function fetch_entries_habit(habit) {
 export async function fetch_entry_id(habit, day) {
     const q = query(collection(db, "habitEntries"), where("habit", "==", habit), where("day", "==", day));
     const entrySnapshot = await getDocs(q);
-
-    const doc_id = ''
+    // console.log("fetch entry id");
+    var doc_id = '';
     entrySnapshot.forEach((doc) => {
+        // console.log(doc);
+        // console.log(doc.id);
         doc_id = doc.id;
     })
     return doc_id;
@@ -102,11 +106,15 @@ export async function fetch_entry_id(habit, day) {
 export async function fetch_habit_id(habit) {
     const q = query(collection(db, "habits"), where("display_name", "==", habit));
     const querySnapshot = await getDocs(q);
-    var habit_id = ''
-    console.log(querySnapshot);
+    var habit_id = '';
+    // console.log("inside fetch habit id, going to return");
+    // console.log(querySnapshot);
     querySnapshot.forEach((doc) => {
+        // console.log(doc.data());
+        // console.log(doc.id);
         habit_id = doc.id;
     })
+    // console.log(habit_id);
     return habit_id;
 }
 
@@ -115,14 +123,25 @@ export async function fetch_habit_id(habit) {
 // today's entry
 export async function create_or_update(habit, day, newnum) {
     // query to see if today's entry exists
-    var entry_id = await fetch_entry_id(habit, day);
-    if (entry_id==='') { // entry doesn't exist, must create
-        console.log("creating entry");
-        add_entry(habit, day, newnum); 
-    } else { // entry exists, update it
-        console.log(entry_id);
-        console.log(new_num);
-        updateDoc(doc(db, "habitEntries", entry_id), {num: newnum}); 
+    // console.log("inside createorupdate");
+    // console.log(habit);
+    const habit_id = await fetch_habit_id(habit);
+    // console.log(habit_id);
+    if (habit_id=='') {
+        console.log("cannot add entry. habit does not exist");
+        console.log(habit);
+    }
+    else {
+    var entry_id = await fetch_entry_id(habit_id, day);
+        if (entry_id==='') { // entry doesn't exist, must create
+            console.log("creating entry");
+            add_entry(habit_id, day, newnum); 
+        } else { // entry exists, update it
+            console.log("updating entry");
+            console.log(entry_id);
+            console.log(newnum);
+            updateDoc(doc(db, "habitEntries", entry_id), {num: newnum}); 
+        }
     }
 }
 

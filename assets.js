@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     textAlign: 'center'
-  }
+  },
   deleteButton: {
     position: 'absolute',
     right: 1,
@@ -531,6 +531,7 @@ export const DetailsScreen = ({ route }) => {
       });
       setHabitData(data);
       habitDataRef.current = data;
+      console.log(data);
       // update linechartdata
       updateLinechartdata(data);
       // look through the entries to see if there is an entry for today
@@ -570,10 +571,11 @@ export const DetailsScreen = ({ route }) => {
   useFocusEffect(
     React.useCallback(() => {
       return () => {
-        // console.log("create or update");
+        console.log("going to call create or update");
         // console.log(item.title);
         // console.log(day);
-        // console.log(counterRef.current);
+        console.log(counterRef.current);
+        console.log(item.title);
         create_or_update(item.title, day, counterRef.current);
       };
     }, [])
