@@ -4,9 +4,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { init, fakedata, display, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
+import { init, fakedata, display, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
 import { Picker } from '@react-native-picker/picker';
+import { Timestamp } from 'firebase/firestore';
 import * as Notifications from 'expo-notifications';
 
 // stylesheet
@@ -208,7 +209,7 @@ async function read_initialData(setData) {
   const newData = [...initialData];
   rows.forEach((row) => {
     newData[0].data.push(
-      { title: row.display_name, details: [row.description], color:row.color, goal:row.goal}
+      { title: row.display_name, details: [row.description], goal:row.goal, color:row.color}
     )
   });
   console.log("read initial data");
@@ -433,46 +434,14 @@ export const HomeScreen = ({ navigation }) => {
   );
 };
 
-// following 3 tables are for the table
-const TableRow = ({ data, headers }) => (
-  <View style={styles.row}>
-    {headers.map((header, index) => (
-      <Text key={index} style={styles.cell}>{data[header]}</Text>
-    ))}
-  </View>
-);
-
-const Table = ({ headers, rows }) => (
-  <View style={styles.table}>
-    <View style={styles.row}>
-      {headers.map((header, index) => (
-        <Text key={index} style={styles.headerCell}>{header}</Text>
-      ))}
-    </View>
-    {rows.map((rowData, index) => (
-      <TableRow key={index} data={rowData} headers={headers} />
-    ))}
-  </View>
-);
-
-const DataTable = (props) => {
-
-  const data = props.data;
-  console.log(data);
-
-  return (
-    <View style={styles.container}>
-      <Table headers={["day", "num"]} rows={data}></Table>
-    </View>
-  )
-}
-
 // details screen
 export const DetailsScreen = ({ route }) => {
   const { item, additionalDetails } = route.params;
 
   // Hooks for habitData and counter
   const [habitData, setHabitData] = useState([]);
+  // format of habitData:
+  // [{ day: Date object, num: integer, habit: habitid }, { day: Date object, num: integer, habit: habitid }]
   const [counter, setCounter] = useState(0);
   const [linechartdata, setLinechartdata] = useState({
     labels: [],
@@ -502,8 +471,9 @@ export const DetailsScreen = ({ route }) => {
   };
 
   const updateLinechartdata = (data) => {
+    console.log("update linechart");
     const newLinechartdata = {
-      labels: data.map(entry => entry.day),
+      labels: data.map(entry => date_display_format(entry.day)), //think of somehting beter
       datasets: [
         {
           data: data.map(entry => entry.num),
@@ -513,11 +483,25 @@ export const DetailsScreen = ({ route }) => {
       ],
       legend: [] // optional
     };
+    console.log(newLinechartdata);
     setLinechartdata(newLinechartdata);
   };
 
   // for fetching data!
-  const day = today_date();
+  const day = today_date().toTimestamp;
+
+  const startTimestamp = new Date(day);
+  startTimestamp.setHours(0, 0, 0, 0);
+
+  const endTimestamp = new Date(day);
+  endTimestamp.setHours(23, 59, 59, 999);
+
+  // Convert to Firestore Timestamps
+  // const startTimestamp = Timestamp.fromDate(startOfDay);
+  // const endTimestamp = Timestamp.fromDate(endOfDay);
+
+  console.log(startTimestamp);
+  console.log(endTimestamp);
 
   // overall effect of the following functions:
   // reliably grab details of one habit once the details screen is rendered
@@ -528,16 +512,17 @@ export const DetailsScreen = ({ route }) => {
     try {
       // fetch all entries for the current habit
       const data = await fetch_entries_habit(item.title);
-      data.sort((a, b) => {
-        return a.day.localeCompare(b.day);
-      });
+      data.sort((a, b) => a.day - b.day);
       setHabitData(data);
       habitDataRef.current = data;
+      console.log("data is");
       console.log(data);
       // update linechartdata
+      // console.log("updating linechart!");
       updateLinechartdata(data);
       // look through the entries to see if there is an entry for today
-      const entry = data.find(item => item.day === day);
+      // const entry = data.find(item => item.day === day);
+      const entry = data.find(item => startTimestamp <= item.day <= endTimestamp);
       // if there is an entry for today, grab today's number for counter
       // if there isn't an entry, set the counter to 0
       setCounter(entry ? entry.num : 0);
@@ -618,6 +603,12 @@ export const DetailsScreen = ({ route }) => {
         height={220}
         chartConfig={chartConfig}
       />
+
+      {/* <View>
+        <Text>
+          {}
+        </Text>
+      </View> */}
 
       <View style={styles.additionalDetailsContainer}>
         <Text> insert reminders here </Text>

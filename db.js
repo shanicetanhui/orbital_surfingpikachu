@@ -1,5 +1,5 @@
 import { db } from "./firebaseConfig";
-import { collection, doc, getDocs, setDoc, query, where, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { collection, doc, getDocs, setDoc, query, where, addDoc, updateDoc, deleteDoc, Timestamp } from "firebase/firestore";
 
 // debug purposes. called in <Test> component
 export async function display() {
@@ -19,26 +19,34 @@ export async function display() {
 }
 
 // generate date in ddmmyy format to use in HabitEntries table
-export function today_date(){
+export function today_date() {
     const today = new Date();
+    console.log(today);
+    return today;
+}
 
-    const year = String(today.getFullYear()).slice(-2); // Last two digits of the year
-    const month = String(today.getMonth() + 1).padStart(2, '0'); // Month (0-11, so add 1)
-    const day = String(today.getDate()).padStart(2, '0');   // Day of the month (1-31)
+export function date_display_format(date_object) {
+    // Get the day and month from the date object
+    const day = date_object.getDate();
+    const month = date_object.getMonth() + 1; // getMonth() returns month index starting from 0
 
-    const formattedDate = `${year}${month}${day}`;
-    return formattedDate;
-    // console.log(formattedDate);
+    // Ensure two-digit format
+    const dayString = day < 10 ? `0${day}` : `${day}`;
+    const monthString = month < 10 ? `0${month}` : `${month}`;
+
+    // Return the formatted date
+    return `${dayString}/${monthString}`;
 }
 
 // CREATE
 
 // create a document under the collection 'habits'
-export async function add_habit(name, description, color, goal) {
+export async function add_habit(name, color, goal) {
     console.log("ADDED HABIT");
+    // const desc = 'Daily goal';
     await addDoc(collection(db, "habits"), {
         display_name: name,
-        description: description,
+        description: `Daily goal: ${goal.toString()}`,
         color: color,
         goal: goal
     })
@@ -73,15 +81,16 @@ export async function read_habits() {
 // get all entries for one habit
 export async function fetch_entries_habit(habit) {
     const habit_id = await fetch_habit_id(habit);
-    // console.log(habit_id);
+    // console.log("fetch entries habit");
     const q = query(collection(db, "habitEntries"), where("habit", "==", habit_id));
 
     const querySnapshot = await getDocs(q);
     var to_return = [];
 
     querySnapshot.forEach((doc) => {
-        // console.log(data.data());
-        to_return.push(doc.data());
+        // to_return.push(doc.data());
+        // console.log({...doc.data(), day:doc.data().day.toDate()});
+        to_return.push({...doc.data(), day:doc.data().day.toDate()});
     })
     return to_return;
 }
@@ -89,12 +98,28 @@ export async function fetch_entries_habit(habit) {
 // if the entry exists, returns id based on habit and day
 // ELSE returns ''
 export async function fetch_entry_id(habit, day) {
-    const q = query(collection(db, "habitEntries"), where("habit", "==", habit), where("day", "==", day));
+    // Get the start and end of the day
+    const startOfDay = new Date(day);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(day);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // Convert to Firestore Timestamps
+    const startTimestamp = Timestamp.fromDate(startOfDay);
+    const endTimestamp = Timestamp.fromDate(endOfDay);
+
+    const q = query(
+        collection(db, "habitEntries"), 
+        where("habit", "==", habit), 
+        where('day', '>=', startTimestamp), 
+        where('day', '<=', endTimestamp)
+    );
     const entrySnapshot = await getDocs(q);
     // console.log("fetch entry id");
     var doc_id = '';
     entrySnapshot.forEach((doc) => {
-        // console.log(doc);
+        console.log(doc);
         // console.log(doc.id);
         doc_id = doc.id;
     })
@@ -144,6 +169,9 @@ export async function create_or_update(habit, day, newnum) {
         }
     }
 }
+
+// habits
+
 
 // for past entry
 export async function update_entry(habit, day, newnum) {
