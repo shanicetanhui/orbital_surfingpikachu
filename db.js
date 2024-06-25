@@ -21,7 +21,7 @@ export async function display() {
 // generate date in ddmmyy format to use in HabitEntries table
 export function today_date() {
     const today = new Date();
-    console.log(today);
+    // console.log(today);
     return today;
 }
 
@@ -87,9 +87,13 @@ export async function fetch_entries_habit(habit) {
     const querySnapshot = await getDocs(q);
     var to_return = [];
 
+    day = today_date();
+    console.log(day.toDateString());
+
     querySnapshot.forEach((doc) => {
         // to_return.push(doc.data());
-        // console.log({...doc.data(), day:doc.data().day.toDate()});
+        console.log(doc.data().day);
+        // console.log(doc.data().day.toDate().toDateString() == day.toDateString());
         to_return.push({...doc.data(), day:doc.data().day.toDate()});
     })
     return to_return;
@@ -109,12 +113,16 @@ export async function fetch_entry_id(habit, day) {
     const startTimestamp = Timestamp.fromDate(startOfDay);
     const endTimestamp = Timestamp.fromDate(endOfDay);
 
+    console.log(startTimestamp);
+    console.log(endTimestamp);
+
     const q = query(
         collection(db, "habitEntries"), 
         where("habit", "==", habit), 
-        where('day', '>=', startTimestamp), 
-        where('day', '<=', endTimestamp)
+        where('day', '<=', endTimestamp),
+        where('day', '>=', startTimestamp)
     );
+
     const entrySnapshot = await getDocs(q);
     // console.log("fetch entry id");
     var doc_id = '';
@@ -157,7 +165,7 @@ export async function create_or_update(habit, day, newnum) {
         console.log(habit);
     }
     else {
-    var entry_id = await fetch_entry_id(habit_id, day);
+        var entry_id = await fetch_entry_id(habit_id, day);
         if (entry_id==='') { // entry doesn't exist, must create
             console.log("creating entry");
             add_entry(habit_id, day, newnum); 

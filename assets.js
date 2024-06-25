@@ -488,20 +488,7 @@ export const DetailsScreen = ({ route }) => {
   };
 
   // for fetching data!
-  const day = today_date().toTimestamp;
-
-  const startTimestamp = new Date(day);
-  startTimestamp.setHours(0, 0, 0, 0);
-
-  const endTimestamp = new Date(day);
-  endTimestamp.setHours(23, 59, 59, 999);
-
-  // Convert to Firestore Timestamps
-  // const startTimestamp = Timestamp.fromDate(startOfDay);
-  // const endTimestamp = Timestamp.fromDate(endOfDay);
-
-  console.log(startTimestamp);
-  console.log(endTimestamp);
+  const day = today_date();
 
   // overall effect of the following functions:
   // reliably grab details of one habit once the details screen is rendered
@@ -522,10 +509,11 @@ export const DetailsScreen = ({ route }) => {
       updateLinechartdata(data);
       // look through the entries to see if there is an entry for today
       // const entry = data.find(item => item.day === day);
-      const entry = data.find(item => startTimestamp <= item.day <= endTimestamp);
+      const entry = data.find(item => item.day.toDateString() === day.toDateString());
       // if there is an entry for today, grab today's number for counter
       // if there isn't an entry, set the counter to 0
       setCounter(entry ? entry.num : 0);
+      // console.log(counter);
     } catch (error) {
       console.error("Error fetching habits:", error);
     }
