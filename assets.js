@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions, Switch } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { init, fakedata, display, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
@@ -465,6 +465,43 @@ export const DetailsScreen = ({ route }) => {
   const counterRef = useRef(counter);
   const habitDataRef = useRef(habitData);
 
+  // REMINDERS
+
+  const [hours, setHours] = useState(''); // State for hours
+  const [minutes, setMinutes] = useState(''); // State for minutes
+  const [repeats, setRepeats] = useState(false); // State for repeats
+
+  // Function to handle scheduling notifications
+  const scheduleNotification = async () => {
+    const hour = parseInt(hours);
+    const minute = parseInt(minutes);
+
+    if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+      Alert.alert('Invalid Time', 'Please enter valid hours (0-23) and minutes (0-59).');
+      return;
+    }
+
+    const trigger = {
+      hour: hour, //in military time, eg if hour: 13, means it will notify at 1pm
+      minute: minute, //in military time, eg if minute: 18, and hour: 0, means it will notify at 0019
+      repeats: repeats,
+    };
+
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Reminder',
+          body: 'It\'s time to do the task!',
+        },
+        trigger: trigger,
+      });
+      alert('Notification scheduled!');
+    } catch (error) {
+      console.error('Error scheduling notification:', error);
+      alert('Failed to schedule notification. Please try again.');
+    }
+  };
+
   // DATA VISUALISATION
 
   const screenWidth = Dimensions.get("window").width - 2*styles.additionalDetailsContainer.padding;
@@ -590,7 +627,34 @@ export const DetailsScreen = ({ route }) => {
         <Text style={styles.counterText}>{counter}</Text>
         <Button title="+" onPress={incrementCounter} />
       </View>
-      
+
+      {/* reminders! */}
+      <View style={styles.additionalDetailsContainer}>
+        <Text style={styles.label}>Hour:</Text>
+        <TextInput
+          style={styles.input}
+          keyboardType="numeric"
+          value={hours}
+          onChangeText={setHours}
+        />
+        <Text style={styles.label}>Minutes:</Text>
+        <TextInput
+          style={styles.input}
+          keyboardType="numeric"
+          value={minutes}
+          onChangeText={setMinutes}
+        />
+        <View style={styles.switchContainer}>
+          <Text style={styles.label}>Repeats:</Text>
+          <Switch
+            value={repeats}
+            onValueChange={setRepeats}
+          />
+        </View>
+        <Button title="Schedule Notification" onPress={scheduleNotification} />
+      </View>
+
+
       {/* data vis! */}
 
       <View style={styles.tableContainer}>
@@ -706,11 +770,3 @@ export function TabNavigator() {
     </Tab.Navigator>
   );
 }
-
-Notifications.setNotificationHandler({ //sets up how notifications will be handled when receieved
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
