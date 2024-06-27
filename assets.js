@@ -55,7 +55,6 @@ const styles = StyleSheet.create({
     color: 'gray',
   },
   additionalDetailsContainer: {
-    marginTop: 20,
     padding: 10,
   },
   additionalDetailsTitle: {
@@ -147,8 +146,9 @@ const styles = StyleSheet.create({
     color: 'black', // Set color of the "+" sign
   },
   tableContainer: {
-    flex: 1,
+    // flex: 1,
     marginTop: 20,
+    marginBottom: 20,
     paddingHorizontal: 16,
     backgroundColor: '#ffffff',
   },
@@ -186,6 +186,12 @@ const styles = StyleSheet.create({
     textAlign: 'center', 
     color: 'blue',
   },
+  notAvailText: {
+    fontSize: 8,
+    color: 'grey',
+    textAlign: 'center',
+    textAlignVertical: 'center'
+  }
 });
 
 // export const Test = () => {
@@ -279,7 +285,7 @@ export const HomeScreen = ({ navigation }) => {
     if (newItemName.trim() !== '' && dailyGoal.trim() !== '') {
       const newItem = { title: newItemName, color: selectedColor, details: [`Daily goal: ${dailyGoal}`], goal: dailyGoal };
       console.log("adding new item")
-      add_habit(newItem.title, newItem.details[0], newItem.color, newItem.goal);
+      add_habit(newItem.title, newItem.color, newItem.goal);
       // console.log(read_habits());
       setData((prevData) => {
         const updatedData = prevData.map((section) => {
@@ -461,7 +467,9 @@ export const DetailsScreen = ({ route }) => {
 
   // DATA VISUALISATION
 
-  const screenWidth = Dimensions.get("window").width;
+  const screenWidth = Dimensions.get("window").width - 2*styles.additionalDetailsContainer.padding;
+  console.log(styles.additionalDetailsContainer.padding);
+  console.log(screenWidth);
 
   const chartConfig = {
     color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`,
@@ -501,14 +509,13 @@ export const DetailsScreen = ({ route }) => {
       const data = await fetch_entries_habit(item.title);
       data.sort((a, b) => a.day - b.day);
       setHabitData(data);
-      habitDataRef.current = data;
+      // habitDataRef.current = data;
       console.log("data is");
       console.log(data);
       // update linechartdata
       // console.log("updating linechart!");
-      updateLinechartdata(data);
+      // updateLinechartdata(data);
       // look through the entries to see if there is an entry for today
-      // const entry = data.find(item => item.day === day);
       const entry = data.find(item => item.day.toDateString() === day.toDateString());
       // if there is an entry for today, grab today's number for counter
       // if there isn't an entry, set the counter to 0
@@ -528,6 +535,11 @@ export const DetailsScreen = ({ route }) => {
   useEffect(() => {
     counterRef.current = counter;
   }, [counter]);
+
+  useEffect(() => {
+    habitDataRef.current = habitData;
+    updateLinechartdata(habitData);
+  }, [habitData]);
 
   // for counters
   const incrementCounter = () => {
@@ -585,18 +597,37 @@ export const DetailsScreen = ({ route }) => {
         <Text style={styles.additionalDetailsTitle}>Your data in the past days:</Text>
       </View>
 
-      <LineChart
-        data={linechartdata}
-        width={screenWidth}
-        height={220}
-        chartConfig={chartConfig}
-      />
+      { (linechartdata.datasets[0].data.length<2) && 
+        <View>
+          <Text style={styles.notAvailText}>Not enough data to make graph :( </Text>
+          <Text style={styles.notAvailText}>Add some! </Text>
+        </View>
+      }
 
-      {/* <View>
-        <Text>
-          {}
-        </Text>
-      </View> */}
+      { (linechartdata.datasets[0].data.length>1) &&
+        <>
+          <View style={styles.additionalDetailsContainer}>
+            <LineChart
+              data={linechartdata}
+              width={screenWidth}
+              height={220}
+              chartConfig={chartConfig}
+              formatYLabel={(yValue) => { return Math.round(yValue).toString();}}
+              onDataPointClick={(value, dataset, getColor) => {}}
+            />
+          </View>
+
+          { habitDataRef.current.map((entry) => {
+            return (
+              <View style={styles.additionalDetailsContainer}>
+                <Text>{entry.day.toString()} </Text>
+              </View>
+            )
+          }) 
+          }
+
+        </>
+      }
 
       <View style={styles.additionalDetailsContainer}>
         <Text> insert reminders here </Text>
