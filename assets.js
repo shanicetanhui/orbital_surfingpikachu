@@ -461,7 +461,7 @@ export const DetailsScreen = ({ route }) => {
     datasets: [
       {
         data: [],
-        color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`, // optional
+        // color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`, // optional
         strokeWidth: 2 // optional
       }
     ],
@@ -495,8 +495,26 @@ export const DetailsScreen = ({ route }) => {
   // console.log(screenWidth);
 
   const chartConfig = {
-    color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`,
-    barPercentage: 0.5,
+    // color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    // backgroundColor: "#e26a00",
+    // barPercentage: 0.5,
+    // decimalPlaces: 0,
+
+    backgroundColor: "#e26a00",
+    backgroundGradientFrom: "#ffffff",
+    backgroundGradientTo: "#ffffff",
+    decimalPlaces: 2, // optional, defaults to 2dp
+    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    style: {
+      borderRadius: 16
+    },
+    propsForDots: {
+      r: "3",
+      strokeWidth: "6",
+      stroke: "#ffa726"
+    }
+
   };
 
   const updateLinechartdata = (data) => {
@@ -506,8 +524,8 @@ export const DetailsScreen = ({ route }) => {
       datasets: [
         {
           data: data.map(entry => entry.num),
-          color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`, // optional
-          strokeWidth: 2 // optional
+          // color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`, // optional
+          // strokeWidth: 2 // optional
         }
       ],
       legend: [] // optional
