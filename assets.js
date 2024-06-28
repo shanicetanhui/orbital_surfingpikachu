@@ -614,6 +614,7 @@ export const DetailsScreen = ({ route }) => {
               chartConfig={chartConfig}
               formatYLabel={(yValue) => { return Math.round(yValue).toString();}}
               onDataPointClick={(value, dataset, getColor) => {}}
+              fromZero={true}
             />
           </View>
 
