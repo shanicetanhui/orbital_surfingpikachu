@@ -8,6 +8,8 @@ import { init, fakedata, display, date_display_format, read_habits, add_habit, f
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
 import { Picker } from '@react-native-picker/picker';
 import { Timestamp } from 'firebase/firestore';
+import DatePicker from 'react-native-date-picker';
+// import DatePicker from 'react-datepicker';
 import * as Notifications from 'expo-notifications';
 
 // stylesheet
@@ -446,6 +448,11 @@ export const DetailsScreen = ({ route }) => {
 
   // Hooks for habitData and counter
   const [habitData, setHabitData] = useState([]);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editedData, setEditedData] = useState({
+    day: '',
+    num: '',
+  });
   // format of habitData:
   // [{ day: Date object, num: integer, habit: habitid }, { day: Date object, num: integer, habit: habitid }]
   const [counter, setCounter] = useState(0);
@@ -465,17 +472,31 @@ export const DetailsScreen = ({ route }) => {
   const counterRef = useRef(counter);
   const habitDataRef = useRef(habitData);
 
+  // Function to open modal and set the initial values
+  const openEditModal = (data) => {
+    setEditedData({
+      day: data.day.toString(),
+      num: data.num,
+    });
+    setEditModalVisible(true);
+  };
+
+  // Function to handle submission of edited data
+  const handleEditSubmit = () => {
+    // Handle the submission logic here
+    console.log(editedData);
+    setEditModalVisible(false);
+  };
+
   // DATA VISUALISATION
 
   const screenWidth = Dimensions.get("window").width - 2*styles.additionalDetailsContainer.padding;
-  console.log(styles.additionalDetailsContainer.padding);
-  console.log(screenWidth);
+  // console.log(styles.additionalDetailsContainer.padding);
+  // console.log(screenWidth);
 
   const chartConfig = {
     color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`,
-    // strokeWidth: 2, // optional, default 3
     barPercentage: 0.5,
-    // useShadowColorFromDataset: false // optional
   };
 
   const updateLinechartdata = (data) => {
@@ -553,6 +574,11 @@ export const DetailsScreen = ({ route }) => {
     return null;
   }
 
+  // const openModal = (sectionTitle) => {
+  //   setCurrentSection(sectionTitle);
+  //   setAddModalVisible(true);
+  // };
+
   // this function triggers when we exit the details page
   // since it would be costly to keep making noSQL statements for every increment or decrement
   useFocusEffect(
@@ -570,7 +596,6 @@ export const DetailsScreen = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      
       {/* text */}
        <View style={styles.additionalDetailsContainer}>
         <Text style={styles.additionalDetailsTitle}>{item.title}</Text>
@@ -617,18 +642,68 @@ export const DetailsScreen = ({ route }) => {
               fromZero={true}
             />
           </View>
-
-          { habitDataRef.current.map((entry) => {
-            return (
-              <View style={styles.additionalDetailsContainer}>
-                <Text>{entry.day.toString()} </Text>
-              </View>
-            )
-          }) 
-          }
-
         </>
       }
+
+      { habitDataRef.current.map((entry) => {
+        return (
+          <View style={styles.item}>
+            <Text> {date_display_format(entry.day)} - {entry.num}  -
+              <Button title="edit" onPress={() => openEditModal(entry)}/>
+            </Text>
+          </View>
+        )
+        })
+      }
+
+      <Modal
+        transparent={true}
+        animationType="slide"
+        visible={editModalVisible}
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>Edit Data</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="day"
+            value={editedData.day}
+            onChangeText={(text) => setEditedData({ ...editedData, day: text })}
+          />
+
+          <DatePicker
+            date={new Date()}
+            mode="date"
+            onDateChange={() => {console.log("datechange")}}
+          />
+
+          {/* <DatePicker
+            selected={new Date()}
+            onDateChange={() => {console.log("datechange")}}
+          /> */}
+
+          <TextInput
+            style={styles.input}
+            placeholder="num"
+            value={editedData.num}
+            onChangeText={(text) => setEditedData({ ...editedData, num: text })}
+          />
+          {/* Add other input fields as necessary */}
+
+          <TouchableOpacity style={styles.button} onPress={handleEditSubmit}>
+            <Text style={styles.buttonText}>Submit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, styles.buttonClose]}
+            onPress={() => setEditModalVisible(false)}
+          >
+            <Text style={styles.buttonText}>Cancel</Text>
+          </TouchableOpacity>
+
+          {/* <Button style={styles.buttonText} title="Submit" onPress={() => handleEditSubmit} />
+          <Button style={styles.buttonText} title="Cancel" onPress={() => setEditModalVisible(false)} /> */}
+      </View>
+      </Modal>
 
       <View style={styles.additionalDetailsContainer}>
         <Text> insert reminders here </Text>

@@ -88,11 +88,11 @@ export async function fetch_entries_habit(habit) {
     var to_return = [];
 
     day = today_date();
-    console.log(day.toDateString());
+    // console.log(day.toDateString());
 
     querySnapshot.forEach((doc) => {
         // to_return.push(doc.data());
-        console.log(doc.data().day);
+        // console.log(doc.data().day);
         // console.log(doc.data().day.toDate().toDateString() == day.toDateString());
         to_return.push({...doc.data(), day:doc.data().day.toDate()});
     })
@@ -113,8 +113,8 @@ export async function fetch_entry_id(habit, day) {
     const startTimestamp = Timestamp.fromDate(startOfDay);
     const endTimestamp = Timestamp.fromDate(endOfDay);
 
-    console.log(startTimestamp);
-    console.log(endTimestamp);
+    // console.log(startTimestamp);
+    // console.log(endTimestamp);
 
     const q = query(
         collection(db, "habitEntries"), 
@@ -182,12 +182,12 @@ export async function create_or_update(habit, day, newnum) {
 
 
 // for past entry
-export async function update_entry(habit, day, newnum) {
+export async function update_entry(habit, newday, newnum) {
     const doc_id = await fetch_entry_id(habit, day);
     if (doc_id==='') {
         console.log("cannot UPDATE past entry of ", habit, " ", day, " doesnt exist");
     } else {
-        await updateDoc(doc(db, "habitEntries", doc_id), {num: newnum});
+        await updateDoc(doc(db, "habitEntries", doc_id), {num: newnum, day:newday});
     }
 }
 
