@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { init, fakedata, display, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
+import { init, fakedata, display, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
 import { Picker } from '@react-native-picker/picker';
 import { Timestamp } from 'firebase/firestore';
@@ -497,8 +497,9 @@ export const DetailsScreen = ({ route }) => {
   const handleAddSubmit = async () => {
     new_date = new Date(addedData.year, addedData.month, addedData.day);
     console.log(new_date);
-    await add_entry(item.title, new_date, addedData.num);
+    add_entry(item.title, new_date, addedData.num);
     setAddModalVisible(false);
+    setRefresh(prev => !prev);  // Toggle the refresh state
   }
 
   // Function to handle submission of edited data
@@ -508,6 +509,13 @@ export const DetailsScreen = ({ route }) => {
     update_entry(editedData.habit_id, editedData.old_date, new_date, editedData.num)
     setEditModalVisible(false);
   };
+
+  const handleDataDelete = async (entry) => {
+    delete_habit_entry(entry.habit, entry.day);
+    console.log("deleted");
+    setRefresh(prev => !prev);  // Toggle the refresh state
+
+  }
 
   // DATA VISUALISATION
 
@@ -677,6 +685,7 @@ export const DetailsScreen = ({ route }) => {
             <Text> 
               {date_display_format(entry.day)} - {entry.num} -
               <Button title="edit" onPress={() => openEditModal(entry)}/>
+              <Button title="delete" onPress={() => handleDataDelete(entry)}/>
             </Text>
           </View>
         )

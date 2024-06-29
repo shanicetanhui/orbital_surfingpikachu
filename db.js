@@ -199,9 +199,8 @@ export async function update_entry(habit, day, newday, newnum) {
 // DELETE
 
 // delete entry
-export async function delete_habit_entry(habit, day) {
-
-    const doc_id = await fetch_entry_id(habit, day);
+export async function delete_habit_entry(habit_id, day) {
+    const doc_id = await fetch_entry_id(habit_id, day);
     if (doc_id==='') {
         console.log("cannot DELETE entry of ", habit, " ", day, " doesnt exist");
     } else {
