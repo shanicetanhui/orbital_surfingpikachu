@@ -196,12 +196,6 @@ const styles = StyleSheet.create({
   }
 });
 
-// export const Test = () => {
-//   add_habit("sleep", "", 'rgba(252, 223, 202, 0.7)', 1000);
-//   console.log("test component");
-//   display();
-// }
-
 // front end purposes
 const initialData = [
   {
@@ -473,10 +467,6 @@ export const DetailsScreen = ({ route }) => {
     legend: [] // optional
   });
 
-  // the Refs are necessary for the useFocusEffect function
-  const counterRef = useRef(counter);
-  const habitDataRef = useRef(habitData);
-
   // Function to open modal and set the initial values
   const openEditModal = (data) => {
     setEditedData({
@@ -490,6 +480,7 @@ export const DetailsScreen = ({ route }) => {
     });
     console.log(editedData);
     setEditModalVisible(true);
+    setRefresh(prev => !prev);  // Toggle the refresh state
   };
 
   // Function to handle submission of edited data
@@ -499,7 +490,6 @@ export const DetailsScreen = ({ route }) => {
     const new_date = new Date(editedData.year, editedData.month, editedData.day);
     update_entry(editedData.habit_id, editedData.old_date, new_date, editedData.num)
     setEditModalVisible(false);
-    setRefresh(prev => !prev);  // Toggle the refresh state
   };
 
   // DATA VISUALISATION
@@ -509,11 +499,6 @@ export const DetailsScreen = ({ route }) => {
   // console.log(screenWidth);
 
   const chartConfig = {
-    // color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-    // backgroundColor: "#e26a00",
-    // barPercentage: 0.5,
-    // decimalPlaces: 0,
-
     backgroundColor: "#e26a00",
     backgroundGradientFrom: "#ffffff",
     backgroundGradientTo: "#ffffff",
@@ -538,8 +523,6 @@ export const DetailsScreen = ({ route }) => {
       datasets: [
         {
           data: data.map(entry => entry.num),
-          // color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`, // optional
-          // strokeWidth: 2 // optional
         }
       ],
       legend: [] // optional
@@ -584,47 +567,36 @@ export const DetailsScreen = ({ route }) => {
     fetchHabits();
   }, [refresh]);
 
-  // triggered by counter changing
-  useEffect(() => {
-    counterRef.current = counter;
-  }, [counter]);
+  // // triggered by counter changing
+  // useEffect(() => {
+  //   // counterRef.current = counter;
+  //   create_or_update(item.title, day, counter);
+  //   setRefresh(prev => !prev);  // Toggle the refresh state
+  // }, [counter]);
 
   useEffect(() => {
-    habitDataRef.current = habitData;
+    // habitDataRef.current = habitData;
     updateLinechartdata(habitData);
   }, [habitData]);
 
   // for counters
-  const incrementCounter = () => {
-    setCounter(prevCounter => prevCounter + 1);
+  const incrementCounter = async () => {
+    const newCounter = counter + 1;
+    setCounter(newCounter);
+    await create_or_update(item.title, day, newCounter);
+    setRefresh(prev => !prev);  // Toggle the refresh state
   };
-  const decrementCounter = () => {
-    setCounter(prevCounter => prevCounter - 1);
+
+  const decrementCounter = async () => {
+    const newCounter = counter - 1;
+    setCounter(newCounter);
+    await create_or_update(item.title, day, newCounter);
+    setRefresh(prev => !prev);  // Toggle the refresh state
   };
 
   if (!item) {
     return null;
   }
-
-  // const openModal = (sectionTitle) => {
-  //   setCurrentSection(sectionTitle);
-  //   setAddModalVisible(true);
-  // };
-
-  // this function triggers when we exit the details page
-  // since it would be costly to keep making noSQL statements for every increment or decrement
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        console.log("going to call create or update");
-        // console.log(item.title);
-        // console.log(day);
-        console.log(counterRef.current);
-        console.log(item.title);
-        create_or_update(item.title, day, counterRef.current);
-      };
-    }, [])
-  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -677,7 +649,8 @@ export const DetailsScreen = ({ route }) => {
         </>
       }
 
-      { habitDataRef.current.map((entry) => {
+      { habitData.map((entry) => {
+      // { habitDataRef.current.map((entry) => {
         return (
           <View style={styles.item}>
             <Text> {date_display_format(entry.day)} - {entry.num}  - {entry.id}
