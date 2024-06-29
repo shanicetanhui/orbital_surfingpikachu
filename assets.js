@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { init, fakedata, display, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
+import { init, fakedata, display, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
 import { Picker } from '@react-native-picker/picker';
 import { Timestamp } from 'firebase/firestore';
@@ -444,6 +444,7 @@ export const DetailsScreen = ({ route }) => {
   const [habitData, setHabitData] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [addModalVisible, setAddModalVisible] = useState(false);
   const [editedData, setEditedData] = useState({
     day: '',
     year: '',
@@ -452,6 +453,12 @@ export const DetailsScreen = ({ route }) => {
     old_date: '',
     habit_id: ''
   });
+  const [addedData, setAddedData] = useState({
+    day: '',
+    month: '',
+    year: '',
+    num: '',
+  })
   // format of habitData:
   // [{ day: Date object, num: integer, habit: habitid }, { day: Date object, num: integer, habit: habitid }]
   const [counter, setCounter] = useState(0);
@@ -483,10 +490,20 @@ export const DetailsScreen = ({ route }) => {
     setRefresh(prev => !prev);  // Toggle the refresh state
   };
 
+  const openAddModal = () => {
+    setAddModalVisible(true);
+  };
+
+  const handleAddSubmit = async () => {
+    new_date = new Date(addedData.year, addedData.month, addedData.day);
+    console.log(new_date);
+    await add_entry(item.title, new_date, addedData.num);
+    setAddModalVisible(false);
+  }
+
   // Function to handle submission of edited data
   const handleEditSubmit = () => {
     // Handle the submission logic here
-
     const new_date = new Date(editedData.year, editedData.month, editedData.day);
     update_entry(editedData.habit_id, editedData.old_date, new_date, editedData.num)
     setEditModalVisible(false);
@@ -649,11 +666,16 @@ export const DetailsScreen = ({ route }) => {
         </>
       }
 
+      <TouchableOpacity style={styles.button} onPress={() => {openAddModal()}}>
+        <Text style={styles.buttonText}>Add Data</Text>
+      </TouchableOpacity>
+
       { habitData.map((entry) => {
       // { habitDataRef.current.map((entry) => {
         return (
           <View style={styles.item}>
-            <Text> {date_display_format(entry.day)} - {entry.num}  - {entry.id}
+            <Text> 
+              {date_display_format(entry.day)} - {entry.num} -
               <Button title="edit" onPress={() => openEditModal(entry)}/>
             </Text>
           </View>
@@ -668,7 +690,7 @@ export const DetailsScreen = ({ route }) => {
         onRequestClose={() => setEditModalVisible(false)}
       >
         <View style={styles.modalView}>
-          <Text style={styles.modalText}>Edit Data</Text>
+          <Text style={styles.modalText}>Edit data</Text>
 
           <TextInput
             style={styles.input}
@@ -720,6 +742,70 @@ export const DetailsScreen = ({ route }) => {
           {/* <Button style={styles.buttonText} title="Submit" onPress={() => handleEditSubmit} />
           <Button style={styles.buttonText} title="Cancel" onPress={() => setEditModalVisible(false)} /> */}
       </View>
+      </Modal>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={addModalVisible}
+        onRequestClose={() => {
+          setAddModalVisible(!addModalVisible);
+        }}
+      >        
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>Add data</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Year"
+            // value={editedData.year.toString()}
+            onChangeText={(text) => {
+              const year = parseInt(text);
+              setAddedData({ ...addedData, year: isNaN(year) ? '' : year });
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Month"
+            // value={(editedData.month + 1).toString()}
+            onChangeText={(text) => {
+              const month = parseInt(text) - 1;
+              setAddedData({ ...addedData, month: isNaN(month) ? '' : month });
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Day"
+            // value={editedData.day.toString()}
+            onChangeText={(text) => {
+              const day = parseInt(text);
+              setAddedData({ ...addedData, day: isNaN(day) ? '' : day });
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Num"
+            // value={editedData.num.toString()}
+            onChangeText={(text) => {
+              const num = parseInt(text);
+              setAddedData({ ...addedData, num: isNaN(num) ? '' : num });
+            }}
+          />
+
+          {/* <TouchableOpacity style={styles.button} onPress={() => {handleAddSubmit}}> */}
+          <TouchableOpacity style={styles.button} onPress={handleAddSubmit}>
+            <Text style={styles.buttonText}>Submit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, styles.buttonClose]}
+            onPress={() => setAddModalVisible(false)}
+          >
+            <Text style={styles.buttonText}>Cancel</Text>
+          </TouchableOpacity>
+
+          {/* <Button style={styles.buttonText} title="Submit" onPress={() => handleEditSubmit} />
+          <Button style={styles.buttonText} title="Cancel" onPress={() => setEditModalVisible(false)} /> */}
+        </View>
       </Modal>
 
       <View style={styles.additionalDetailsContainer}>

@@ -54,15 +54,16 @@ export async function add_habit(name, color, goal) {
 
 // TODO: FIGURE OUT FORMAT OF day
 // create a document under the collection 'habitEntries'
-export async function add_entry(habit_id, day, num) {
-    // console.log("cry");
-    // console.log(habit_id);
+export async function add_entry(habit, day, num) {
+    const habit_id = await fetch_habit_id(habit);
+    console.log(day);
+    // console.log("ADDED ENTRY");
     await addDoc(collection(db, "habitEntries"), {
         day: day,
         habit: habit_id,
         num: num
-    });
-    // console.log("ADDED ENTRY");
+    }); 
+
 }
 
 // READ
@@ -168,7 +169,11 @@ export async function create_or_update(habit, day, newnum) {
         var entry_id = await fetch_entry_id(habit_id, day);
         if (entry_id==='') { // entry doesn't exist, must create
             console.log("creating entry");
-            add_entry(habit_id, day, newnum); 
+            await addDoc(collection(db, "habitEntries"), {
+                day: day,
+                habit: habit_id,
+                num: num
+            }); 
         } else { // entry exists, update it
             console.log("updating entry");
             console.log(entry_id);
