@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions, Switch } from 'react-native';
+import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions, Switch, Alert, ScrollView } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { init, fakedata, display, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
@@ -20,6 +20,9 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 16,
   },
+  text: {
+    fontFamily: 'Kollektif',
+  },
   item: {
     padding: 20,
     marginVertical: 8,
@@ -35,24 +38,34 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
+    fontFamily: 'Kollektif',
   },
   headerTitle: {
     fontSize: 32,
     fontWeight: 'bold',
+    fontFamily: 'Kollektif',
   },
   headerSubtitle: {
     fontSize: 16,
     marginTop: 8,
     color: 'gray',
+    fontFamily: 'Kollektif',
   },
   detailsContainer: {
     marginTop: 10,
+  },
+  detailsScreenContainer: {
+    padding: 4,
+    margin: 10,
+   // backgroundColor: 'rgba(252, 223, 202, 0.5)', // or rgba(211, 211, 211, 0.2) lightgrey
+    borderRadius: '10',
   },
   detail: {
     padding: 2,
     justifyContent: 'center',
     fontSize: 16,
     color: 'gray',
+    fontFamily: 'Kollektif',
   },
   additionalDetailsContainer: {
     padding: 10,
@@ -60,6 +73,7 @@ const styles = StyleSheet.create({
   additionalDetailsTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    fontFamily: 'Kollektif',
   },
   buttonContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
@@ -67,14 +81,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical: 20,
   },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    justifyContent: 'center'
+  },
   input: {
     height: 40,
     borderColor: 'gray',
     borderWidth: 1,
     borderRadius: 5,
-    width: '80%',
+    width: '95%',
     marginVertical: 10,
     paddingHorizontal: 10,
+    alignSelf: 'center', // Aligns the TextInput itself to the center horizontally
+    fontFamily: 'Roboto', // Ensure consistent font family
   },
   modalView: {
     width: '80%',
@@ -82,15 +109,29 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',
+    justifyContent: 'center', // Center vertically and horizontally
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: [{ translateX: '-50%' }, { translateY: '-50%' }],
+  },  
+  addButtonModalView: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center', // Ensure this is present
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    position: 'absolute', // Adjust as per your modal requirements
+    top: '20%', // Ensure these are not conflicting with each other
+    left: '10%', // Ensure these are not conflicting with each other
+   // transform: [{ translateX: 0 }, { translateY: -50 }], // Adjust if necessary
   },
   modalContainer: {
     flex: 1,
@@ -108,6 +149,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: 'center',
     fontSize: 18,
+    fontFamily: 'Kollektif',
   },
   button: {
     backgroundColor: '#2196F3',
@@ -119,6 +161,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     textAlign: 'center',
+    fontFamily: 'Kollektif',
   },
   buttonClose: {
     backgroundColor: '#f44336',
@@ -132,6 +175,7 @@ const styles = StyleSheet.create({
   counterText: {
     fontSize: 24,
     marginHorizontal: 20,
+    fontFamily: 'Kollektif',
   },
   addButton: {
     backgroundColor: 'lightgrey', // Set background color to grey
@@ -177,6 +221,7 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 20,
     fontWeight: 'bold',
+    fontFamily: 'Kollektif',
   },
   gotoDetailsButton: {
 
@@ -185,12 +230,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center', 
     color: 'blue',
+    fontFamily: 'Kollektif',
   },
   notAvailText: {
     fontSize: 8,
     color: 'grey',
     textAlign: 'center',
-    textAlignVertical: 'center'
+    textAlignVertical: 'center',
+    fontFamily: 'Kollektif',
   }
 });
 
@@ -302,7 +349,6 @@ export const HomeScreen = ({ navigation }) => {
     }
   };
 
-  // not yet implemented
   const renderSectionFooter = (section) => (
     <View style={styles.footerContainer}>
       <TextInput
@@ -315,7 +361,8 @@ export const HomeScreen = ({ navigation }) => {
       <Button title="Add New Item" onPress={() => addNewItem(section.title)} />
     </View>
   );
-  const handleDelete = () => {
+
+  const handleDelete = () => { //delete habits
     if (itemToDelete) {
       const updatedData = data.map(section => ({
         ...section,
@@ -385,7 +432,7 @@ export const HomeScreen = ({ navigation }) => {
           setAddModalVisible(!addModalVisible);
         }}
       >
-        <View style={styles.modalView}>
+        <View style={styles.addButtonModalView}>
           <Text style={styles.modalText}>Enter new {currentSection.toLowerCase()} name</Text>
           <TextInput
             style={styles.input}
@@ -465,43 +512,6 @@ export const DetailsScreen = ({ route }) => {
   const counterRef = useRef(counter);
   const habitDataRef = useRef(habitData);
 
-  // REMINDERS
-
-  const [hours, setHours] = useState(''); // State for hours
-  const [minutes, setMinutes] = useState(''); // State for minutes
-  const [repeats, setRepeats] = useState(false); // State for repeats
-
-  // Function to handle scheduling notifications
-  const scheduleNotification = async () => {
-    const hour = parseInt(hours);
-    const minute = parseInt(minutes);
-
-    if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
-      Alert.alert('Invalid Time', 'Please enter valid hours (0-23) and minutes (0-59).');
-      return;
-    }
-
-    const trigger = {
-      hour: hour, //in military time, eg if hour: 13, means it will notify at 1pm
-      minute: minute, //in military time, eg if minute: 18, and hour: 0, means it will notify at 0019
-      repeats: repeats,
-    };
-
-    try {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: 'Reminder',
-          body: 'It\'s time to do the task!',
-        },
-        trigger: trigger,
-      });
-      alert('Notification scheduled!');
-    } catch (error) {
-      console.error('Error scheduling notification:', error);
-      alert('Failed to schedule notification. Please try again.');
-    }
-  };
-
   // DATA VISUALISATION
 
   const screenWidth = Dimensions.get("window").width - 2*styles.additionalDetailsContainer.padding;
@@ -578,6 +588,70 @@ export const DetailsScreen = ({ route }) => {
     updateLinechartdata(habitData);
   }, [habitData]);
 
+    // REMINDERS
+
+    const [hours, setHours] = useState(''); // State for hours
+    const [minutes, setMinutes] = useState(''); // State for minutes
+    const [repeats, setRepeats] = useState(false); // State for repeats
+  
+     //Request notification permissions
+     useEffect(() => {
+      (async () => {
+        const { status } = await Notifications.getPermissionsAsync();
+        console.log('Notification permissions status:', status);
+        if (status !== 'granted') {
+          const { status: newStatus } = await Notifications.requestPermissionsAsync();
+          if (newStatus !== 'granted') {
+            alert('Failed to get push token for push notification!');
+            return;
+          }
+        }
+      })();
+    }, []); 
+  
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+      }),
+    });
+
+    // Function to schedule timed notifications
+    const scheduleNotification = async () => {
+      const hour = parseInt(hours);
+      const minute = parseInt(minutes);
+    
+      // Validate hour and minute inputs
+      if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+        Alert.alert('Invalid Time', 'Please enter valid hours (0-23) and minutes (0-59).');
+        return;
+      }
+    
+      const trigger = {
+        hour: hour,
+        minute: minute,
+        repeats: repeats,
+      };    
+    
+      try {
+        // Schedule the notification
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: 'Reminder',
+            body:  'Time to do the task!',
+          },
+          trigger: trigger,
+        });
+        // Notify user upon successful scheduling
+        alert('Notification scheduled!');
+      } catch (error) {
+        // Handle any errors that occur during scheduling
+        console.error('Error scheduling notification:', error);
+        alert('Failed to schedule notification. Please try again.');
+      }
+    };
+
   // for counters
   const incrementCounter = () => {
     setCounter(prevCounter => prevCounter + 1);
@@ -607,56 +681,33 @@ export const DetailsScreen = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScrollView>
       
       {/* text */}
+      <View style={styles.detailsScreenContainer}>
        <View style={styles.additionalDetailsContainer}>
         <Text style={styles.additionalDetailsTitle}>{item.title}</Text>
         {item.details && item.details.map((detail, index) => (
           <Text key={index} style={styles.detail}> {detail}</Text>
         ))}
       </View>
+      </View>
       
       {/* today's data */}
+      <View style={styles.detailsScreenContainer}>
       <View style={styles.additionalDetailsContainer}>
         <Text style={styles.additionalDetailsTitle}>Today's number:</Text>
       </View>
-
       {/* counter */}
       <View style={styles.counterContainer}>
         <Button title="-" onPress={decrementCounter} />
         <Text style={styles.counterText}>{counter}</Text>
         <Button title="+" onPress={incrementCounter} />
       </View>
-
-      {/* reminders! */}
-      <View style={styles.additionalDetailsContainer}>
-        <Text style={styles.label}>Hour:</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={hours}
-          onChangeText={setHours}
-        />
-        <Text style={styles.label}>Minutes:</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={minutes}
-          onChangeText={setMinutes}
-        />
-        <View style={styles.switchContainer}>
-          <Text style={styles.label}>Repeats:</Text>
-          <Switch
-            value={repeats}
-            onValueChange={setRepeats}
-          />
-        </View>
-        <Button title="Schedule Notification" onPress={scheduleNotification} />
       </View>
 
-
       {/* data vis! */}
-
+      <View style={styles.additionalDetailsContainer}>
       <View style={styles.tableContainer}>
         <Text style={styles.additionalDetailsTitle}>Your data in the past days:</Text>
       </View>
@@ -673,7 +724,7 @@ export const DetailsScreen = ({ route }) => {
           <View style={styles.additionalDetailsContainer}>
             <LineChart
               data={linechartdata}
-              width={screenWidth}
+              width={screenWidth * 0.9} //90% screen width
               height={220}
               chartConfig={chartConfig}
               formatYLabel={(yValue) => { return Math.round(yValue).toString();}}
@@ -692,11 +743,48 @@ export const DetailsScreen = ({ route }) => {
 
         </>
       }
-
-      <View style={styles.additionalDetailsContainer}>
-        <Text> insert reminders here </Text>
       </View>
 
+      {/* reminders! */} 
+<View style={styles.detailsScreenContainer}>
+      <View style={styles.additionalDetailsContainer}>
+        <Text style={styles.additionalDetailsTitle}>Schedule Reminders:</Text>
+        <Text style={styles.detail}> Input in military time</Text>
+      </View>
+
+      <View style={styles.additionalDetailsContainer}>
+        <Text style={styles.detail}>Hour:</Text>
+        <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          keyboardType="numeric"
+          value={hours}
+          onChangeText={setHours}
+        />
+          </View>
+        <Text style={styles.detail}>Minutes:</Text>
+        <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          keyboardType="numeric"
+          value={minutes}
+          onChangeText={setMinutes}
+        />
+          </View>
+        <View style={styles.switchContainer}>
+          <Text style={styles.detail}>Repeats:</Text>
+          <View style={styles.inputContainer}>
+          <Switch
+            value={repeats}
+            onValueChange={setRepeats}
+          />
+            </View>
+        </View>
+        <Button title="Schedule Notification" onPress={scheduleNotification} />
+      </View>
+      </View>
+
+      </ScrollView>
     </SafeAreaView>
   );
 };

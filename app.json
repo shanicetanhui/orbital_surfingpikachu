@@ -26,7 +26,18 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-router"
+      [
+        "expo-font",
+        {
+          "fonts": [
+            {
+              "asset": "./assets/Roboto/Roboto-LightItalic.ttf",
+              "weight": "300",
+              "style": "italic"
+            }
+          ]
+        }
+      ]
     ]
   }
 }
