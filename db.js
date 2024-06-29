@@ -54,15 +54,16 @@ export async function add_habit(name, color, goal) {
 
 // TODO: FIGURE OUT FORMAT OF day
 // create a document under the collection 'habitEntries'
-export async function add_entry(habit_id, day, num) {
-    // console.log("cry");
-    // console.log(habit_id);
+export async function add_entry(habit, day, num) {
+    const habit_id = await fetch_habit_id(habit);
+    console.log(day);
+    // console.log("ADDED ENTRY");
     await addDoc(collection(db, "habitEntries"), {
         day: day,
         habit: habit_id,
         num: num
-    });
-    // console.log("ADDED ENTRY");
+    }); 
+
 }
 
 // READ
@@ -88,11 +89,11 @@ export async function fetch_entries_habit(habit) {
     var to_return = [];
 
     day = today_date();
-    console.log(day.toDateString());
+    // console.log(day.toDateString());
 
     querySnapshot.forEach((doc) => {
         // to_return.push(doc.data());
-        console.log(doc.data().day);
+        // console.log(doc.data().day);
         // console.log(doc.data().day.toDate().toDateString() == day.toDateString());
         to_return.push({...doc.data(), day:doc.data().day.toDate()});
     })
@@ -113,8 +114,8 @@ export async function fetch_entry_id(habit, day) {
     const startTimestamp = Timestamp.fromDate(startOfDay);
     const endTimestamp = Timestamp.fromDate(endOfDay);
 
-    console.log(startTimestamp);
-    console.log(endTimestamp);
+    // console.log(startTimestamp);
+    // console.log(endTimestamp);
 
     const q = query(
         collection(db, "habitEntries"), 
@@ -168,7 +169,11 @@ export async function create_or_update(habit, day, newnum) {
         var entry_id = await fetch_entry_id(habit_id, day);
         if (entry_id==='') { // entry doesn't exist, must create
             console.log("creating entry");
-            add_entry(habit_id, day, newnum); 
+            await addDoc(collection(db, "habitEntries"), {
+                day: day,
+                habit: habit_id,
+                num: num
+            }); 
         } else { // entry exists, update it
             console.log("updating entry");
             console.log(entry_id);
@@ -182,21 +187,20 @@ export async function create_or_update(habit, day, newnum) {
 
 
 // for past entry
-export async function update_entry(habit, day, newnum) {
+export async function update_entry(habit, day, newday, newnum) {
     const doc_id = await fetch_entry_id(habit, day);
     if (doc_id==='') {
         console.log("cannot UPDATE past entry of ", habit, " ", day, " doesnt exist");
     } else {
-        await updateDoc(doc(db, "habitEntries", doc_id), {num: newnum});
+        await updateDoc(doc(db, "habitEntries", doc_id), {num: newnum, day:newday});
     }
 }
 
 // DELETE
 
 // delete entry
-export async function delete_habit_entry(habit, day) {
-
-    const doc_id = await fetch_entry_id(habit, day);
+export async function delete_habit_entry(habit_id, day) {
+    const doc_id = await fetch_entry_id(habit_id, day);
     if (doc_id==='') {
         console.log("cannot DELETE entry of ", habit, " ", day, " doesnt exist");
     } else {

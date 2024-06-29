@@ -4,10 +4,12 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { init, fakedata, display, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
+import { init, fakedata, display, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
 import { Picker } from '@react-native-picker/picker';
 import { Timestamp } from 'firebase/firestore';
+import DatePicker from 'react-native-date-picker';
+// import DatePicker from 'react-datepicker';
 import * as Notifications from 'expo-notifications';
 
 // stylesheet
@@ -193,12 +195,6 @@ const styles = StyleSheet.create({
     textAlignVertical: 'center'
   }
 });
-
-// export const Test = () => {
-//   add_habit("sleep", "", 'rgba(252, 223, 202, 0.7)', 1000);
-//   console.log("test component");
-//   display();
-// }
 
 // front end purposes
 const initialData = [
@@ -446,6 +442,23 @@ export const DetailsScreen = ({ route }) => {
 
   // Hooks for habitData and counter
   const [habitData, setHabitData] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [editedData, setEditedData] = useState({
+    day: '',
+    year: '',
+    month: '',
+    num: '',      
+    old_date: '',
+    habit_id: ''
+  });
+  const [addedData, setAddedData] = useState({
+    day: '',
+    month: '',
+    year: '',
+    num: '',
+  })
   // format of habitData:
   // [{ day: Date object, num: integer, habit: habitid }, { day: Date object, num: integer, habit: habitid }]
   const [counter, setCounter] = useState(0);
@@ -454,28 +467,78 @@ export const DetailsScreen = ({ route }) => {
     datasets: [
       {
         data: [],
-        color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`, // optional
+        // color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`, // optional
         strokeWidth: 2 // optional
       }
     ],
     legend: [] // optional
   });
 
-  // the Refs are necessary for the useFocusEffect function
-  const counterRef = useRef(counter);
-  const habitDataRef = useRef(habitData);
+  // Function to open modal and set the initial values
+  const openEditModal = (data) => {
+    setEditedData({
+      // day: data.day.toString(),
+      year: data.day.getFullYear(),
+      month: data.day.getMonth(),
+      day: data.day.getDate(),
+      num: data.num,
+      old_date: data.day,
+      habit_id: data.habit
+    });
+    console.log(editedData);
+    setEditModalVisible(true);
+    setRefresh(prev => !prev);  // Toggle the refresh state
+  };
+
+  const openAddModal = () => {
+    setAddModalVisible(true);
+  };
+
+  const handleAddSubmit = async () => {
+    new_date = new Date(addedData.year, addedData.month, addedData.day);
+    console.log(new_date);
+    add_entry(item.title, new_date, addedData.num);
+    setAddModalVisible(false);
+    setRefresh(prev => !prev);  // Toggle the refresh state
+  }
+
+  // Function to handle submission of edited data
+  const handleEditSubmit = () => {
+    // Handle the submission logic here
+    const new_date = new Date(editedData.year, editedData.month, editedData.day);
+    update_entry(editedData.habit_id, editedData.old_date, new_date, editedData.num)
+    setEditModalVisible(false);
+  };
+
+  const handleDataDelete = async (entry) => {
+    delete_habit_entry(entry.habit, entry.day);
+    console.log("deleted");
+    setRefresh(prev => !prev);  // Toggle the refresh state
+
+  }
 
   // DATA VISUALISATION
 
   const screenWidth = Dimensions.get("window").width - 2*styles.additionalDetailsContainer.padding;
-  console.log(styles.additionalDetailsContainer.padding);
-  console.log(screenWidth);
+  // console.log(styles.additionalDetailsContainer.padding);
+  // console.log(screenWidth);
 
   const chartConfig = {
-    color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`,
-    // strokeWidth: 2, // optional, default 3
-    barPercentage: 0.5,
-    // useShadowColorFromDataset: false // optional
+    backgroundColor: "#e26a00",
+    backgroundGradientFrom: "#ffffff",
+    backgroundGradientTo: "#ffffff",
+    decimalPlaces: 2, // optional, defaults to 2dp
+    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    style: {
+      borderRadius: 16
+    },
+    propsForDots: {
+      r: "3",
+      strokeWidth: "6",
+      stroke: "#ffa726"
+    }
+
   };
 
   const updateLinechartdata = (data) => {
@@ -485,8 +548,6 @@ export const DetailsScreen = ({ route }) => {
       datasets: [
         {
           data: data.map(entry => entry.num),
-          color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`, // optional
-          strokeWidth: 2 // optional
         }
       ],
       legend: [] // optional
@@ -529,48 +590,41 @@ export const DetailsScreen = ({ route }) => {
   // calls fetchHabits on load
   useEffect(() => {
     fetchHabits();
-  }, []);
+  }, [refresh]);
 
-  // triggered by counter changing
-  useEffect(() => {
-    counterRef.current = counter;
-  }, [counter]);
+  // // triggered by counter changing
+  // useEffect(() => {
+  //   // counterRef.current = counter;
+  //   create_or_update(item.title, day, counter);
+  //   setRefresh(prev => !prev);  // Toggle the refresh state
+  // }, [counter]);
 
   useEffect(() => {
-    habitDataRef.current = habitData;
+    // habitDataRef.current = habitData;
     updateLinechartdata(habitData);
   }, [habitData]);
 
   // for counters
-  const incrementCounter = () => {
-    setCounter(prevCounter => prevCounter + 1);
+  const incrementCounter = async () => {
+    const newCounter = counter + 1;
+    setCounter(newCounter);
+    await create_or_update(item.title, day, newCounter);
+    setRefresh(prev => !prev);  // Toggle the refresh state
   };
-  const decrementCounter = () => {
-    setCounter(prevCounter => prevCounter - 1);
+
+  const decrementCounter = async () => {
+    const newCounter = counter - 1;
+    setCounter(newCounter);
+    await create_or_update(item.title, day, newCounter);
+    setRefresh(prev => !prev);  // Toggle the refresh state
   };
 
   if (!item) {
     return null;
   }
 
-  // this function triggers when we exit the details page
-  // since it would be costly to keep making noSQL statements for every increment or decrement
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        console.log("going to call create or update");
-        // console.log(item.title);
-        // console.log(day);
-        console.log(counterRef.current);
-        console.log(item.title);
-        create_or_update(item.title, day, counterRef.current);
-      };
-    }, [])
-  );
-
   return (
     <SafeAreaView style={styles.container}>
-      
       {/* text */}
        <View style={styles.additionalDetailsContainer}>
         <Text style={styles.additionalDetailsTitle}>{item.title}</Text>
@@ -614,20 +668,154 @@ export const DetailsScreen = ({ route }) => {
               chartConfig={chartConfig}
               formatYLabel={(yValue) => { return Math.round(yValue).toString();}}
               onDataPointClick={(value, dataset, getColor) => {}}
+              fromZero={true}
             />
           </View>
-
-          { habitDataRef.current.map((entry) => {
-            return (
-              <View style={styles.additionalDetailsContainer}>
-                <Text>{entry.day.toString()} </Text>
-              </View>
-            )
-          }) 
-          }
-
         </>
       }
+
+      <TouchableOpacity style={styles.button} onPress={() => {openAddModal()}}>
+        <Text style={styles.buttonText}>Add Data</Text>
+      </TouchableOpacity>
+
+      { habitData.map((entry) => {
+      // { habitDataRef.current.map((entry) => {
+        return (
+          <View style={styles.item}>
+            <Text> 
+              {date_display_format(entry.day)} - {entry.num} -
+              <Button title="edit" onPress={() => openEditModal(entry)}/>
+              <Button title="delete" onPress={() => handleDataDelete(entry)}/>
+            </Text>
+          </View>
+        )
+        })
+      }
+
+      <Modal
+        transparent={true}
+        animationType="slide"
+        visible={editModalVisible}
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>Edit data</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Year"
+            value={editedData.year.toString()}
+            onChangeText={(text) => {
+              const year = parseInt(text);
+              setEditedData({ ...editedData, year: isNaN(year) ? '' : year });
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Month"
+            value={(editedData.month + 1).toString()}
+            onChangeText={(text) => {
+              const month = parseInt(text) - 1;
+              setEditedData({ ...editedData, month: isNaN(month) ? '' : month });
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Day"
+            value={editedData.day.toString()}
+            onChangeText={(text) => {
+              const day = parseInt(text);
+              setEditedData({ ...editedData, day: isNaN(day) ? '' : day });
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="num"
+            value={editedData.num.toString()}
+            onChangeText={(text) => {
+              const num = parseInt(text);
+              setEditedData({ ...editedData, num: isNaN(num) ? '' : num });
+            }}
+          />
+
+          <TouchableOpacity style={styles.button} onPress={handleEditSubmit}>
+            <Text style={styles.buttonText}>Submit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, styles.buttonClose]}
+            onPress={() => setEditModalVisible(false)}
+          >
+            <Text style={styles.buttonText}>Cancel</Text>
+          </TouchableOpacity>
+
+          {/* <Button style={styles.buttonText} title="Submit" onPress={() => handleEditSubmit} />
+          <Button style={styles.buttonText} title="Cancel" onPress={() => setEditModalVisible(false)} /> */}
+      </View>
+      </Modal>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={addModalVisible}
+        onRequestClose={() => {
+          setAddModalVisible(!addModalVisible);
+        }}
+      >        
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>Add data</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Year"
+            // value={editedData.year.toString()}
+            onChangeText={(text) => {
+              const year = parseInt(text);
+              setAddedData({ ...addedData, year: isNaN(year) ? '' : year });
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Month"
+            // value={(editedData.month + 1).toString()}
+            onChangeText={(text) => {
+              const month = parseInt(text) - 1;
+              setAddedData({ ...addedData, month: isNaN(month) ? '' : month });
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Day"
+            // value={editedData.day.toString()}
+            onChangeText={(text) => {
+              const day = parseInt(text);
+              setAddedData({ ...addedData, day: isNaN(day) ? '' : day });
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Num"
+            // value={editedData.num.toString()}
+            onChangeText={(text) => {
+              const num = parseInt(text);
+              setAddedData({ ...addedData, num: isNaN(num) ? '' : num });
+            }}
+          />
+
+          {/* <TouchableOpacity style={styles.button} onPress={() => {handleAddSubmit}}> */}
+          <TouchableOpacity style={styles.button} onPress={handleAddSubmit}>
+            <Text style={styles.buttonText}>Submit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, styles.buttonClose]}
+            onPress={() => setAddModalVisible(false)}
+          >
+            <Text style={styles.buttonText}>Cancel</Text>
+          </TouchableOpacity>
+
+          {/* <Button style={styles.buttonText} title="Submit" onPress={() => handleEditSubmit} />
+          <Button style={styles.buttonText} title="Cancel" onPress={() => setEditModalVisible(false)} /> */}
+        </View>
+      </Modal>
 
       <View style={styles.additionalDetailsContainer}>
         <Text> insert reminders here </Text>
