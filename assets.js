@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { init, fakedata, display, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
+import { init, fakedata, display, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
 import { Picker } from '@react-native-picker/picker';
 import { Timestamp } from 'firebase/firestore';
@@ -448,10 +448,15 @@ export const DetailsScreen = ({ route }) => {
 
   // Hooks for habitData and counter
   const [habitData, setHabitData] = useState([]);
+  const [refresh, setRefresh] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editedData, setEditedData] = useState({
     day: '',
-    num: '',
+    year: '',
+    month: '',
+    num: '',      
+    old_date: '',
+    habit_id: ''
   });
   // format of habitData:
   // [{ day: Date object, num: integer, habit: habitid }, { day: Date object, num: integer, habit: habitid }]
@@ -475,17 +480,26 @@ export const DetailsScreen = ({ route }) => {
   // Function to open modal and set the initial values
   const openEditModal = (data) => {
     setEditedData({
-      day: data.day.toString(),
+      // day: data.day.toString(),
+      year: data.day.getFullYear(),
+      month: data.day.getMonth(),
+      day: data.day.getDate(),
       num: data.num,
+      old_date: data.day,
+      habit_id: data.habit
     });
+    console.log(editedData);
     setEditModalVisible(true);
   };
 
   // Function to handle submission of edited data
   const handleEditSubmit = () => {
     // Handle the submission logic here
-    console.log(editedData);
+
+    const new_date = new Date(editedData.year, editedData.month, editedData.day);
+    update_entry(editedData.habit_id, editedData.old_date, new_date, editedData.num)
     setEditModalVisible(false);
+    setRefresh(prev => !prev);  // Toggle the refresh state
   };
 
   // DATA VISUALISATION
@@ -568,7 +582,7 @@ export const DetailsScreen = ({ route }) => {
   // calls fetchHabits on load
   useEffect(() => {
     fetchHabits();
-  }, []);
+  }, [refresh]);
 
   // triggered by counter changing
   useEffect(() => {
@@ -666,7 +680,7 @@ export const DetailsScreen = ({ route }) => {
       { habitDataRef.current.map((entry) => {
         return (
           <View style={styles.item}>
-            <Text> {date_display_format(entry.day)} - {entry.num}  -
+            <Text> {date_display_format(entry.day)} - {entry.num}  - {entry.id}
               <Button title="edit" onPress={() => openEditModal(entry)}/>
             </Text>
           </View>
@@ -682,31 +696,43 @@ export const DetailsScreen = ({ route }) => {
       >
         <View style={styles.modalView}>
           <Text style={styles.modalText}>Edit Data</Text>
+
           <TextInput
             style={styles.input}
-            placeholder="day"
-            value={editedData.day}
-            onChangeText={(text) => setEditedData({ ...editedData, day: text })}
+            placeholder="Year"
+            value={editedData.year.toString()}
+            onChangeText={(text) => {
+              const year = parseInt(text);
+              setEditedData({ ...editedData, year: isNaN(year) ? '' : year });
+            }}
           />
-
-          <DatePicker
-            date={new Date()}
-            mode="date"
-            onDateChange={() => {console.log("datechange")}}
+          <TextInput
+            style={styles.input}
+            placeholder="Month"
+            value={(editedData.month + 1).toString()}
+            onChangeText={(text) => {
+              const month = parseInt(text) - 1;
+              setEditedData({ ...editedData, month: isNaN(month) ? '' : month });
+            }}
           />
-
-          {/* <DatePicker
-            selected={new Date()}
-            onDateChange={() => {console.log("datechange")}}
-          /> */}
-
+          <TextInput
+            style={styles.input}
+            placeholder="Day"
+            value={editedData.day.toString()}
+            onChangeText={(text) => {
+              const day = parseInt(text);
+              setEditedData({ ...editedData, day: isNaN(day) ? '' : day });
+            }}
+          />
           <TextInput
             style={styles.input}
             placeholder="num"
-            value={editedData.num}
-            onChangeText={(text) => setEditedData({ ...editedData, num: text })}
+            value={editedData.num.toString()}
+            onChangeText={(text) => {
+              const num = parseInt(text);
+              setEditedData({ ...editedData, num: isNaN(num) ? '' : num });
+            }}
           />
-          {/* Add other input fields as necessary */}
 
           <TouchableOpacity style={styles.button} onPress={handleEditSubmit}>
             <Text style={styles.buttonText}>Submit</Text>

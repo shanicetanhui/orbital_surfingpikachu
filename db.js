@@ -182,7 +182,7 @@ export async function create_or_update(habit, day, newnum) {
 
 
 // for past entry
-export async function update_entry(habit, newday, newnum) {
+export async function update_entry(habit, day, newday, newnum) {
     const doc_id = await fetch_entry_id(habit, day);
     if (doc_id==='') {
         console.log("cannot UPDATE past entry of ", habit, " ", day, " doesnt exist");
