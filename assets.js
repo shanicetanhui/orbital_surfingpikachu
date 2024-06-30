@@ -2,15 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions, Switch, ScrollView, ImageBackground } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { init, fakedata, display, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
+import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions, Switch, Alert, Image, Pressable, ScrollView, ImageBackground } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
 import { Picker } from '@react-native-picker/picker';
 import { Timestamp } from 'firebase/firestore';
 import DatePicker from 'react-native-date-picker';
 // import DatePicker from 'react-datepicker';
 import * as Notifications from 'expo-notifications';
+import * as ImagePicker from 'expo-image-picker';
 
 // stylesheet
 const styles = StyleSheet.create({
@@ -21,6 +22,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 16,
+  },
+  text: {
+    fontFamily: 'Kollektif',
   },
   item: {
     padding: 20,
@@ -37,24 +41,34 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
+    fontFamily: 'Kollektif',
   },
   headerTitle: {
     fontSize: 32,
     fontWeight: 'bold',
+    fontFamily: 'Kollektif',
   },
   headerSubtitle: {
     fontSize: 16,
     marginTop: 8,
     color: 'gray',
+    fontFamily: 'Kollektif',
   },
   detailsContainer: {
     marginTop: 10,
+  },
+  detailsScreenContainer: {
+    padding: 4,
+    margin: 10,
+    // backgroundColor: 'rgba(252, 223, 202, 0.5)', // or rgba(211, 211, 211, 0.2) lightgrey
+    borderRadius: '10',
   },
   detail: {
     padding: 2,
     justifyContent: 'center',
     fontSize: 16,
     color: 'gray',
+    fontFamily: 'Kollektif',
   },
   additionalDetailsContainer: {
     padding: 10,
@@ -62,6 +76,7 @@ const styles = StyleSheet.create({
   additionalDetailsTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    fontFamily: 'Kollektif',
   },
   buttonContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
@@ -69,14 +84,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical: 20,
   },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    justifyContent: 'center'
+  },
   input: {
     height: 40,
     borderColor: 'gray',
     borderWidth: 1,
     borderRadius: 5,
-    width: '80%',
+    width: '95%',
     marginVertical: 10,
     paddingHorizontal: 10,
+    alignSelf: 'center', // Aligns the TextInput itself to the center horizontally
+    fontFamily: 'Roboto', // Ensure consistent font family
   },
   modalView: {
     width: '80%',
@@ -84,15 +112,29 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',
+    justifyContent: 'center', // Center vertically and horizontally
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: [{ translateX: '-50%' }, { translateY: '-50%' }],
+  },
+  addButtonModalView: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center', // Ensure this is present
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    position: 'absolute', // Adjust as per your modal requirements
+    top: '20%', // Ensure these are not conflicting with each other
+    left: '10%', // Ensure these are not conflicting with each other
+    // transform: [{ translateX: 0 }, { translateY: -50 }], // Adjust if necessary
   },
   modalContainer: {
     flex: 1,
@@ -110,6 +152,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: 'center',
     fontSize: 18,
+    fontFamily: 'Kollektif',
   },
   button: {
     backgroundColor: '#2196F3',
@@ -121,6 +164,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     textAlign: 'center',
+    fontFamily: 'Kollektif',
   },
   buttonClose: {
     backgroundColor: '#f44336',
@@ -134,6 +178,7 @@ const styles = StyleSheet.create({
   counterText: {
     fontSize: 24,
     marginHorizontal: 20,
+    fontFamily: 'Kollektif',
   },
   addButton: {
     backgroundColor: 'lightgrey', // Set background color to grey
@@ -179,6 +224,7 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 20,
     fontWeight: 'bold',
+    fontFamily: 'Kollektif',
   },
   gotoDetailsButton: {
 
@@ -187,13 +233,48 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     color: 'blue',
+    fontFamily: 'Kollektif',
   },
   notAvailText: {
     fontSize: 8,
     color: 'grey',
     textAlign: 'center',
-    textAlignVertical: 'center'
-  }
+    textAlignVertical: 'center',
+    fontFamily: 'Kollektif',
+  },
+  profileImageContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  image: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    top: 7,
+    postiion: 'absolute',
+  },
+  imagebutton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 4,
+    elevation: 3,
+    backgroundColor: 'black',
+  },
+  picker: {
+    height: 40,
+    width: '100%',
+    fontFamily: 'Roboto',
+    height: 40, // Match the height of the input
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    width: '95%',
+    marginVertical: 10,
+    paddingHorizontal: 10,
+    alignSelf: 'center',
+  },
 });
 
 // const image = {}
@@ -213,7 +294,7 @@ async function read_initialData(setData) {
   const newData = [...initialData];
   rows.forEach((row) => {
     newData[0].data.push(
-      { title: row.display_name, details: [row.description], goal:row.goal, color:row.color}
+      { title: row.display_name, details: [row.description], goal: row.goal, color: row.color }
     )
   });
   console.log("read initial data");
@@ -249,7 +330,7 @@ const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for 
         onValueChange={(itemValue, itemIndex) => onColorChange(itemValue)}
       >
         {colors.map((color, index) => (
-          <Picker.Item key={index} label={color.label} value={color.value} color={color.color}/>
+          <Picker.Item key={index} label={color.label} value={color.value} color={color.color} />
         ))}
       </Picker>
     </View>
@@ -300,7 +381,6 @@ export const HomeScreen = ({ navigation }) => {
     }
   };
 
-  // not yet implemented
   const renderSectionFooter = (section) => (
     <View style={styles.footerContainer}>
       <TextInput
@@ -313,7 +393,8 @@ export const HomeScreen = ({ navigation }) => {
       <Button title="Add New Item" onPress={() => addNewItem(section.title)} />
     </View>
   );
-  const handleDelete = () => {
+
+  const handleDelete = () => { //delete habits
     if (itemToDelete) {
       const updatedData = data.map(section => ({
         ...section,
@@ -329,6 +410,7 @@ export const HomeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScrollView>
       <ImageBackground source={require('./assets/bg3.png')}>
       {/* <Test></Test> */}
       <SectionList
@@ -384,7 +466,7 @@ export const HomeScreen = ({ navigation }) => {
           setAddModalVisible(!addModalVisible);
         }}
       >
-        <View style={styles.modalView}>
+        <View style={styles.addButtonModalView}>
           <Text style={styles.modalText}>Enter new {currentSection.toLowerCase()} name</Text>
           <TextInput
             style={styles.input}
@@ -436,6 +518,7 @@ export const HomeScreen = ({ navigation }) => {
         </View>
       </Modal>
       </ImageBackground>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -520,43 +603,6 @@ export const DetailsScreen = ({ route }) => {
     setRefresh(prev => !prev);  // Toggle the refresh state
 
   }
-
-  // REMINDERS
-
-  const [hours, setHours] = useState(''); // State for hours
-  const [minutes, setMinutes] = useState(''); // State for minutes
-  const [repeats, setRepeats] = useState(false); // State for repeats
-
-  // Function to handle scheduling notifications
-  const scheduleNotification = async () => {
-    const hour = parseInt(hours);
-    const minute = parseInt(minutes);
-
-    if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
-      Alert.alert('Invalid Time', 'Please enter valid hours (0-23) and minutes (0-59).');
-      return;
-    }
-
-    const trigger = {
-      hour: hour, //in military time, eg if hour: 13, means it will notify at 1pm
-      minute: minute, //in military time, eg if minute: 18, and hour: 0, means it will notify at 0019
-      repeats: repeats,
-    };
-
-    try {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: 'Reminder',
-          body: 'It\'s time to do the task!',
-        },
-        trigger: trigger,
-      });
-      alert('Notification scheduled!');
-    } catch (error) {
-      console.error('Error scheduling notification:', error);
-      alert('Failed to schedule notification. Please try again.');
-    }
-  };
 
   // DATA VISUALISATION
 
@@ -643,6 +689,70 @@ export const DetailsScreen = ({ route }) => {
     updateLinechartdata(habitData);
   }, [habitData]);
 
+  // REMINDERS
+
+  const [hours, setHours] = useState(''); // State for hours
+  const [minutes, setMinutes] = useState(''); // State for minutes
+  const [repeats, setRepeats] = useState(false); // State for repeats
+
+  //Request notification permissions
+  useEffect(() => {
+    (async () => {
+      const { status } = await Notifications.getPermissionsAsync();
+      console.log('Notification permissions status:', status);
+      if (status !== 'granted') {
+        const { status: newStatus } = await Notifications.requestPermissionsAsync();
+        if (newStatus !== 'granted') {
+          alert('Failed to get push token for push notification!');
+          return;
+        }
+      }
+    })();
+  }, []);
+
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+
+  // Function to schedule timed notifications
+  const scheduleNotification = async () => {
+    const hour = parseInt(hours);
+    const minute = parseInt(minutes);
+
+    // Validate hour and minute inputs
+    if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+      Alert.alert('Invalid Time', 'Please enter valid hours (0-23) and minutes (0-59).');
+      return;
+    }
+
+    const trigger = {
+      hour: hour,
+      minute: minute,
+      repeats: repeats,
+    };
+
+    try {
+      // Schedule the notification
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Reminder',
+          body: 'Time to do the task!',
+        },
+        trigger: trigger,
+      });
+      // Notify user upon successful scheduling
+      alert('Notification scheduled!');
+    } catch (error) {
+      // Handle any errors that occur during scheduling
+      console.error('Error scheduling notification:', error);
+      alert('Failed to schedule notification. Please try again.');
+    }
+  };
+
   // for counters
   const incrementCounter = async () => {
     const newCounter = counter + 1;
@@ -666,81 +776,98 @@ export const DetailsScreen = ({ route }) => {
     <SafeAreaView style={styles.container}>
       <ScrollView>
       <ImageBackground source={require('./assets/bg3.png')}>
+    
       {/* text */}
-       <View style={styles.additionalDetailsContainer}>
-        <Text style={styles.additionalDetailsTitle}>{item.title}</Text>
-        {item.details && item.details.map((detail, index) => (
-          <Text key={index} style={styles.detail}> {detail}</Text>
-        ))}
+      <View style={styles.detailsScreenContainer}>
+        <View style={styles.additionalDetailsContainer}>
+          <Text style={styles.additionalDetailsTitle}>{item.title}</Text>
+          {item.details && item.details.map((detail, index) => (
+            <Text key={index} style={styles.detail}> {detail}</Text>
+          ))}
+        </View>
       </View>
 
       {/* today's data */}
-      <View style={styles.additionalDetailsContainer}>
-        <Text style={styles.additionalDetailsTitle}>Today's number:</Text>
+      <View style={styles.detailsScreenContainer}>
+        <View style={styles.additionalDetailsContainer}>
+          <Text style={styles.additionalDetailsTitle}>Today's number:</Text>
+        </View>
+        {/* counter */}
+        <View style={styles.counterContainer}>
+          <Button title="-" onPress={decrementCounter} />
+          <Text style={styles.counterText}>{counter}</Text>
+          <Button title="+" onPress={incrementCounter} />
+        </View>
       </View>
 
-      {/* counter */}
-      <View style={styles.counterContainer}>
-        <Button title="-" onPress={decrementCounter} />
-        <Text style={styles.counterText}>{counter}</Text>
-        <Button title="+" onPress={incrementCounter} />
+          {/* reminders! */}
+    <View style={styles.detailsScreenContainer}>
+      <View style={styles.additionalDetailsContainer}>
+        <Text style={styles.additionalDetailsTitle}>Schedule Reminders:</Text>
+        <Text style={styles.detail}> Input in military time</Text>
       </View>
 
-      {/* reminders! */}
       <View style={styles.additionalDetailsContainer}>
-        <Text style={styles.label}>Hour:</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={hours}
-          onChangeText={setHours}
-        />
-        <Text style={styles.label}>Minutes:</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={minutes}
-          onChangeText={setMinutes}
-        />
-        <View style={styles.switchContainer}>
-          <Text style={styles.label}>Repeats:</Text>
-          <Switch
-            value={repeats}
-            onValueChange={setRepeats}
+        <Text style={styles.detail}>Hour:</Text>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            value={hours}
+            onChangeText={setHours}
           />
+        </View>
+        <Text style={styles.detail}>Minutes:</Text>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            value={minutes}
+            onChangeText={setMinutes}
+          />
+        </View>
+        <View style={styles.switchContainer}>
+          <Text style={styles.detail}>Repeats:</Text>
+          <View style={styles.inputContainer}>
+            <Switch
+              value={repeats}
+              onValueChange={setRepeats}
+            />
+          </View>
         </View>
         <Button title="Schedule Notification" onPress={scheduleNotification} />
       </View>
-
+    </View>
 
       {/* data vis! */}
+      <View style={styles.detailsScreenContainer}>
+        <View style={styles.tableContainer}>
+          <Text style={styles.additionalDetailsTitle}>Your data in the past days:</Text>
+        </View>
 
-      <View style={styles.tableContainer}>
-        <Text style={styles.additionalDetailsTitle}>Your data in the past days:</Text>
-      </View>
-
-      { (linechartdata.datasets[0].data.length<2) &&
+      {(linechartdata.datasets[0].data.length < 2) &&
         <View>
           <Text style={styles.notAvailText}>Not enough data to make graph :( </Text>
           <Text style={styles.notAvailText}>Add some! </Text>
         </View>
       }
 
-      { (linechartdata.datasets[0].data.length>1) &&
+      {(linechartdata.datasets[0].data.length > 1) &&
         <>
           <View style={styles.additionalDetailsContainer}>
             <LineChart
               data={linechartdata}
-              width={screenWidth}
+              width={screenWidth * 0.9} //90% screen width
               height={220}
               chartConfig={chartConfig}
-              formatYLabel={(yValue) => { return Math.round(yValue).toString();}}
-              onDataPointClick={(value, dataset, getColor) => {}}
-              fromZero={true}
+              formatYLabel={(yValue) => { return Math.round(yValue).toString(); }}
+              onDataPointClick={(value, dataset, getColor) => { }}
             />
           </View>
+
         </>
       }
+      </View>
 
       <TouchableOpacity style={styles.button} onPress={() => {openAddModal()}}>
         <Text style={styles.buttonText}>Add Data</Text>
@@ -766,7 +893,7 @@ export const DetailsScreen = ({ route }) => {
         visible={editModalVisible}
         onRequestClose={() => setEditModalVisible(false)}
       >
-        <View style={styles.modalView}>
+        <View style={styles.addButtonModalView}>
           <Text style={styles.modalText}>Edit data</Text>
 
           <TextInput
@@ -829,7 +956,8 @@ export const DetailsScreen = ({ route }) => {
           setAddModalVisible(!addModalVisible);
         }}
       >
-        <View style={styles.modalView}>
+        {/* <View style={styles.modalView}> */}
+        <View style={styles.addButtonModalView}>
           <Text style={styles.modalText}>Add data</Text>
 
           <TextInput
@@ -885,10 +1013,6 @@ export const DetailsScreen = ({ route }) => {
         </View>
       </Modal>
 
-      <View style={styles.additionalDetailsContainer}>
-        <Text> insert reminders here </Text>
-      </View>
-
       </ImageBackground>
       </ScrollView>
     </SafeAreaView>
@@ -902,12 +1026,113 @@ export const SettingsScreen = () => (
   </View>
 );
 
-// profile screen
-export const ProfileScreen = () => (
-  <View>
-    <Text>Profile Screen</Text>
-  </View>
-);
+export const ProfileScreen = () => {
+  // PROFILE IMAGE
+  const [image, setImage] = useState(null);
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  // USERNAME
+  const usernameInputRef = useRef(null);
+  const [username, setUsername] = useState('');
+
+  // AGE
+  const ageInputRef = useRef(null);
+  const [age, setAge] = useState('');
+
+  // SCHOOL
+  const [school, setSchool] = useState('');
+
+  // MOTIVATIONALMESSAGE
+  const msgInputRef = useRef(null);
+  const [msg, setMsg] = useState(''); 
+
+  return (
+    <View style={styles.container}>
+      {/* Profile Image */}
+      <View style={styles.profileImageContainer}>
+        {image && <Image source={{ uri: image }} style={styles.image} />}
+        <Pressable style={styles.imagebutton} onPress={pickImage}>
+          <Text style={styles.buttonText}>Change your Profile Picture</Text>
+        </Pressable>
+      </View>
+
+      {/* Username */}
+      <View style={styles.usernameContainer}>
+        <Pressable onPress={() => usernameInputRef?.current?.focus()}>
+          <Text> Username:</Text>
+          <TextInput
+            ref={usernameInputRef}
+            style={styles.input}
+            onChangeText={(event) => setUsername(event)}
+            value={username}
+            placeholder='Edit your username here'
+            placeholderTextColor='grey'
+          />
+        </Pressable>
+      </View>
+
+      {/* Age */}
+      <View style={styles.usernameContainer}>
+        <Pressable onPress={() => ageInputRef?.current?.focus()}>
+          <Text> Age:</Text>
+          <TextInput
+            ref={ageInputRef}
+            style={styles.input}
+            onChangeText={(event) => setAge(event)}
+            value={age}
+            keyboardType={'numeric'}
+            placeholder='Edit your age here'
+            placeholderTextColor='grey'
+          />
+        </Pressable>
+      </View>
+
+      {/* School Picker */}
+      <View style={styles.usernameContainer}>
+        <Text> School:</Text>
+        <Picker
+          selectedValue={school}
+          onValueChange={(itemValue) => setSchool(itemValue)}
+          style={styles.picker}
+        >
+          <Picker.Item label="Select your school" value=""/>
+          <Picker.Item label="School 1" value="school1" />
+          <Picker.Item label="School 2" value="school2" />
+          <Picker.Item label="School 3" value="school3" />
+        </Picker>
+      </View>
+
+      {/* Motivational Message */}
+      <View style={styles.usernameContainer}>
+        <Pressable onPress={() => msgInputRef?.current?.focus()}>
+          <Text> Add a motivational message for your future self:</Text>
+          <TextInput
+            ref={msgInputRef}
+            style={styles.input}
+            onChangeText={(event) => setMsg(event)}
+            value={msg}
+            placeholder='Consistency breeds success.'
+            placeholderTextColor='grey'
+          />
+        </Pressable>
+      </View>
+    </View>
+  );
+};
 
 // colours
 const colors = {
@@ -935,14 +1160,14 @@ export function TabNavigator() {
       }}
     >
       <Tab.Screen
-      name="Homescreen"
-      component={HomeScreen}
-      options={{
-        tabBarIcon: ({size, color }) => (
-          <AntDesign name="home" size={size} color={color} />
-        ),
+        name="Homescreen"
+        component={HomeScreen}
+        options={{
+          tabBarIcon: ({ size, color }) => (
+            <AntDesign name="home" size={size} color={color} />
+          ),
         }}
-        />
+      />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
