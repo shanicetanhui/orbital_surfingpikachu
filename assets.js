@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions, Switch } from 'react-native';
+import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions, Switch, ScrollView, ImageBackground } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { init, fakedata, display, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: 360, // Set the width of the button
-    height: 50, // Set the height of the button 
+    height: 50, // Set the height of the button
     borderRadius: 20,
   },
   addButtonIcon: {
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   },
   gotoDetailsText: {
     fontSize: 18,
-    textAlign: 'center', 
+    textAlign: 'center',
     color: 'blue',
   },
   notAvailText: {
@@ -195,6 +195,8 @@ const styles = StyleSheet.create({
     textAlignVertical: 'center'
   }
 });
+
+// const image = {}
 
 // front end purposes
 const initialData = [
@@ -271,7 +273,7 @@ export const HomeScreen = ({ navigation }) => {
     read_initialData(setData);
   }, []);
 
-  // modal -> popups like in 'add new habit/section' 
+  // modal -> popups like in 'add new habit/section'
   const openModal = (sectionTitle) => {
     setCurrentSection(sectionTitle);
     setAddModalVisible(true);
@@ -327,6 +329,7 @@ export const HomeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ImageBackground source={require('./assets/bg3.png')}>
       {/* <Test></Test> */}
       <SectionList
         sections={data}
@@ -350,8 +353,8 @@ export const HomeScreen = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
             )}
-            <TouchableOpacity 
-      style={styles.gotoDetailsButton} 
+            <TouchableOpacity
+      style={styles.gotoDetailsButton}
       onPress={() => navigation.navigate('Details', { item, additionalDetails: 'Some additional details here' })}
     >
       <Text style={styles.gotoDetailsText}>Go to {item.title} details</Text>
@@ -432,6 +435,7 @@ export const HomeScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
+      </ImageBackground>
     </SafeAreaView>
   );
 };
@@ -449,7 +453,7 @@ export const DetailsScreen = ({ route }) => {
     day: '',
     year: '',
     month: '',
-    num: '',      
+    num: '',
     old_date: '',
     habit_id: ''
   });
@@ -617,7 +621,12 @@ export const DetailsScreen = ({ route }) => {
       const entry = data.find(item => item.day.toDateString() === day.toDateString());
       // if there is an entry for today, grab today's number for counter
       // if there isn't an entry, set the counter to 0
-      setCounter(entry ? entry.num : 0);
+      if (!entry) {
+        await add_entry(item.title, day, 0);
+        setRefresh(prev => !prev);  // Toggle the refresh state
+      } else {
+        setCounter(entry.num);
+      }
       // console.log(counter);
     } catch (error) {
       console.error("Error fetching habits:", error);
@@ -628,13 +637,6 @@ export const DetailsScreen = ({ route }) => {
   useEffect(() => {
     fetchHabits();
   }, [refresh]);
-
-  // // triggered by counter changing
-  // useEffect(() => {
-  //   // counterRef.current = counter;
-  //   create_or_update(item.title, day, counter);
-  //   setRefresh(prev => !prev);  // Toggle the refresh state
-  // }, [counter]);
 
   useEffect(() => {
     // habitDataRef.current = habitData;
@@ -662,6 +664,8 @@ export const DetailsScreen = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScrollView>
+      <ImageBackground source={require('./assets/bg3.png')}>
       {/* text */}
        <View style={styles.additionalDetailsContainer}>
         <Text style={styles.additionalDetailsTitle}>{item.title}</Text>
@@ -669,7 +673,7 @@ export const DetailsScreen = ({ route }) => {
           <Text key={index} style={styles.detail}> {detail}</Text>
         ))}
       </View>
-      
+
       {/* today's data */}
       <View style={styles.additionalDetailsContainer}>
         <Text style={styles.additionalDetailsTitle}>Today's number:</Text>
@@ -715,7 +719,7 @@ export const DetailsScreen = ({ route }) => {
         <Text style={styles.additionalDetailsTitle}>Your data in the past days:</Text>
       </View>
 
-      { (linechartdata.datasets[0].data.length<2) && 
+      { (linechartdata.datasets[0].data.length<2) &&
         <View>
           <Text style={styles.notAvailText}>Not enough data to make graph :( </Text>
           <Text style={styles.notAvailText}>Add some! </Text>
@@ -746,7 +750,7 @@ export const DetailsScreen = ({ route }) => {
       // { habitDataRef.current.map((entry) => {
         return (
           <View style={styles.item}>
-            <Text> 
+            <Text>
               {date_display_format(entry.day)} - {entry.num} -
               <Button title="edit" onPress={() => openEditModal(entry)}/>
               <Button title="delete" onPress={() => handleDataDelete(entry)}/>
@@ -824,7 +828,7 @@ export const DetailsScreen = ({ route }) => {
         onRequestClose={() => {
           setAddModalVisible(!addModalVisible);
         }}
-      >        
+      >
         <View style={styles.modalView}>
           <Text style={styles.modalText}>Add data</Text>
 
@@ -885,6 +889,8 @@ export const DetailsScreen = ({ route }) => {
         <Text> insert reminders here </Text>
       </View>
 
+      </ImageBackground>
+      </ScrollView>
     </SafeAreaView>
   );
 };
