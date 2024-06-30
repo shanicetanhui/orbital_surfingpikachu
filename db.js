@@ -184,7 +184,15 @@ export async function create_or_update(habit, day, newnum) {
 }
 
 // habits
-
+export async function update_habit(habit_name, new_habit_name, new_goal, new_color) {
+    const habit_id = await fetch_habit_id(habit_name);
+    if (habit_id==='') {
+        console.log("cannot UPDATE habit ", habit, " doesnt exist");
+    } else {
+        // await updateDoc(doc(db, "habitEntries", doc_id), {num: newnum, day:newday});
+        await updateDoc(doc(db, "habits", habit_id), {display_name: new_habit_name, color: new_color, goal: new_goal, description: `Daily goal: ${new_goal}`});
+    }
+}
 
 // for past entry
 export async function update_entry(habit, day, newday, newnum) {

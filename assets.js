@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { init, fakedata, display, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
+import { init, fakedata, display, update_habit, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions, Switch, Alert, Image, Pressable, ScrollView, ImageBackground } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
     marginTop: StatusBar.currentHeight || 0,
     backgroundColor: '#ffffff',
     paddingHorizontal: 16,
-    paddingTop: 16,
+    // paddingTop: 16,
     paddingBottom: 16,
   },
   text: {
@@ -215,6 +215,12 @@ const styles = StyleSheet.create({
     padding: 10,
     textAlign: 'center'
   },
+  editButton: {
+    position: 'absolute',
+    right: 1,
+    top: -20,
+    padding: 5,
+  },
   deleteButton: {
     position: 'absolute',
     right: 1,
@@ -222,7 +228,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   deleteButtonText: {
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: 'bold',
     fontFamily: 'Kollektif',
   },
@@ -341,10 +347,21 @@ const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for 
 export const HomeScreen = ({ navigation }) => {
 
   // Hooks for variables
+  const [refresh, setRefresh] = useState(false);
   const [data, setData] = useState(initialData);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  // const [choiceModalVisible, setChoiceModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [itemToEdit, setItemToEdit] = useState(null);
+  const [editedData, setEditedData] = useState({
+    title: '',
+    old_title: '',
+    details: [],
+    goal: '',
+    color: ''
+  })
   const [newItemName, setNewItemName] = useState('');
   const [dailyGoal, setDailyGoal] = useState('');
   const [currentSection, setCurrentSection] = useState('');
@@ -352,7 +369,7 @@ export const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     read_initialData(setData);
-  }, []);
+  }, [refresh]);
 
   // modal -> popups like in 'add new habit/section'
   const openModal = (sectionTitle) => {
@@ -408,6 +425,40 @@ export const HomeScreen = ({ navigation }) => {
     }
   };
 
+  const handleEdit = async () => {
+    await update_habit(editedData.old_title, editedData.title, editedData.goal, editedData.color);
+    setData((data) => {
+      return data.map((section) => {
+        return {
+          ...section,
+          data: section.data.map((item) =>
+            item.title === editedData.old_title
+              ? { ...item, title: editedData.title, goal: editedData.goal, color: editedData.color }
+              : item
+          ),
+        };
+      });
+    });
+    setEditModalVisible(false);
+    setRefresh(prev => !prev);  // Toggle the refresh state
+  }
+
+  const openEditModal = (item) => {
+    setEditedData({
+      title: item.title,
+      old_title: item.title,
+      details: [...item.details],
+      goal: item.goal,
+      color: item.color
+    });
+    setEditModalVisible(true);
+  }
+
+  // const handleChoice = (item) => {
+  //   setItemToDelete(item);
+  //   setDeleteModalVisible(true);
+  // }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -431,8 +482,20 @@ export const HomeScreen = ({ navigation }) => {
                   }}
                   style={styles.deleteButton}
                 >
-                  <Text style={styles.deleteButtonText}>...</Text>
+                  <Text style={styles.deleteButtonText}> Delete </Text>
                 </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    // setItemToEdit(item);
+                    // setEditModalVisible(true);
+                    openEditModal(item);
+                  }}
+                  style={styles.editButton}
+                >
+                  <Text style={styles.deleteButtonText}> Edit </Text>
+                </TouchableOpacity>
+
               </View>
             )}
             <TouchableOpacity
@@ -517,6 +580,57 @@ export const HomeScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
+
+      <Modal
+        transparent={true}
+        animationType="slide"
+        visible={editModalVisible}
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalView}>
+            <Text>EDIT</Text>
+
+            <TextInput
+            style={styles.input}
+            placeholder="Name"
+            value={editedData.title}
+            onChangeText={(text) => {
+              const title = text;
+              // setEditedData({ ...editedData, year: isNaN(year) ? '' : year });
+              setEditedData({...editedData, title: title});
+              console.log(text);
+            }}
+            />
+            <TextInput
+            style={styles.input}
+            placeholder="Goal"
+            value={editedData.goal}
+            onChangeText={(text) => {
+              const goal = parseInt(text);
+              setEditedData({ ...editedData, goal: isNaN(goal) ? '' : goal });
+              console.log(goal);
+            }}
+            />
+            {/* <TextInput
+            style={styles.input}
+            placeholder="Name"
+            value={editedData.title}
+            onChangeText={(text) => {
+              // const title = parseInt(text);
+              // setEditedData({ ...editedData, year: isNaN(year) ? '' : year });
+              console.log(text);
+            }}
+            /> */}
+
+            <View style={styles.modalButtons}>
+              <Button title="Cancel" onPress={() => setEditModalVisible(false)} />
+              <Button title="Confirm edit" onPress={handleEdit} />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       </ImageBackground>
       </ScrollView>
     </SafeAreaView>
@@ -1022,7 +1136,9 @@ export const DetailsScreen = ({ route }) => {
 // settings
 export const SettingsScreen = () => (
   <View>
+    <ImageBackground source={require('./assets/bg3.png')}>
     <Text>Settings Screen</Text>
+    </ImageBackground>
   </View>
 );
 
@@ -1061,7 +1177,8 @@ export const ProfileScreen = () => {
   const [msg, setMsg] = useState(''); 
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <ImageBackground source={require('./assets/bg3.png')}>
       {/* Profile Image */}
       <View style={styles.profileImageContainer}>
         {image && <Image source={{ uri: image }} style={styles.image} />}
@@ -1130,7 +1247,8 @@ export const ProfileScreen = () => {
           />
         </Pressable>
       </View>
-    </View>
+      </ImageBackground>
+    </SafeAreaView>
   );
 };
 
