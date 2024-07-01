@@ -427,20 +427,23 @@ export const HomeScreen = ({ navigation }) => {
 
   const handleEdit = async () => {
     await update_habit(editedData.old_title, editedData.title, editedData.goal, editedData.color);
-    setData((data) => {
-      return data.map((section) => {
-        return {
-          ...section,
-          data: section.data.map((item) =>
-            item.title === editedData.old_title
-              ? { ...item, title: editedData.title, goal: editedData.goal, color: editedData.color }
-              : item
-          ),
-        };
-      });
+    const rows = await read_habits();
+    const newData = [
+      {
+        title: 'Habits',
+        subtitle: 'Small habits, big changes',
+        data: []
+      }
+    ];
+    rows.forEach((row) => {
+      newData[0].data.push(
+        { title: row.display_name, details: [row.description], goal: row.goal, color: row.color }
+      )
     });
+    console.log("read initial data");
+    console.log(newData);
+    setData(newData);
     setEditModalVisible(false);
-    setRefresh(prev => !prev);  // Toggle the refresh state
   }
 
   const openEditModal = (item) => {
