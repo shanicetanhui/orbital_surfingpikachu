@@ -880,9 +880,14 @@ export const DetailsScreen = ({ route }) => {
 
   const decrementCounter = async () => {
     const newCounter = counter - 1;
+    if (newCounter<0) {
+      alert('Cannot go below 0!');
+    } 
+    else {
     setCounter(newCounter);
     await create_or_update(item.title, day, newCounter);
     setRefresh(prev => !prev);  // Toggle the refresh state
+    }
   };
 
   if (!item) {
@@ -979,6 +984,7 @@ export const DetailsScreen = ({ route }) => {
               chartConfig={chartConfig}
               formatYLabel={(yValue) => { return Math.round(yValue).toString(); }}
               onDataPointClick={(value, dataset, getColor) => { }}
+              fromZero={true}
             />
           </View>
 
