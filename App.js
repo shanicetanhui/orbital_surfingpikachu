@@ -1,5 +1,5 @@
 import React from 'react';
-import { ProfileScreen, HomeScreen, DetailsScreen, Stack, TabNavigator} from './assets'
+import { HomeScreen, DetailsScreen, Stack, TabNavigator} from './assets'
 import "./firebaseConfig"
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
@@ -22,7 +22,7 @@ function App() {
       <Stack.Navigator initialRouteName="Back">
         {/* Three tabs, home, profile and details */}
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
+        {/*<Stack.Screen name="Profile" component={ProfileScreen} />*/}
         <Stack.Screen name="Details" component={DetailsScreen} />
         <Stack.Screen
           name="Back"

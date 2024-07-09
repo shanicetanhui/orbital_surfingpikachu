@@ -99,7 +99,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
-    justifyContent: 'center'
+    justifyContent: 'center',
+    backgroundColor: 'white',
   },
   input: {
     height: 40,
@@ -111,6 +112,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     alignSelf: 'center', // Aligns the TextInput itself to the center horizontally
     fontFamily: 'Roboto', // Ensure consistent font family
+    backgroundColor: 'white',
   },
   modalView: {
     width: '80%',
@@ -238,9 +240,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontFamily: 'Kollektif',
   },
-  gotoDetailsButton: {
-
-  },
   gotoDetailsText: {
     fontSize: 18,
     textAlign: 'center',
@@ -274,16 +273,45 @@ const styles = StyleSheet.create({
     elevation: 3,
     backgroundColor: 'black',
   },
+  usernameContainer: {
+    padding: 10,
+    fontFamily: 'center',
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    fontFamily: 'center',
+  },
+  // PICKERSTYLES 
   picker: {
     height: 40,
-    borderColor: 'gray',
+    borderColor: 'grey',
     borderWidth: 1,
     borderRadius: 5,
     width: '95%',
     marginVertical: 10,
-    paddingHorizontal: 10,
-    alignSelf: 'center', // Aligns the Picker itself to the center horizontally
-    fontFamily: 'Roboto', // Ensure consistent font family
+    alignSelf: 'center',
+    fontFamily: 'Roboto',
+    color: 'grey',
+    alignItems: 'center',
+  },
+  pickerContainer: {
+    width: '95%',
+    borderColor: 'grey',
+    borderWidth: 1, 
+    borderRadius: 5,
+    alignSelf: 'center',
+    marginVertical: 10,
+  },
+  pickerItem: {
+    fontFamily: 'Roboto', 
+    fontSize: 12, 
+    backgroundColor: 'white',
+    borderColor: 'grey',
+    borderWidth: 1,
+    borderRadius: 5,
   },
 });
 
@@ -314,14 +342,13 @@ async function read_initialData(setData) {
 
 // colour picker for habit
 // TODO: preview colours?
-const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for now
+const ColorPicker = ({ selectedColor, onColorChange }) => {
   const colors = [
-    { label: 'Default', value: 'rgba(252, 223, 202, 0.7)' },
+    { label: 'Light Orange', value: 'rgba(252, 223, 202, 0.7)' },
     { label: 'Light Green', value: 'rgba(144, 238, 144, 0.7)' },
     { label: 'Pink', value: 'rgba(255, 192, 203, 0.7)' },
     { label: 'Light Blue', value: 'rgba(175, 238, 238, 0.7)' },
     { label: 'Peach', value: 'rgba(255, 218, 185, 0.7)' },
-    { label: 'Light Orange', value: 'rgba(255, 165, 0, 0.7)' },
     { label: 'Honeydew', value: 'rgba(240, 255, 240, 0.7)' },
     { label: 'Alice Blue', value: 'rgba(240, 248, 255, 0.7)' },
     { label: 'Antique White', value: 'rgba(250, 235, 215, 0.7)' },
@@ -334,14 +361,15 @@ const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for 
   ];
 
   return (
-    <View style={{ marginBottom: 15 }}>
+    <View style={styles.pickerContainer}>
       <Picker
         style={styles.picker}
         selectedValue={selectedColor}
         onValueChange={(itemValue, itemIndex) => onColorChange(itemValue)}
       >
+        <Picker.Item label="Choose colour" value="" />
         {colors.map((color, index) => (
-          <Picker.Item key={index} label={color.label} value={color.value} color={color.color} />
+          <Picker.Item key={index} label={color.label} value={color.value} />
         ))}
       </Picker>
     </View>
@@ -470,7 +498,7 @@ export const HomeScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.fullscreen}>
       <ScrollView>
-      <ImageBackground source={require('./assets/bg3.png')} style={styles.imageBackground}>
+        <ImageBackground source={require('./assets/bg3.png')} style={styles.imageBackground}>
           {/* <Test></Test> */}
           <SectionList
             sections={data}
@@ -902,7 +930,7 @@ export const DetailsScreen = ({ route }) => {
   return (
     <SafeAreaView style={styles.fullscreen}>
       <ScrollView>
-      <ImageBackground source={require('./assets/bg3.png')} style={styles.imageBackground}>
+        <ImageBackground source={require('./assets/bg3.png')} style={styles.imageBackground}>
 
           {/* text */}
           <View style={styles.detailsScreenContainer}>
@@ -1147,16 +1175,17 @@ export const DetailsScreen = ({ route }) => {
   );
 };
 
-// settings
-export const SettingsScreen = () => (
+// blank screen
+export const BlankScreen = () => (
   <SafeAreaView style={styles.fullscreen}>
     <ImageBackground source={require('./assets/bg3.png')} style={styles.imageBackground}>
-      <Text style={styles.text}>Settings Screen</Text>
+      <Text style={styles.text}>Blank Screen</Text>
     </ImageBackground>
   </SafeAreaView>
 );
 
-export const ProfileScreen = () => {
+// settings screen
+export const SettingsScreen = () => {
   // PROFILE IMAGE
   const [image, setImage] = useState(null);
 
@@ -1190,9 +1219,18 @@ export const ProfileScreen = () => {
   const msgInputRef = useRef(null);
   const [msg, setMsg] = useState('');
 
+  // DARKMODE   
+  const [isEnabled, setIsEnabled] = useState(false);
+  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+
+  // FEEDBACK
+  const feedbackInputRef = useRef(null);
+  const [feedback, setFeedback] = useState('');
+
+
   return (
     <SafeAreaView style={styles.fullscreen}>
-<ImageBackground source={require('./assets/bg3.png')} style={styles.imageBackground}>
+      <ImageBackground source={require('./assets/bg3.png')} style={styles.imageBackground}>
         {/* Profile Image */}
         <View style={styles.profileImageContainer}>
           {image && <Image source={{ uri: image }} style={styles.image} />}
@@ -1238,12 +1276,12 @@ export const ProfileScreen = () => {
           <Picker
             selectedValue={school}
             onValueChange={(itemValue) => setSchool(itemValue)}
-            style={styles.picker}
+            style={[styles.picker, { borderColor: 'grey', borderWidth: 1 }]}
           >
-            <Picker.Item label="Select your school" value="" />
-            <Picker.Item label="School 1" value="school1" />
-            <Picker.Item label="School 2" value="school2" />
-            <Picker.Item label="School 3" value="school3" />
+            <Picker.Item label="Select your school" value="" style={styles.pickerItem} />
+            <Picker.Item label="School 1" value="school1" style={styles.pickerItem} />
+            <Picker.Item label="School 2" value="school2" style={styles.pickerItem} />
+            <Picker.Item label="School 3" value="school3" style={styles.pickerItem} />
           </Picker>
         </View>
 
@@ -1261,6 +1299,34 @@ export const ProfileScreen = () => {
             />
           </Pressable>
         </View>
+
+        {/* Dark Mode */}
+        <View style={styles.switchContainer}>
+          <Text> Dark Mode</Text>
+          <Switch
+            trackColor={{ false: "#767577", true: "#81b0ff" }}
+            thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={toggleSwitch}
+            value={isEnabled}
+          />
+        </View>
+
+        {/* Send Feedback (need backend to 'send' feedback to admins) */}
+        <View style={styles.usernameContainer}>
+          <Pressable onPress={() => feedbackInputRef?.current?.focus()}>
+            <Text> Report an issue:</Text>
+            <TextInput
+              ref={feedbackInputRef}
+              style={styles.input}
+              onChangeText={(event) => setFeedback(event)}
+              value={feedback}
+              placeholder='Bug'
+              placeholderTextColor='grey'
+            />
+          </Pressable>
+        </View>
+
       </ImageBackground>
     </SafeAreaView>
   );
@@ -1301,11 +1367,11 @@ export function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
+        name="Blank"
+        component={BlankScreen}
         options={{
           tabBarIcon: ({ size, color }) => (
-            <AntDesign name="user" size={size} color={color} />
+            <AntDesign name="cloud" size={size} color={color} />
           ),
         }}
       />
