@@ -26,7 +26,7 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "output": "web-build",
+      "output": "server",
       "bundler": "metro"
     },
     "plugins": [
@@ -45,6 +45,12 @@
         "projectId": "c5bea227-984e-411f-92b8-a9fcd29ffe70"
       }
     },
-    "owner": "surfingpikachu"
+    "owner": "surfingpikachu",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/c5bea227-984e-411f-92b8-a9fcd29ffe70"
+    }
   }
 }
