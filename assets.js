@@ -343,6 +343,14 @@ const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for 
   );
 };
 
+export const Test = () => {
+  return (
+    <Text>HELLO</Text>
+  )
+}
+
+export const LoginScreen = () => {}
+
 // home screen
 export const HomeScreen = ({ navigation }) => {
 

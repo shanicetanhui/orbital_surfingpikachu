@@ -18,7 +18,6 @@ export async function display() {
     console.log("========================");
 }
 
-// generate date in ddmmyy format to use in HabitEntries table
 export function today_date() {
     const today = new Date();
     // console.log(today);
@@ -52,7 +51,6 @@ export async function add_habit(name, color, goal) {
     })
 }
 
-// TODO: FIGURE OUT FORMAT OF day
 // create a document under the collection 'habitEntries'
 export async function add_entry(habit, day, num) {
     const habit_id = await fetch_habit_id(habit);

@@ -1,5 +1,6 @@
 import React from 'react';
-import { ProfileScreen, HomeScreen, DetailsScreen, Stack, TabNavigator} from './assets'
+// import Text from 'react-native';
+import { ProfileScreen, HomeScreen, DetailsScreen, Stack, TabNavigator, Test} from './assets'
 import "./firebaseConfig"
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
@@ -8,13 +9,15 @@ import AppLoading from 'expo-app-loading';
 function App() {
   console.log("top level");
 
-  const [fontsLoaded] = useFonts({
-    'Kolletkif': require('./assets/Roboto/Roboto-LightItalic.ttf'),
-  });
+  // const [fontsLoaded] = useFonts({
+  //   'Kolletkif': require('./assets/Roboto/Roboto-LightItalic.ttf'),
+  // });
 
 //  if (!fontsLoaded) {
   //  return <AppLoading />;
   //}
+
+  if (false) {
 
   return (
 
@@ -33,6 +36,12 @@ function App() {
     </NavigationContainer>
     // <Test></Test>
   );
+}
+else {
+  return (
+    <Test>testing</Test>
+  )
+}
 }
 
 export default App;
