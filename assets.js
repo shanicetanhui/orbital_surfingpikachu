@@ -1191,7 +1191,6 @@ export const ProfileScreen = () => {
       {/* Profile Image */}
       <View style={styles.profileImageContainer}>
         {image && <Image source={{ uri: image }} style={styles.image} />}
-        <Text> </Text>
         <Pressable style={styles.imagebutton} onPress={pickImage}>
           <Text style={styles.buttonText}>Change your Profile Picture</Text>
         </Pressable>
