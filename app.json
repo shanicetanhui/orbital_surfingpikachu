@@ -18,25 +18,20 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.surfingpikachu.unihealth"
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "output": "web-build",
+      "output": "server",
       "bundler": "metro"
     },
     "plugins": [
       [
-        "expo-font",
-        {
-          "fonts": [
-            {
-              "asset": "./assets/Roboto/Roboto-LightItalic.ttf",
-              "weight": "300",
-              "style": "italic"
-            }
-          ]
-        }
+        "expo-font"
       ],
       [
         "expo-image-picker",
@@ -44,7 +39,18 @@
           "photosPermission": "The app accesses your photos to let you share them with your friends."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "c5bea227-984e-411f-92b8-a9fcd29ffe70"
+      }
+    },
+    "owner": "surfingpikachu",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/c5bea227-984e-411f-92b8-a9fcd29ffe70"
+    }
   }
 }
-

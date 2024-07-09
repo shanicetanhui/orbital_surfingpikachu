@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions, Switch, Alert, ScrollView, Image, Pressable } from 'react-native';
+import { init, fakedata, display, update_habit, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
+import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions, Switch, Alert, Image, Pressable, ScrollView, ImageBackground } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { init, fakedata, display, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit } from './db';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
 import { Picker } from '@react-native-picker/picker';
 import { Timestamp } from 'firebase/firestore';
+import DatePicker from 'react-native-date-picker';
+// import DatePicker from 'react-datepicker';
 import * as Notifications from 'expo-notifications';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -18,7 +20,7 @@ const styles = StyleSheet.create({
     marginTop: StatusBar.currentHeight || 0,
     backgroundColor: '#ffffff',
     paddingHorizontal: 16,
-    paddingTop: 16,
+    // paddingTop: 16,
     paddingBottom: 16,
   },
   text: {
@@ -183,7 +185,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: 360, // Set the width of the button
-    height: 50, // Set the height of the button 
+    height: 50, // Set the height of the button
     borderRadius: 20,
   },
   addButtonIcon: {
@@ -213,6 +215,12 @@ const styles = StyleSheet.create({
     padding: 10,
     textAlign: 'center'
   },
+  editButton: {
+    position: 'absolute',
+    right: 1,
+    top: -20,
+    padding: 5,
+  },
   deleteButton: {
     position: 'absolute',
     right: 1,
@@ -220,7 +228,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   deleteButtonText: {
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: 'bold',
     fontFamily: 'Kollektif',
   },
@@ -275,11 +283,7 @@ const styles = StyleSheet.create({
   },
 });
 
-// export const Test = () => {
-//   add_habit("sleep", "", 'rgba(252, 223, 202, 0.7)', 1000);
-//   console.log("test component");
-//   display();
-// }
+// const image = {}
 
 // front end purposes
 const initialData = [
@@ -343,10 +347,21 @@ const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for 
 export const HomeScreen = ({ navigation }) => {
 
   // Hooks for variables
+  const [refresh, setRefresh] = useState(false);
   const [data, setData] = useState(initialData);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  // const [choiceModalVisible, setChoiceModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [itemToEdit, setItemToEdit] = useState(null);
+  const [editedData, setEditedData] = useState({
+    title: '',
+    old_title: '',
+    details: [],
+    goal: '',
+    color: ''
+  })
   const [newItemName, setNewItemName] = useState('');
   const [dailyGoal, setDailyGoal] = useState('');
   const [currentSection, setCurrentSection] = useState('');
@@ -354,9 +369,9 @@ export const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     read_initialData(setData);
-  }, []);
+  }, [refresh]);
 
-  // modal -> popups like in 'add new habit/section' 
+  // modal -> popups like in 'add new habit/section'
   const openModal = (sectionTitle) => {
     setCurrentSection(sectionTitle);
     setAddModalVisible(true);
@@ -410,8 +425,47 @@ export const HomeScreen = ({ navigation }) => {
     }
   };
 
+  const handleEdit = async () => {
+    await update_habit(editedData.old_title, editedData.title, editedData.goal, editedData.color);
+    const rows = await read_habits();
+    const newData = [
+      {
+        title: 'Habits',
+        subtitle: 'Small habits, big changes',
+        data: []
+      }
+    ];
+    rows.forEach((row) => {
+      newData[0].data.push(
+        { title: row.display_name, details: [row.description], goal: row.goal, color: row.color }
+      )
+    });
+    console.log("read initial data");
+    console.log(newData);
+    setData(newData);
+    setEditModalVisible(false);
+  }
+
+  const openEditModal = (item) => {
+    setEditedData({
+      title: item.title,
+      old_title: item.title,
+      details: [...item.details],
+      goal: item.goal,
+      color: item.color
+    });
+    setEditModalVisible(true);
+  }
+
+  // const handleChoice = (item) => {
+  //   setItemToDelete(item);
+  //   setDeleteModalVisible(true);
+  // }
+
   return (
     <SafeAreaView style={styles.container}>
+      <ScrollView>
+      <ImageBackground source={require('./assets/bg3.png')}>
       {/* <Test></Test> */}
       <SectionList
         sections={data}
@@ -431,16 +485,28 @@ export const HomeScreen = ({ navigation }) => {
                   }}
                   style={styles.deleteButton}
                 >
-                  <Text style={styles.deleteButtonText}>...</Text>
+                  <Text style={styles.deleteButtonText}> Delete </Text>
                 </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    // setItemToEdit(item);
+                    // setEditModalVisible(true);
+                    openEditModal(item);
+                  }}
+                  style={styles.editButton}
+                >
+                  <Text style={styles.deleteButtonText}> Edit </Text>
+                </TouchableOpacity>
+
               </View>
             )}
             <TouchableOpacity
-              style={styles.gotoDetailsButton}
-              onPress={() => navigation.navigate('Details', { item, additionalDetails: 'Some additional details here' })}
-            >
-              <Text style={styles.gotoDetailsText}>Go to {item.title} details</Text>
-            </TouchableOpacity>
+      style={styles.gotoDetailsButton}
+      onPress={() => navigation.navigate('Details', { item, additionalDetails: 'Some additional details here' })}
+    >
+      <Text style={styles.gotoDetailsText}>Go to {item.title} details</Text>
+    </TouchableOpacity>
           </View>
         )}
         renderSectionHeader={({ section }) => (
@@ -517,6 +583,59 @@ export const HomeScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
+
+      <Modal
+        transparent={true}
+        animationType="slide"
+        visible={editModalVisible}
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalView}>
+            <Text>EDIT</Text>
+
+            <TextInput
+            style={styles.input}
+            placeholder="Name"
+            value={editedData.title}
+            onChangeText={(text) => {
+              const title = text;
+              // setEditedData({ ...editedData, year: isNaN(year) ? '' : year });
+              setEditedData({...editedData, title: title});
+              console.log(text);
+            }}
+            />
+            <TextInput
+            style={styles.input}
+            placeholder="Goal"
+            value={editedData.goal}
+            onChangeText={(text) => {
+              const goal = parseInt(text);
+              setEditedData({ ...editedData, goal: isNaN(goal) ? '' : goal });
+              console.log(goal);
+            }}
+            />
+            {/* <TextInput
+            style={styles.input}
+            placeholder="Name"
+            value={editedData.title}
+            onChangeText={(text) => {
+              // const title = parseInt(text);
+              // setEditedData({ ...editedData, year: isNaN(year) ? '' : year });
+              console.log(text);
+            }}
+            /> */}
+
+            <View style={styles.modalButtons}>
+              <Button title="Cancel" onPress={() => setEditModalVisible(false)} />
+              <Button title="Confirm edit" onPress={handleEdit} />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      </ImageBackground>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -527,6 +646,23 @@ export const DetailsScreen = ({ route }) => {
 
   // Hooks for habitData and counter
   const [habitData, setHabitData] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [editedData, setEditedData] = useState({
+    day: '',
+    year: '',
+    month: '',
+    num: '',
+    old_date: '',
+    habit_id: ''
+  });
+  const [addedData, setAddedData] = useState({
+    day: '',
+    month: '',
+    year: '',
+    num: '',
+  })
   // format of habitData:
   // [{ day: Date object, num: integer, habit: habitid }, { day: Date object, num: integer, habit: habitid }]
   const [counter, setCounter] = useState(0);
@@ -535,28 +671,78 @@ export const DetailsScreen = ({ route }) => {
     datasets: [
       {
         data: [],
-        color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`, // optional
+        // color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`, // optional
         strokeWidth: 2 // optional
       }
     ],
     legend: [] // optional
   });
 
-  // the Refs are necessary for the useFocusEffect function
-  const counterRef = useRef(counter);
-  const habitDataRef = useRef(habitData);
+  // Function to open modal and set the initial values
+  const openEditModal = (data) => {
+    setEditedData({
+      // day: data.day.toString(),
+      year: data.day.getFullYear(),
+      month: data.day.getMonth(),
+      day: data.day.getDate(),
+      num: data.num,
+      old_date: data.day,
+      habit_id: data.habit
+    });
+    console.log(editedData);
+    setEditModalVisible(true);
+    setRefresh(prev => !prev);  // Toggle the refresh state
+  };
+
+  const openAddModal = () => {
+    setAddModalVisible(true);
+  };
+
+  const handleAddSubmit = async () => {
+    new_date = new Date(addedData.year, addedData.month, addedData.day);
+    console.log(new_date);
+    add_entry(item.title, new_date, addedData.num);
+    setAddModalVisible(false);
+    setRefresh(prev => !prev);  // Toggle the refresh state
+  }
+
+  // Function to handle submission of edited data
+  const handleEditSubmit = () => {
+    // Handle the submission logic here
+    const new_date = new Date(editedData.year, editedData.month, editedData.day);
+    update_entry(editedData.habit_id, editedData.old_date, new_date, editedData.num)
+    setEditModalVisible(false);
+  };
+
+  const handleDataDelete = async (entry) => {
+    delete_habit_entry(entry.habit, entry.day);
+    console.log("deleted");
+    setRefresh(prev => !prev);  // Toggle the refresh state
+
+  }
 
   // DATA VISUALISATION
 
-  const screenWidth = Dimensions.get("window").width - 2 * styles.additionalDetailsContainer.padding;
-  console.log(styles.additionalDetailsContainer.padding);
-  console.log(screenWidth);
+  const screenWidth = Dimensions.get("window").width - 2*styles.additionalDetailsContainer.padding;
+  // console.log(styles.additionalDetailsContainer.padding);
+  // console.log(screenWidth);
 
   const chartConfig = {
-    color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`,
-    // strokeWidth: 2, // optional, default 3
-    barPercentage: 0.5,
-    // useShadowColorFromDataset: false // optional
+    backgroundColor: "#e26a00",
+    backgroundGradientFrom: "#ffffff",
+    backgroundGradientTo: "#ffffff",
+    decimalPlaces: 2, // optional, defaults to 2dp
+    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    style: {
+      borderRadius: 16
+    },
+    propsForDots: {
+      r: "3",
+      strokeWidth: "6",
+      stroke: "#ffa726"
+    }
+
   };
 
   const updateLinechartdata = (data) => {
@@ -566,8 +752,6 @@ export const DetailsScreen = ({ route }) => {
       datasets: [
         {
           data: data.map(entry => entry.num),
-          color: (opacity = 1) => `rgba(255, 162, 0, ${opacity})`, // optional
-          strokeWidth: 2 // optional
         }
       ],
       legend: [] // optional
@@ -600,7 +784,12 @@ export const DetailsScreen = ({ route }) => {
       const entry = data.find(item => item.day.toDateString() === day.toDateString());
       // if there is an entry for today, grab today's number for counter
       // if there isn't an entry, set the counter to 0
-      setCounter(entry ? entry.num : 0);
+      if (!entry) {
+        await add_entry(item.title, day, 0);
+        setRefresh(prev => !prev);  // Toggle the refresh state
+      } else {
+        setCounter(entry.num);
+      }
       // console.log(counter);
     } catch (error) {
       console.error("Error fetching habits:", error);
@@ -610,15 +799,10 @@ export const DetailsScreen = ({ route }) => {
   // calls fetchHabits on load
   useEffect(() => {
     fetchHabits();
-  }, []);
-
-  // triggered by counter changing
-  useEffect(() => {
-    counterRef.current = counter;
-  }, [counter]);
+  }, [refresh]);
 
   useEffect(() => {
-    habitDataRef.current = habitData;
+    // habitDataRef.current = habitData;
     updateLinechartdata(habitData);
   }, [habitData]);
 
@@ -687,137 +871,272 @@ export const DetailsScreen = ({ route }) => {
   };
 
   // for counters
-  const incrementCounter = () => {
-    setCounter(prevCounter => prevCounter + 1);
+  const incrementCounter = async () => {
+    const newCounter = counter + 1;
+    setCounter(newCounter);
+    await create_or_update(item.title, day, newCounter);
+    setRefresh(prev => !prev);  // Toggle the refresh state
   };
-  const decrementCounter = () => {
-    setCounter(prevCounter => prevCounter - 1);
+
+  const decrementCounter = async () => {
+    const newCounter = counter - 1;
+    if (newCounter<0) {
+      alert('Cannot go below 0!');
+    } 
+    else {
+    setCounter(newCounter);
+    await create_or_update(item.title, day, newCounter);
+    setRefresh(prev => !prev);  // Toggle the refresh state
+    }
   };
 
   if (!item) {
     return null;
   }
 
-  // this function triggers when we exit the details page
-  // since it would be costly to keep making noSQL statements for every increment or decrement
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        console.log("going to call create or update");
-        // console.log(item.title);
-        // console.log(day);
-        console.log(counterRef.current);
-        console.log(item.title);
-        create_or_update(item.title, day, counterRef.current);
-      };
-    }, [])
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-
-        {/* text */}
-        <View style={styles.detailsScreenContainer}>
-          <View style={styles.additionalDetailsContainer}>
-            <Text style={styles.additionalDetailsTitle}>{item.title}</Text>
-            {item.details && item.details.map((detail, index) => (
-              <Text key={index} style={styles.detail}> {detail}</Text>
-            ))}
-          </View>
-        </View>
-
-        {/* today's data */}
-        <View style={styles.detailsScreenContainer}>
-          <View style={styles.additionalDetailsContainer}>
-            <Text style={styles.additionalDetailsTitle}>Today's number:</Text>
-          </View>
-          {/* counter */}
-          <View style={styles.counterContainer}>
-            <Button title="-" onPress={decrementCounter} />
-            <Text style={styles.counterText}>{counter}</Text>
-            <Button title="+" onPress={incrementCounter} />
-          </View>
-        </View>
-
-        {/* data vis! */}
+      <ImageBackground source={require('./assets/bg3.png')}>
+    
+      {/* text */}
+      <View style={styles.detailsScreenContainer}>
         <View style={styles.additionalDetailsContainer}>
-          <View style={styles.tableContainer}>
-            <Text style={styles.additionalDetailsTitle}>Your data in the past days:</Text>
-          </View>
-
-          {(linechartdata.datasets[0].data.length < 2) &&
-            <View>
-              <Text style={styles.notAvailText}>Not enough data to make graph :( </Text>
-              <Text style={styles.notAvailText}>Add some! </Text>
-            </View>
-          }
-
-          {(linechartdata.datasets[0].data.length > 1) &&
-            <>
-              <View style={styles.additionalDetailsContainer}>
-                <LineChart
-                  data={linechartdata}
-                  width={screenWidth * 0.9} //90% screen width
-                  height={220}
-                  chartConfig={chartConfig}
-                  formatYLabel={(yValue) => { return Math.round(yValue).toString(); }}
-                  onDataPointClick={(value, dataset, getColor) => { }}
-                />
-              </View>
-
-              {habitDataRef.current.map((entry) => {
-                return (
-                  <View style={styles.additionalDetailsContainer}>
-                    <Text>{entry.day.toString()} </Text>
-                  </View>
-                )
-              })
-              }
-
-            </>
-          }
+          <Text style={styles.additionalDetailsTitle}>{item.title}</Text>
+          {item.details && item.details.map((detail, index) => (
+            <Text key={index} style={styles.detail}> {detail}</Text>
+          ))}
         </View>
+      </View>
 
-        {/* reminders! */}
-        <View style={styles.detailsScreenContainer}>
-          <View style={styles.additionalDetailsContainer}>
-            <Text style={styles.additionalDetailsTitle}>Schedule Reminders:</Text>
-            <Text style={styles.detail}> Input in military time</Text>
-          </View>
+      {/* today's data */}
+      <View style={styles.detailsScreenContainer}>
+        <View style={styles.additionalDetailsContainer}>
+          <Text style={styles.additionalDetailsTitle}>Today's number:</Text>
+        </View>
+        {/* counter */}
+        <View style={styles.counterContainer}>
+          <Button title="-" onPress={decrementCounter} />
+          <Text style={styles.counterText}>{counter}</Text>
+          <Button title="+" onPress={incrementCounter} />
+        </View>
+      </View>
 
-          <View style={styles.additionalDetailsContainer}>
-            <Text style={styles.detail}>Hour:</Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                keyboardType="numeric"
-                value={hours}
-                onChangeText={setHours}
-              />
-            </View>
-            <Text style={styles.detail}>Minutes:</Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                keyboardType="numeric"
-                value={minutes}
-                onChangeText={setMinutes}
-              />
-            </View>
-            <View style={styles.switchContainer}>
-              <Text style={styles.detail}>Repeats:</Text>
-              <View style={styles.inputContainer}>
-                <Switch
-                  value={repeats}
-                  onValueChange={setRepeats}
-                />
-              </View>
-            </View>
-            <Button title="Schedule Notification" onPress={scheduleNotification} />
+          {/* reminders! */}
+    <View style={styles.detailsScreenContainer}>
+      <View style={styles.additionalDetailsContainer}>
+        <Text style={styles.additionalDetailsTitle}>Schedule Reminders:</Text>
+        <Text style={styles.detail}> Input in military time</Text>
+      </View>
+
+      <View style={styles.additionalDetailsContainer}>
+        <Text style={styles.detail}>Hour:</Text>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            value={hours}
+            onChangeText={setHours}
+          />
+        </View>
+        <Text style={styles.detail}>Minutes:</Text>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            value={minutes}
+            onChangeText={setMinutes}
+          />
+        </View>
+        <View style={styles.switchContainer}>
+          <Text style={styles.detail}>Repeats:</Text>
+          <View style={styles.inputContainer}>
+            <Switch
+              value={repeats}
+              onValueChange={setRepeats}
+            />
           </View>
         </View>
+        <Button title="Schedule Notification" onPress={scheduleNotification} />
+      </View>
+    </View>
 
+      {/* data vis! */}
+      <View style={styles.detailsScreenContainer}>
+        <View style={styles.tableContainer}>
+          <Text style={styles.additionalDetailsTitle}>Your data in the past days:</Text>
+        </View>
+
+      {(linechartdata.datasets[0].data.length < 2) &&
+        <View>
+          <Text style={styles.notAvailText}>Not enough data to make graph :( </Text>
+          <Text style={styles.notAvailText}>Add some! </Text>
+        </View>
+      }
+
+      {(linechartdata.datasets[0].data.length > 1) &&
+        <>
+          <View style={styles.additionalDetailsContainer}>
+            <LineChart
+              data={linechartdata}
+              width={screenWidth * 0.9} //90% screen width
+              height={220}
+              chartConfig={chartConfig}
+              formatYLabel={(yValue) => { return Math.round(yValue).toString(); }}
+              onDataPointClick={(value, dataset, getColor) => { }}
+              fromZero={true}
+            />
+          </View>
+
+        </>
+      }
+      </View>
+
+      <TouchableOpacity style={styles.button} onPress={() => {openAddModal()}}>
+        <Text style={styles.buttonText}>Add Data</Text>
+      </TouchableOpacity>
+
+      { habitData.map((entry) => {
+      // { habitDataRef.current.map((entry) => {
+        return (
+          <View style={styles.item}>
+            <Text>
+              {date_display_format(entry.day)} - {entry.num} -
+              <Button title="edit" onPress={() => openEditModal(entry)}/>
+              <Button title="delete" onPress={() => handleDataDelete(entry)}/>
+            </Text>
+          </View>
+        )
+        })
+      }
+
+      <Modal
+        transparent={true}
+        animationType="slide"
+        visible={editModalVisible}
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={styles.addButtonModalView}>
+          <Text style={styles.modalText}>Edit data</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Year"
+            value={editedData.year.toString()}
+            onChangeText={(text) => {
+              const year = parseInt(text);
+              setEditedData({ ...editedData, year: isNaN(year) ? '' : year });
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Month"
+            value={(editedData.month + 1).toString()}
+            onChangeText={(text) => {
+              const month = parseInt(text) - 1;
+              setEditedData({ ...editedData, month: isNaN(month) ? '' : month });
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Day"
+            value={editedData.day.toString()}
+            onChangeText={(text) => {
+              const day = parseInt(text);
+              setEditedData({ ...editedData, day: isNaN(day) ? '' : day });
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="num"
+            value={editedData.num.toString()}
+            onChangeText={(text) => {
+              const num = parseInt(text);
+              setEditedData({ ...editedData, num: isNaN(num) ? '' : num });
+            }}
+          />
+
+          <TouchableOpacity style={styles.button} onPress={handleEditSubmit}>
+            <Text style={styles.buttonText}>Submit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, styles.buttonClose]}
+            onPress={() => setEditModalVisible(false)}
+          >
+            <Text style={styles.buttonText}>Cancel</Text>
+          </TouchableOpacity>
+
+          {/* <Button style={styles.buttonText} title="Submit" onPress={() => handleEditSubmit} />
+          <Button style={styles.buttonText} title="Cancel" onPress={() => setEditModalVisible(false)} /> */}
+      </View>
+      </Modal>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={addModalVisible}
+        onRequestClose={() => {
+          setAddModalVisible(!addModalVisible);
+        }}
+      >
+        {/* <View style={styles.modalView}> */}
+        <View style={styles.addButtonModalView}>
+          <Text style={styles.modalText}>Add data</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Year"
+            // value={editedData.year.toString()}
+            onChangeText={(text) => {
+              const year = parseInt(text);
+              setAddedData({ ...addedData, year: isNaN(year) ? '' : year });
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Month"
+            // value={(editedData.month + 1).toString()}
+            onChangeText={(text) => {
+              const month = parseInt(text) - 1;
+              setAddedData({ ...addedData, month: isNaN(month) ? '' : month });
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Day"
+            // value={editedData.day.toString()}
+            onChangeText={(text) => {
+              const day = parseInt(text);
+              setAddedData({ ...addedData, day: isNaN(day) ? '' : day });
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Num"
+            // value={editedData.num.toString()}
+            onChangeText={(text) => {
+              const num = parseInt(text);
+              setAddedData({ ...addedData, num: isNaN(num) ? '' : num });
+            }}
+          />
+
+          {/* <TouchableOpacity style={styles.button} onPress={() => {handleAddSubmit}}> */}
+          <TouchableOpacity style={styles.button} onPress={handleAddSubmit}>
+            <Text style={styles.buttonText}>Submit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, styles.buttonClose]}
+            onPress={() => setAddModalVisible(false)}
+          >
+            <Text style={styles.buttonText}>Cancel</Text>
+          </TouchableOpacity>
+
+          {/* <Button style={styles.buttonText} title="Submit" onPress={() => handleEditSubmit} />
+          <Button style={styles.buttonText} title="Cancel" onPress={() => setEditModalVisible(false)} /> */}
+        </View>
+      </Modal>
+
+      </ImageBackground>
       </ScrollView>
     </SafeAreaView>
   );
@@ -826,7 +1145,9 @@ export const DetailsScreen = ({ route }) => {
 // settings
 export const SettingsScreen = () => (
   <View>
+    <ImageBackground source={require('./assets/bg3.png')}>
     <Text>Settings Screen</Text>
+    </ImageBackground>
   </View>
 );
 
@@ -866,6 +1187,7 @@ export const ProfileScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ImageBackground source={require('./assets/bg3.png')}>
       {/* Profile Image */}
       <View style={styles.profileImageContainer}>
         {image && <Image source={{ uri: image }} style={styles.image} />}
@@ -935,6 +1257,7 @@ export const ProfileScreen = () => {
           />
         </Pressable>
       </View>
+      </ImageBackground>
     </SafeAreaView>
   );
 };
