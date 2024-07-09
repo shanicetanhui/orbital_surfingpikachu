@@ -17,10 +17,14 @@ function App() {
   //  return <AppLoading />;
   //}
 
+  // await auth.authStateReady()
+  // const currentUser = auth.currentUser
+
+  
+
   if (false) {
 
   return (
-
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Back">
         {/* Three tabs, home, profile and details */}
