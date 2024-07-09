@@ -865,10 +865,11 @@ export const ProfileScreen = () => {
   const [msg, setMsg] = useState(''); 
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Profile Image */}
       <View style={styles.profileImageContainer}>
         {image && <Image source={{ uri: image }} style={styles.image} />}
+        <Text> </Text>
         <Pressable style={styles.imagebutton} onPress={pickImage}>
           <Text style={styles.buttonText}>Change your Profile Picture</Text>
         </Pressable>
@@ -934,7 +935,7 @@ export const ProfileScreen = () => {
           />
         </Pressable>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
