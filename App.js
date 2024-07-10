@@ -20,8 +20,6 @@ function App() {
   // await auth.authStateReady()
   // const currentUser = auth.currentUser
 
-  
-
   if (false) {
 
   return (
