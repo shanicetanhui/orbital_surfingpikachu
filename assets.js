@@ -2,19 +2,25 @@ import React, { useState, useEffect, useRef } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { init, fakedata, display, update_habit, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit} from './db';
+import { init, fakedata, display, update_habit, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit } from './db';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions, Switch, Alert, Image, Pressable, ScrollView, ImageBackground } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
 import { Picker } from '@react-native-picker/picker';
 import { Timestamp } from 'firebase/firestore';
-import DatePicker from 'react-native-date-picker';
+//import DatePicker from 'react-native-date-picker';
 // import DatePicker from 'react-datepicker';
 import * as Notifications from 'expo-notifications';
 import * as ImagePicker from 'expo-image-picker';
 
 // stylesheet
 const styles = StyleSheet.create({
+  fullscreen: {
+    flex: 1,
+  },
+  imageBackground: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     marginTop: StatusBar.currentHeight || 0,
@@ -93,7 +99,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
-    justifyContent: 'center'
+    justifyContent: 'center',
+    backgroundColor: 'white',
   },
   input: {
     height: 40,
@@ -105,6 +112,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     alignSelf: 'center', // Aligns the TextInput itself to the center horizontally
     fontFamily: 'Roboto', // Ensure consistent font family
+    backgroundColor: 'white',
   },
   modalView: {
     width: '80%',
@@ -232,9 +240,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontFamily: 'Kollektif',
   },
-  gotoDetailsButton: {
-
-  },
   gotoDetailsText: {
     fontSize: 18,
     textAlign: 'center',
@@ -268,18 +273,45 @@ const styles = StyleSheet.create({
     elevation: 3,
     backgroundColor: 'black',
   },
+  usernameContainer: {
+    padding: 10,
+    fontFamily: 'center',
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    fontFamily: 'center',
+  },
+  // PICKERSTYLES 
   picker: {
     height: 40,
-    width: '100%',
-    fontFamily: 'Roboto',
-    height: 40, // Match the height of the input
-    borderColor: 'gray',
+    borderColor: 'grey',
     borderWidth: 1,
     borderRadius: 5,
     width: '95%',
     marginVertical: 10,
-    paddingHorizontal: 10,
     alignSelf: 'center',
+    fontFamily: 'Roboto',
+    color: 'grey',
+    alignItems: 'center',
+  },
+  pickerContainer: {
+    width: '95%',
+    borderColor: 'grey',
+    borderWidth: 1, 
+    borderRadius: 5,
+    alignSelf: 'center',
+    marginVertical: 10,
+  },
+  pickerItem: {
+    fontFamily: 'Roboto', 
+    fontSize: 12, 
+    backgroundColor: 'white',
+    borderColor: 'grey',
+    borderWidth: 1,
+    borderRadius: 5,
   },
 });
 
@@ -310,14 +342,13 @@ async function read_initialData(setData) {
 
 // colour picker for habit
 // TODO: preview colours?
-const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for now
+const ColorPicker = ({ selectedColor, onColorChange }) => {
   const colors = [
-    { label: 'Default', value: 'rgba(252, 223, 202, 0.7)' },
+    { label: 'Light Orange', value: 'rgba(252, 223, 202, 0.7)' },
     { label: 'Light Green', value: 'rgba(144, 238, 144, 0.7)' },
     { label: 'Pink', value: 'rgba(255, 192, 203, 0.7)' },
     { label: 'Light Blue', value: 'rgba(175, 238, 238, 0.7)' },
     { label: 'Peach', value: 'rgba(255, 218, 185, 0.7)' },
-    { label: 'Light Orange', value: 'rgba(255, 165, 0, 0.7)' },
     { label: 'Honeydew', value: 'rgba(240, 255, 240, 0.7)' },
     { label: 'Alice Blue', value: 'rgba(240, 248, 255, 0.7)' },
     { label: 'Antique White', value: 'rgba(250, 235, 215, 0.7)' },
@@ -330,13 +361,15 @@ const ColorPicker = ({ selectedColor, onColorChange }) => { //unoperational for 
   ];
 
   return (
-    <View style={{ marginBottom: 15 }}>
+    <View style={styles.pickerContainer}>
       <Picker
+        style={styles.picker}
         selectedValue={selectedColor}
         onValueChange={(itemValue, itemIndex) => onColorChange(itemValue)}
       >
+        <Picker.Item label="Choose colour" value="" />
         {colors.map((color, index) => (
-          <Picker.Item key={index} label={color.label} value={color.value} color={color.color} />
+          <Picker.Item key={index} label={color.label} value={color.value} />
         ))}
       </Picker>
     </View>
@@ -471,159 +504,159 @@ export const HomeScreen = ({ navigation }) => {
   // }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.fullscreen}>
       <ScrollView>
-      <ImageBackground source={require('./assets/bg3.png')}>
-      {/* <Test></Test> */}
-      <SectionList
-        sections={data}
-        keyExtractor={(item, index) => item.title + index}
-        renderItem={({ item }) => (
-          <View style={[styles.item, { backgroundColor: item.color }]}>
-            <Text style={styles.title}>{item.title}</Text>
-            {item.details && (
-              <View style={styles.detailsContainer}>
-                {item.details.map((detail, index) => (
-                  <Text key={index} style={styles.detail}>{detail}</Text>
-                ))}
-                <TouchableOpacity
-                  onPress={() => {
-                    setItemToDelete(item);
-                    setDeleteModalVisible(true);
-                  }}
-                  style={styles.deleteButton}
-                >
-                  <Text style={styles.deleteButtonText}> Delete </Text>
-                </TouchableOpacity>
+        <ImageBackground source={require('./assets/bg3.png')} style={styles.imageBackground}>
+          {/* <Test></Test> */}
+          <SectionList
+            sections={data}
+            keyExtractor={(item, index) => item.title + index}
+            renderItem={({ item }) => (
+              <View style={[styles.item, { backgroundColor: item.color }]}>
+                <Text style={styles.title}>{item.title}</Text>
+                {item.details && (
+                  <View style={styles.detailsContainer}>
+                    {item.details.map((detail, index) => (
+                      <Text key={index} style={styles.detail}>{detail}</Text>
+                    ))}
+                    <TouchableOpacity
+                      onPress={() => {
+                        setItemToDelete(item);
+                        setDeleteModalVisible(true);
+                      }}
+                      style={styles.deleteButton}
+                    >
+                      <Text style={styles.deleteButtonText}> Delete </Text>
+                    </TouchableOpacity>
 
-                <TouchableOpacity
-                  onPress={() => {
-                    // setItemToEdit(item);
-                    // setEditModalVisible(true);
-                    openEditModal(item);
-                  }}
-                  style={styles.editButton}
-                >
-                  <Text style={styles.deleteButtonText}> Edit </Text>
-                </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        // setItemToEdit(item);
+                        // setEditModalVisible(true);
+                        openEditModal(item);
+                      }}
+                      style={styles.editButton}
+                    >
+                      <Text style={styles.deleteButtonText}> Edit </Text>
+                    </TouchableOpacity>
 
+                  </View>
+                )}
+                <TouchableOpacity
+                  style={styles.gotoDetailsButton}
+                  onPress={() => navigation.navigate('Details', { item, additionalDetails: 'Some additional details here' })}
+                >
+                  <Text style={styles.gotoDetailsText}>Go to {item.title} details</Text>
+                </TouchableOpacity>
               </View>
             )}
-            <TouchableOpacity
-      style={styles.gotoDetailsButton}
-      onPress={() => navigation.navigate('Details', { item, additionalDetails: 'Some additional details here' })}
-    >
-      <Text style={styles.gotoDetailsText}>Go to {item.title} details</Text>
-    </TouchableOpacity>
-          </View>
-        )}
-        renderSectionHeader={({ section }) => (
-          <View style={[styles.headerContainer, { backgroundColor: section.color }]}>
-            <Text style={styles.headerTitle}>{section.title}</Text>
-            {section.subtitle && <Text style={styles.headerSubtitle}>{section.subtitle}</Text>}
-          </View>
-        )}
-        renderSectionFooter={({ section: { title } }) => (
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={() => openModal(title)} style={styles.addButton}>
-              <Text style={styles.addButtonIcon}>+</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
+            renderSectionHeader={({ section }) => (
+              <View style={[styles.headerContainer, { backgroundColor: section.color }]}>
+                <Text style={styles.headerTitle}>{section.title}</Text>
+                {section.subtitle && <Text style={styles.headerSubtitle}>{section.subtitle}</Text>}
+              </View>
+            )}
+            renderSectionFooter={({ section: { title } }) => (
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity onPress={() => openModal(title)} style={styles.addButton}>
+                  <Text style={styles.addButtonIcon}>+</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          />
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={addModalVisible}
-        onRequestClose={() => {
-          setAddModalVisible(!addModalVisible);
-        }}
-      >
-        <View style={styles.addButtonModalView}>
-          <Text style={styles.modalText}>Enter new {currentSection.toLowerCase()} name</Text>
-          <TextInput
-            style={styles.input}
-            placeholderTextColor="grey"
-            placeholder={`Enter new ${currentSection.toLowerCase()} name`}
-            value={newItemName}
-            onChangeText={text => setNewItemName(text)}
-          />
-          <Text style={styles.modalText}>What is your daily goal?</Text>
-          <TextInput
-            style={styles.input}
-            placeholderTextColor="grey"
-            placeholder="Enter daily goal"
-            value={dailyGoal}
-            keyboardType="numeric"
-            onChangeText={text => setDailyGoal(text)}
-          />
-          <Text style={styles.modalText}>Select item color:</Text>
-          <ColorPicker
-            selectedColor={selectedColor}
-            onColorChange={(color) => setSelectedColor(color)}
-          />
-          <TouchableOpacity style={styles.button} onPress={addNewItem}>
-            <Text style={styles.buttonText}>Add Item</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, styles.buttonClose]}
-            onPress={() => setAddModalVisible(!addModalVisible)}
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={addModalVisible}
+            onRequestClose={() => {
+              setAddModalVisible(!addModalVisible);
+            }}
           >
-            <Text style={styles.buttonText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-
-      <Modal
-        transparent={true}
-        animationType="slide"
-        visible={deleteModalVisible}
-        onRequestClose={() => setDeleteModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalView}>
-            <Text>Are you sure you want to delete this item?</Text>
-            <View style={styles.modalButtons}>
-              <Button title="Cancel" onPress={() => setDeleteModalVisible(false)} />
-              <Button title="Delete" onPress={handleDelete} />
+            <View style={styles.addButtonModalView}>
+              <Text style={styles.modalText}>Enter new {currentSection.toLowerCase()} name</Text>
+              <TextInput
+                style={styles.input}
+                placeholderTextColor="grey"
+                placeholder={`Enter new ${currentSection.toLowerCase()} name`}
+                value={newItemName}
+                onChangeText={text => setNewItemName(text)}
+              />
+              <Text style={styles.modalText}>What is your daily goal?</Text>
+              <TextInput
+                style={styles.input}
+                placeholderTextColor="grey"
+                placeholder="Enter daily goal"
+                value={dailyGoal}
+                keyboardType="numeric"
+                onChangeText={text => setDailyGoal(text)}
+              />
+              <Text style={styles.modalText}>Select item color:</Text>
+              <ColorPicker
+                selectedColor={selectedColor}
+                onColorChange={(color) => setSelectedColor(color)}
+              />
+              <TouchableOpacity style={styles.button} onPress={addNewItem}>
+                <Text style={styles.buttonText}>Add Item</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.buttonClose]}
+                onPress={() => setAddModalVisible(!addModalVisible)}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
             </View>
-          </View>
-        </View>
-      </Modal>
+          </Modal>
 
-      <Modal
-        transparent={true}
-        animationType="slide"
-        visible={editModalVisible}
-        onRequestClose={() => setEditModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalView}>
-            <Text>EDIT</Text>
+          <Modal
+            transparent={true}
+            animationType="slide"
+            visible={deleteModalVisible}
+            onRequestClose={() => setDeleteModalVisible(false)}
+          >
+            <View style={styles.modalContainer}>
+              <View style={styles.modalView}>
+                <Text>Are you sure you want to delete this item?</Text>
+                <View style={styles.modalButtons}>
+                  <Button title="Cancel" onPress={() => setDeleteModalVisible(false)} />
+                  <Button title="Delete" onPress={handleDelete} />
+                </View>
+              </View>
+            </View>
+          </Modal>
 
-            <TextInput
-            style={styles.input}
-            placeholder="Name"
-            value={editedData.title}
-            onChangeText={(text) => {
-              const title = text;
-              // setEditedData({ ...editedData, year: isNaN(year) ? '' : year });
-              setEditedData({...editedData, title: title});
-              console.log(text);
-            }}
-            />
-            <TextInput
-            style={styles.input}
-            placeholder="Goal"
-            value={editedData.goal}
-            onChangeText={(text) => {
-              const goal = parseInt(text);
-              setEditedData({ ...editedData, goal: isNaN(goal) ? '' : goal });
-              console.log(goal);
-            }}
-            />
-            {/* <TextInput
+          <Modal
+            transparent={true}
+            animationType="slide"
+            visible={editModalVisible}
+            onRequestClose={() => setEditModalVisible(false)}
+          >
+            <View style={styles.modalContainer}>
+              <View style={styles.modalView}>
+                <Text>EDIT</Text>
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Name"
+                  value={editedData.title}
+                  onChangeText={(text) => {
+                    const title = text;
+                    // setEditedData({ ...editedData, year: isNaN(year) ? '' : year });
+                    setEditedData({ ...editedData, title: title });
+                    console.log(text);
+                  }}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Goal"
+                  value={editedData.goal}
+                  onChangeText={(text) => {
+                    const goal = parseInt(text);
+                    setEditedData({ ...editedData, goal: isNaN(goal) ? '' : goal });
+                    console.log(goal);
+                  }}
+                />
+                {/* <TextInput
             style={styles.input}
             placeholder="Name"
             value={editedData.title}
@@ -634,15 +667,15 @@ export const HomeScreen = ({ navigation }) => {
             }}
             /> */}
 
-            <View style={styles.modalButtons}>
-              <Button title="Cancel" onPress={() => setEditModalVisible(false)} />
-              <Button title="Confirm edit" onPress={handleEdit} />
+                <View style={styles.modalButtons}>
+                  <Button title="Cancel" onPress={() => setEditModalVisible(false)} />
+                  <Button title="Confirm edit" onPress={handleEdit} />
+                </View>
+              </View>
             </View>
-          </View>
-        </View>
-      </Modal>
+          </Modal>
 
-      </ImageBackground>
+        </ImageBackground>
       </ScrollView>
     </SafeAreaView>
   );
@@ -731,7 +764,7 @@ export const DetailsScreen = ({ route }) => {
 
   // DATA VISUALISATION
 
-  const screenWidth = Dimensions.get("window").width - 2*styles.additionalDetailsContainer.padding;
+  const screenWidth = Dimensions.get("window").width - 2 * styles.additionalDetailsContainer.padding;
   // console.log(styles.additionalDetailsContainer.padding);
   // console.log(screenWidth);
 
@@ -888,13 +921,13 @@ export const DetailsScreen = ({ route }) => {
 
   const decrementCounter = async () => {
     const newCounter = counter - 1;
-    if (newCounter<0) {
+    if (newCounter < 0) {
       alert('Cannot go below 0!');
-    } 
+    }
     else {
-    setCounter(newCounter);
-    await create_or_update(item.title, day, newCounter);
-    setRefresh(prev => !prev);  // Toggle the refresh state
+      setCounter(newCounter);
+      await create_or_update(item.title, day, newCounter);
+      setRefresh(prev => !prev);  // Toggle the refresh state
     }
   };
 
@@ -903,263 +936,264 @@ export const DetailsScreen = ({ route }) => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.fullscreen}>
       <ScrollView>
-      <ImageBackground source={require('./assets/bg3.png')}>
-    
-      {/* text */}
-      <View style={styles.detailsScreenContainer}>
-        <View style={styles.additionalDetailsContainer}>
-          <Text style={styles.additionalDetailsTitle}>{item.title}</Text>
-          {item.details && item.details.map((detail, index) => (
-            <Text key={index} style={styles.detail}> {detail}</Text>
-          ))}
-        </View>
-      </View>
+        <ImageBackground source={require('./assets/bg3.png')} style={styles.imageBackground}>
 
-      {/* today's data */}
-      <View style={styles.detailsScreenContainer}>
-        <View style={styles.additionalDetailsContainer}>
-          <Text style={styles.additionalDetailsTitle}>Today's number:</Text>
-        </View>
-        {/* counter */}
-        <View style={styles.counterContainer}>
-          <Button title="-" onPress={decrementCounter} />
-          <Text style={styles.counterText}>{counter}</Text>
-          <Button title="+" onPress={incrementCounter} />
-        </View>
-      </View>
+          {/* text */}
+          <View style={styles.detailsScreenContainer}>
+            <View style={styles.additionalDetailsContainer}>
+              <Text style={styles.additionalDetailsTitle}>{item.title}</Text>
+              {item.details && item.details.map((detail, index) => (
+                <Text key={index} style={styles.detail}> {detail}</Text>
+              ))}
+            </View>
+          </View>
+
+          {/* today's data */}
+          <View style={styles.detailsScreenContainer}>
+            <View style={styles.additionalDetailsContainer}>
+              <Text style={styles.additionalDetailsTitle}>Today's number:</Text>
+            </View>
+            {/* counter */}
+            <View style={styles.counterContainer}>
+              <Button title="-" onPress={decrementCounter} />
+              <Text style={styles.counterText}>{counter}</Text>
+              <Button title="+" onPress={incrementCounter} />
+            </View>
+          </View>
 
           {/* reminders! */}
-    <View style={styles.detailsScreenContainer}>
-      <View style={styles.additionalDetailsContainer}>
-        <Text style={styles.additionalDetailsTitle}>Schedule Reminders:</Text>
-        <Text style={styles.detail}> Input in military time</Text>
-      </View>
+          <View style={styles.detailsScreenContainer}>
+            <View style={styles.additionalDetailsContainer}>
+              <Text style={styles.additionalDetailsTitle}>Schedule Reminders:</Text>
+              <Text style={styles.detail}> Input in military time</Text>
+            </View>
 
-      <View style={styles.additionalDetailsContainer}>
-        <Text style={styles.detail}>Hour:</Text>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            value={hours}
-            onChangeText={setHours}
-          />
-        </View>
-        <Text style={styles.detail}>Minutes:</Text>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            value={minutes}
-            onChangeText={setMinutes}
-          />
-        </View>
-        <View style={styles.switchContainer}>
-          <Text style={styles.detail}>Repeats:</Text>
-          <View style={styles.inputContainer}>
-            <Switch
-              value={repeats}
-              onValueChange={setRepeats}
-            />
-          </View>
-        </View>
-        <Button title="Schedule Notification" onPress={scheduleNotification} />
-      </View>
-    </View>
-
-      {/* data vis! */}
-      <View style={styles.detailsScreenContainer}>
-        <View style={styles.tableContainer}>
-          <Text style={styles.additionalDetailsTitle}>Your data in the past days:</Text>
-        </View>
-
-      {(linechartdata.datasets[0].data.length < 2) &&
-        <View>
-          <Text style={styles.notAvailText}>Not enough data to make graph :( </Text>
-          <Text style={styles.notAvailText}>Add some! </Text>
-        </View>
-      }
-
-      {(linechartdata.datasets[0].data.length > 1) &&
-        <>
-          <View style={styles.additionalDetailsContainer}>
-            <LineChart
-              data={linechartdata}
-              width={screenWidth * 0.9} //90% screen width
-              height={220}
-              chartConfig={chartConfig}
-              formatYLabel={(yValue) => { return Math.round(yValue).toString(); }}
-              onDataPointClick={(value, dataset, getColor) => { }}
-              fromZero={true}
-            />
+            <View style={styles.additionalDetailsContainer}>
+              <Text style={styles.detail}>Hour:</Text>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  value={hours}
+                  onChangeText={setHours}
+                />
+              </View>
+              <Text style={styles.detail}>Minutes:</Text>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  value={minutes}
+                  onChangeText={setMinutes}
+                />
+              </View>
+              <View style={styles.switchContainer}>
+                <Text style={styles.detail}>Repeats:</Text>
+                <View style={styles.inputContainer}>
+                  <Switch
+                    value={repeats}
+                    onValueChange={setRepeats}
+                  />
+                </View>
+              </View>
+              <Button title="Schedule Notification" onPress={scheduleNotification} />
+            </View>
           </View>
 
-        </>
-      }
-      </View>
+          {/* data vis! */}
+          <View style={styles.detailsScreenContainer}>
+            <View style={styles.tableContainer}>
+              <Text style={styles.additionalDetailsTitle}>Your data in the past days:</Text>
+            </View>
 
-      <TouchableOpacity style={styles.button} onPress={() => {openAddModal()}}>
-        <Text style={styles.buttonText}>Add Data</Text>
-      </TouchableOpacity>
+            {(linechartdata.datasets[0].data.length < 2) &&
+              <View>
+                <Text style={styles.notAvailText}>Not enough data to make graph :( </Text>
+                <Text style={styles.notAvailText}>Add some! </Text>
+              </View>
+            }
 
-      { habitData.map((entry) => {
-      // { habitDataRef.current.map((entry) => {
-        return (
-          <View style={styles.item}>
-            <Text>
-              {date_display_format(entry.day)} - {entry.num} -
-              <Button title="edit" onPress={() => openEditModal(entry)}/>
-              <Button title="delete" onPress={() => handleDataDelete(entry)}/>
-            </Text>
+            {(linechartdata.datasets[0].data.length > 1) &&
+              <>
+                <View style={styles.additionalDetailsContainer}>
+                  <LineChart
+                    data={linechartdata}
+                    width={screenWidth * 0.9} //90% screen width
+                    height={220}
+                    chartConfig={chartConfig}
+                    formatYLabel={(yValue) => { return Math.round(yValue).toString(); }}
+                    onDataPointClick={(value, dataset, getColor) => { }}
+                    fromZero={true}
+                  />
+                </View>
+
+              </>
+            }
           </View>
-        )
-        })
-      }
 
-      <Modal
-        transparent={true}
-        animationType="slide"
-        visible={editModalVisible}
-        onRequestClose={() => setEditModalVisible(false)}
-      >
-        <View style={styles.addButtonModalView}>
-          <Text style={styles.modalText}>Edit data</Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="Year"
-            value={editedData.year.toString()}
-            onChangeText={(text) => {
-              const year = parseInt(text);
-              setEditedData({ ...editedData, year: isNaN(year) ? '' : year });
-            }}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Month"
-            value={(editedData.month + 1).toString()}
-            onChangeText={(text) => {
-              const month = parseInt(text) - 1;
-              setEditedData({ ...editedData, month: isNaN(month) ? '' : month });
-            }}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Day"
-            value={editedData.day.toString()}
-            onChangeText={(text) => {
-              const day = parseInt(text);
-              setEditedData({ ...editedData, day: isNaN(day) ? '' : day });
-            }}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="num"
-            value={editedData.num.toString()}
-            onChangeText={(text) => {
-              const num = parseInt(text);
-              setEditedData({ ...editedData, num: isNaN(num) ? '' : num });
-            }}
-          />
-
-          <TouchableOpacity style={styles.button} onPress={handleEditSubmit}>
-            <Text style={styles.buttonText}>Submit</Text>
+          <TouchableOpacity style={styles.button} onPress={() => { openAddModal() }}>
+            <Text style={styles.buttonText}>Add Data</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, styles.buttonClose]}
-            onPress={() => setEditModalVisible(false)}
+
+          {habitData.map((entry) => {
+            // { habitDataRef.current.map((entry) => {
+            return (
+              <View style={styles.item}>
+                <Text>
+                  {date_display_format(entry.day)} - {entry.num} -
+                  <Button title="edit" onPress={() => openEditModal(entry)} />
+                  <Button title="delete" onPress={() => handleDataDelete(entry)} />
+                </Text>
+              </View>
+            )
+          })
+          }
+
+          <Modal
+            transparent={true}
+            animationType="slide"
+            visible={editModalVisible}
+            onRequestClose={() => setEditModalVisible(false)}
           >
-            <Text style={styles.buttonText}>Cancel</Text>
-          </TouchableOpacity>
+            <View style={styles.addButtonModalView}>
+              <Text style={styles.modalText}>Edit data</Text>
 
-          {/* <Button style={styles.buttonText} title="Submit" onPress={() => handleEditSubmit} />
+              <TextInput
+                style={styles.input}
+                placeholder="Year"
+                value={editedData.year.toString()}
+                onChangeText={(text) => {
+                  const year = parseInt(text);
+                  setEditedData({ ...editedData, year: isNaN(year) ? '' : year });
+                }}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Month"
+                value={(editedData.month + 1).toString()}
+                onChangeText={(text) => {
+                  const month = parseInt(text) - 1;
+                  setEditedData({ ...editedData, month: isNaN(month) ? '' : month });
+                }}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Day"
+                value={editedData.day.toString()}
+                onChangeText={(text) => {
+                  const day = parseInt(text);
+                  setEditedData({ ...editedData, day: isNaN(day) ? '' : day });
+                }}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="num"
+                value={editedData.num.toString()}
+                onChangeText={(text) => {
+                  const num = parseInt(text);
+                  setEditedData({ ...editedData, num: isNaN(num) ? '' : num });
+                }}
+              />
+
+              <TouchableOpacity style={styles.button} onPress={handleEditSubmit}>
+                <Text style={styles.buttonText}>Submit</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.buttonClose]}
+                onPress={() => setEditModalVisible(false)}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+
+              {/* <Button style={styles.buttonText} title="Submit" onPress={() => handleEditSubmit} />
           <Button style={styles.buttonText} title="Cancel" onPress={() => setEditModalVisible(false)} /> */}
-      </View>
-      </Modal>
+            </View>
+          </Modal>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={addModalVisible}
-        onRequestClose={() => {
-          setAddModalVisible(!addModalVisible);
-        }}
-      >
-        {/* <View style={styles.modalView}> */}
-        <View style={styles.addButtonModalView}>
-          <Text style={styles.modalText}>Add data</Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="Year"
-            // value={editedData.year.toString()}
-            onChangeText={(text) => {
-              const year = parseInt(text);
-              setAddedData({ ...addedData, year: isNaN(year) ? '' : year });
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={addModalVisible}
+            onRequestClose={() => {
+              setAddModalVisible(!addModalVisible);
             }}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Month"
-            // value={(editedData.month + 1).toString()}
-            onChangeText={(text) => {
-              const month = parseInt(text) - 1;
-              setAddedData({ ...addedData, month: isNaN(month) ? '' : month });
-            }}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Day"
-            // value={editedData.day.toString()}
-            onChangeText={(text) => {
-              const day = parseInt(text);
-              setAddedData({ ...addedData, day: isNaN(day) ? '' : day });
-            }}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Num"
-            // value={editedData.num.toString()}
-            onChangeText={(text) => {
-              const num = parseInt(text);
-              setAddedData({ ...addedData, num: isNaN(num) ? '' : num });
-            }}
-          />
-
-          {/* <TouchableOpacity style={styles.button} onPress={() => {handleAddSubmit}}> */}
-          <TouchableOpacity style={styles.button} onPress={handleAddSubmit}>
-            <Text style={styles.buttonText}>Submit</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, styles.buttonClose]}
-            onPress={() => setAddModalVisible(false)}
           >
-            <Text style={styles.buttonText}>Cancel</Text>
-          </TouchableOpacity>
+            {/* <View style={styles.modalView}> */}
+            <View style={styles.addButtonModalView}>
+              <Text style={styles.modalText}>Add data</Text>
 
-          {/* <Button style={styles.buttonText} title="Submit" onPress={() => handleEditSubmit} />
+              <TextInput
+                style={styles.input}
+                placeholder="Year"
+                // value={editedData.year.toString()}
+                onChangeText={(text) => {
+                  const year = parseInt(text);
+                  setAddedData({ ...addedData, year: isNaN(year) ? '' : year });
+                }}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Month"
+                // value={(editedData.month + 1).toString()}
+                onChangeText={(text) => {
+                  const month = parseInt(text) - 1;
+                  setAddedData({ ...addedData, month: isNaN(month) ? '' : month });
+                }}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Day"
+                // value={editedData.day.toString()}
+                onChangeText={(text) => {
+                  const day = parseInt(text);
+                  setAddedData({ ...addedData, day: isNaN(day) ? '' : day });
+                }}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Num"
+                // value={editedData.num.toString()}
+                onChangeText={(text) => {
+                  const num = parseInt(text);
+                  setAddedData({ ...addedData, num: isNaN(num) ? '' : num });
+                }}
+              />
+
+              {/* <TouchableOpacity style={styles.button} onPress={() => {handleAddSubmit}}> */}
+              <TouchableOpacity style={styles.button} onPress={handleAddSubmit}>
+                <Text style={styles.buttonText}>Submit</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.buttonClose]}
+                onPress={() => setAddModalVisible(false)}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+
+              {/* <Button style={styles.buttonText} title="Submit" onPress={() => handleEditSubmit} />
           <Button style={styles.buttonText} title="Cancel" onPress={() => setEditModalVisible(false)} /> */}
-        </View>
-      </Modal>
+            </View>
+          </Modal>
 
-      </ImageBackground>
+        </ImageBackground>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-// settings
-export const SettingsScreen = () => (
-  <View>
-    <ImageBackground source={require('./assets/bg3.png')}>
-    <Text>Settings Screen</Text>
+// blank screen
+export const BlankScreen = () => (
+  <SafeAreaView style={styles.fullscreen}>
+    <ImageBackground source={require('./assets/bg3.png')} style={styles.imageBackground}>
+      <Text style={styles.text}>Blank Screen</Text>
     </ImageBackground>
-  </View>
+  </SafeAreaView>
 );
 
-export const ProfileScreen = () => {
+// settings screen
+export const SettingsScreen = () => {
   // PROFILE IMAGE
   const [image, setImage] = useState(null);
 
@@ -1191,79 +1225,116 @@ export const ProfileScreen = () => {
 
   // MOTIVATIONALMESSAGE
   const msgInputRef = useRef(null);
-  const [msg, setMsg] = useState(''); 
+  const [msg, setMsg] = useState('');
+
+  // DARKMODE   
+  const [isEnabled, setIsEnabled] = useState(false);
+  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+
+  // FEEDBACK
+  const feedbackInputRef = useRef(null);
+  const [feedback, setFeedback] = useState('');
+
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ImageBackground source={require('./assets/bg3.png')}>
-      {/* Profile Image */}
-      <View style={styles.profileImageContainer}>
-        {image && <Image source={{ uri: image }} style={styles.image} />}
-        <Pressable style={styles.imagebutton} onPress={pickImage}>
-          <Text style={styles.buttonText}>Change your Profile Picture</Text>
-        </Pressable>
-      </View>
+    <SafeAreaView style={styles.fullscreen}>
+      <ImageBackground source={require('./assets/bg3.png')} style={styles.imageBackground}>
+        {/* Profile Image */}
+        <View style={styles.profileImageContainer}>
+          {image && <Image source={{ uri: image }} style={styles.image} />}
+          <Pressable style={styles.imagebutton} onPress={pickImage}>
+            <Text style={styles.buttonText}>Change your Profile Picture</Text>
+          </Pressable>
+        </View>
 
-      {/* Username */}
-      <View style={styles.usernameContainer}>
-        <Pressable onPress={() => usernameInputRef?.current?.focus()}>
-          <Text> Username:</Text>
-          <TextInput
-            ref={usernameInputRef}
-            style={styles.input}
-            onChangeText={(event) => setUsername(event)}
-            value={username}
-            placeholder='Edit your username here'
-            placeholderTextColor='grey'
+        {/* Username */}
+        <View style={styles.usernameContainer}>
+          <Pressable onPress={() => usernameInputRef?.current?.focus()}>
+            <Text> Username:</Text>
+            <TextInput
+              ref={usernameInputRef}
+              style={styles.input}
+              onChangeText={(event) => setUsername(event)}
+              value={username}
+              placeholder='Edit your username here'
+              placeholderTextColor='grey'
+            />
+          </Pressable>
+        </View>
+
+        {/* Age */}
+        <View style={styles.usernameContainer}>
+          <Pressable onPress={() => ageInputRef?.current?.focus()}>
+            <Text> Age:</Text>
+            <TextInput
+              ref={ageInputRef}
+              style={styles.input}
+              onChangeText={(event) => setAge(event)}
+              value={age}
+              keyboardType={'numeric'}
+              placeholder='Edit your age here'
+              placeholderTextColor='grey'
+            />
+          </Pressable>
+        </View>
+
+        {/* School Picker */}
+        <View style={styles.usernameContainer}>
+          <Text> School:</Text>
+          <Picker
+            selectedValue={school}
+            onValueChange={(itemValue) => setSchool(itemValue)}
+            style={[styles.picker, { borderColor: 'grey', borderWidth: 1 }]}
+          >
+            <Picker.Item label="Select your school" value="" style={styles.pickerItem} />
+            <Picker.Item label="School 1" value="school1" style={styles.pickerItem} />
+            <Picker.Item label="School 2" value="school2" style={styles.pickerItem} />
+            <Picker.Item label="School 3" value="school3" style={styles.pickerItem} />
+          </Picker>
+        </View>
+
+        {/* Motivational Message */}
+        <View style={styles.usernameContainer}>
+          <Pressable onPress={() => msgInputRef?.current?.focus()}>
+            <Text> Add a motivational message for your future self:</Text>
+            <TextInput
+              ref={msgInputRef}
+              style={styles.input}
+              onChangeText={(event) => setMsg(event)}
+              value={msg}
+              placeholder='Consistency breeds success.'
+              placeholderTextColor='grey'
+            />
+          </Pressable>
+        </View>
+
+        {/* Dark Mode */}
+        <View style={styles.switchContainer}>
+          <Text> Dark Mode</Text>
+          <Switch
+            trackColor={{ false: "#767577", true: "#81b0ff" }}
+            thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={toggleSwitch}
+            value={isEnabled}
           />
-        </Pressable>
-      </View>
+        </View>
 
-      {/* Age */}
-      <View style={styles.usernameContainer}>
-        <Pressable onPress={() => ageInputRef?.current?.focus()}>
-          <Text> Age:</Text>
-          <TextInput
-            ref={ageInputRef}
-            style={styles.input}
-            onChangeText={(event) => setAge(event)}
-            value={age}
-            keyboardType={'numeric'}
-            placeholder='Edit your age here'
-            placeholderTextColor='grey'
-          />
-        </Pressable>
-      </View>
+        {/* Send Feedback (need backend to 'send' feedback to admins) */}
+        <View style={styles.usernameContainer}>
+          <Pressable onPress={() => feedbackInputRef?.current?.focus()}>
+            <Text> Report an issue:</Text>
+            <TextInput
+              ref={feedbackInputRef}
+              style={styles.input}
+              onChangeText={(event) => setFeedback(event)}
+              value={feedback}
+              placeholder='Bug'
+              placeholderTextColor='grey'
+            />
+          </Pressable>
+        </View>
 
-      {/* School Picker */}
-      <View style={styles.usernameContainer}>
-        <Text> School:</Text>
-        <Picker
-          selectedValue={school}
-          onValueChange={(itemValue) => setSchool(itemValue)}
-          style={styles.picker}
-        >
-          <Picker.Item label="Select your school" value=""/>
-          <Picker.Item label="School 1" value="school1" />
-          <Picker.Item label="School 2" value="school2" />
-          <Picker.Item label="School 3" value="school3" />
-        </Picker>
-      </View>
-
-      {/* Motivational Message */}
-      <View style={styles.usernameContainer}>
-        <Pressable onPress={() => msgInputRef?.current?.focus()}>
-          <Text> Add a motivational message for your future self:</Text>
-          <TextInput
-            ref={msgInputRef}
-            style={styles.input}
-            onChangeText={(event) => setMsg(event)}
-            value={msg}
-            placeholder='Consistency breeds success.'
-            placeholderTextColor='grey'
-          />
-        </Pressable>
-      </View>
       </ImageBackground>
     </SafeAreaView>
   );
@@ -1304,11 +1375,11 @@ export function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
+        name="Blank"
+        component={BlankScreen}
         options={{
           tabBarIcon: ({ size, color }) => (
-            <AntDesign name="user" size={size} color={color} />
+            <AntDesign name="cloud" size={size} color={color} />
           ),
         }}
       />

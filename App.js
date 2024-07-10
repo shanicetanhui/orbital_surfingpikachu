@@ -1,6 +1,5 @@
 import React from 'react';
-// import Text from 'react-native';
-import { ProfileScreen, HomeScreen, DetailsScreen, Stack, TabNavigator, Test} from './assets'
+import { HomeScreen, DetailsScreen, Stack, TabNavigator, Test} from './assets'
 import "./firebaseConfig"
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
@@ -20,14 +19,14 @@ function App() {
   // await auth.authStateReady()
   // const currentUser = auth.currentUser
 
-  if (false) {
+  if (true) {
 
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Back">
         {/* Three tabs, home, profile and details */}
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
+        {/*<Stack.Screen name="Profile" component={ProfileScreen} />*/}
         <Stack.Screen name="Details" component={DetailsScreen} />
         <Stack.Screen
           name="Back"
