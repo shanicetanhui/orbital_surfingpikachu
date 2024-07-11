@@ -4,7 +4,7 @@
     "slug": "unihealth",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/app_icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/app_icon-icon.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
@@ -26,7 +26,7 @@
       "package": "com.surfingpikachu.unihealth"
     },
     "web": {
-      "favicon": "./assets/favicon.png",
+      "favicon": "./assets/app_icon.png",
       "output": "server",
       "bundler": "metro"
     },

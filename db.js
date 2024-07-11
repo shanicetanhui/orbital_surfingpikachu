@@ -1,5 +1,6 @@
 import { db } from "./firebaseConfig";
 import { collection, doc, getDocs, setDoc, query, where, addDoc, updateDoc, deleteDoc, Timestamp } from "firebase/firestore";
+// import { UserContext } from './UserContext';
 
 // debug purposes. called in <Test> component
 export async function display() {
@@ -37,13 +38,18 @@ export function date_display_format(date_object) {
     return `${dayString}/${monthString}`;
 }
 
+// const { loggedInUser } = useContext(UserContext); // Use the context directly
+// const uid = loggedInUser.uid ;
+
+// console.log(uid);
+
 // CREATE
 
 // create a document under the collection 'habits'
-export async function add_habit(name, color, goal) {
+export async function add_habit(name, color, goal, uid) {
     console.log("ADDED HABIT");
     // const desc = 'Daily goal';
-    await addDoc(collection(db, "habits"), {
+    await addDoc(collection(db, "users", uid, "habits"), {
         display_name: name,
         description: `Daily goal: ${goal.toString()}`,
         color: color,
@@ -52,11 +58,11 @@ export async function add_habit(name, color, goal) {
 }
 
 // create a document under the collection 'habitEntries'
-export async function add_entry(habit, day, num) {
-    const habit_id = await fetch_habit_id(habit);
+export async function add_entry(habit, day, num, uid) {
+    const habit_id = await fetch_habit_id(habit, uid);
     console.log(day);
     // console.log("ADDED ENTRY");
-    await addDoc(collection(db, "habitEntries"), {
+    await addDoc(collection(db, "users", uid, "habitEntries"), {
         day: day,
         habit: habit_id,
         num: num
@@ -64,11 +70,16 @@ export async function add_entry(habit, day, num) {
 
 }
 
+// create document under the collection 'users'
+export async function add_user(uid) {
+    await setDoc(collection(db, "users", uid));
+}
+
 // READ
 
 // get list of habits
-export async function read_habits() {
-    const querySnapshot = await getDocs(collection(db, 'habits'));
+export async function read_habits(uid) {
+    const querySnapshot = await getDocs(collection(db, "users", uid, 'habits'));
     var to_return = [];
     querySnapshot.forEach((doc) => {
         // console.log(doc.id, " = ", doc.data());
@@ -78,10 +89,10 @@ export async function read_habits() {
 }
 
 // get all entries for one habit
-export async function fetch_entries_habit(habit) {
-    const habit_id = await fetch_habit_id(habit);
+export async function fetch_entries_habit(habit, uid) {
+    const habit_id = await fetch_habit_id(habit, uid);
     // console.log("fetch entries habit");
-    const q = query(collection(db, "habitEntries"), where("habit", "==", habit_id));
+    const q = query(collection(db, "users", uid, "habitEntries"), where("habit", "==", habit_id));
 
     const querySnapshot = await getDocs(q);
     var to_return = [];
@@ -100,7 +111,7 @@ export async function fetch_entries_habit(habit) {
 
 // if the entry exists, returns id based on habit and day
 // ELSE returns ''
-export async function fetch_entry_id(habit, day) {
+export async function fetch_entry_id(habit, day, uid) {
     // Get the start and end of the day
     const startOfDay = new Date(day);
     startOfDay.setHours(0, 0, 0, 0);
@@ -116,7 +127,7 @@ export async function fetch_entry_id(habit, day) {
     // console.log(endTimestamp);
 
     const q = query(
-        collection(db, "habitEntries"), 
+        collection(db, "users", uid, "habitEntries"), 
         where("habit", "==", habit), 
         where('day', '<=', endTimestamp),
         where('day', '>=', startTimestamp)
@@ -135,8 +146,8 @@ export async function fetch_entry_id(habit, day) {
 
 // if the habit exists, returns id based on display_name
 // ELSE returns ''
-export async function fetch_habit_id(habit) {
-    const q = query(collection(db, "habits"), where("display_name", "==", habit));
+export async function fetch_habit_id(habit, uid) {
+    const q = query(collection(db, "users", uid, "habits"), where("display_name", "==", habit));
     const querySnapshot = await getDocs(q);
     var habit_id = '';
     // console.log("inside fetch habit id, going to return");
@@ -153,11 +164,11 @@ export async function fetch_habit_id(habit) {
 // UPDATE
 
 // today's entry
-export async function create_or_update(habit, day, newnum) {
+export async function create_or_update(habit, day, newnum, uid) {
     // query to see if today's entry exists
     // console.log("inside createorupdate");
     // console.log(habit);
-    const habit_id = await fetch_habit_id(habit);
+    const habit_id = await fetch_habit_id(habit, uid);
     // console.log(habit_id);
     if (habit_id=='') {
         console.log("cannot add entry. habit does not exist");
@@ -167,7 +178,7 @@ export async function create_or_update(habit, day, newnum) {
         var entry_id = await fetch_entry_id(habit_id, day);
         if (entry_id==='') { // entry doesn't exist, must create
             console.log("creating entry");
-            await addDoc(collection(db, "habitEntries"), {
+            await addDoc(collection(db, "users", uid, "habitEntries"), {
                 day: day,
                 habit: habit_id,
                 num: num
@@ -176,61 +187,61 @@ export async function create_or_update(habit, day, newnum) {
             console.log("updating entry");
             console.log(entry_id);
             console.log(newnum);
-            updateDoc(doc(db, "habitEntries", entry_id), {num: newnum}); 
+            updateDoc(doc(db, "users", uid,  "habitEntries", entry_id), {num: newnum}); 
         }
     }
 }
 
 // habits
-export async function update_habit(habit_name, new_habit_name, new_goal, new_color) {
-    const habit_id = await fetch_habit_id(habit_name);
+export async function update_habit(habit_name, new_habit_name, new_goal, new_color, uid) {
+    const habit_id = await fetch_habit_id(habit_name, uid);
     if (habit_id==='') {
         console.log("cannot UPDATE habit ", habit, " doesnt exist");
     } else {
         // await updateDoc(doc(db, "habitEntries", doc_id), {num: newnum, day:newday});
-        await updateDoc(doc(db, "habits", habit_id), {display_name: new_habit_name, color: new_color, goal: new_goal, description: `Daily goal: ${new_goal}`});
+        await updateDoc(doc(db, "users", uid, "habits", habit_id), {display_name: new_habit_name, color: new_color, goal: new_goal, description: `Daily goal: ${new_goal}`});
     }
 }
 
 // for past entry
-export async function update_entry(habit, day, newday, newnum) {
+export async function update_entry(habit, day, newday, newnum, uid) {
     const doc_id = await fetch_entry_id(habit, day);
     if (doc_id==='') {
         console.log("cannot UPDATE past entry of ", habit, " ", day, " doesnt exist");
     } else {
-        await updateDoc(doc(db, "habitEntries", doc_id), {num: newnum, day:newday});
+        await updateDoc(doc(db, "users", uid, "habitEntries", doc_id), {num: newnum, day:newday});
     }
 }
 
 // DELETE
 
 // delete entry
-export async function delete_habit_entry(habit_id, day) {
+export async function delete_habit_entry(habit_id, day, uid) {
     const doc_id = await fetch_entry_id(habit_id, day);
     if (doc_id==='') {
         console.log("cannot DELETE entry of ", habit, " ", day, " doesnt exist");
     } else {
-        await deleteDoc(doc(db, "habitEntries", doc_id));
+        await deleteDoc(doc(db, "users", uid, "habitEntries", doc_id));
     }
 }
 
 // delete habit and all its entries too
-export async function delete_habit(habit) {
+export async function delete_habit(habit, uid) {
     // habit means the display name of the habit so first convert to habit_id
-    const habit_id = await fetch_habit_id(habit);
+    const habit_id = await fetch_habit_id(habit, uid);
     // check if can
     if (habit_id==='') {
         console.log("cannot delete habit ", habit, " id doesnt exist");
     } else {
         // delete all entries for the habit from habitEntries
-        const habitentries_q = query(collection(db, "habitEntries"), where("habit", "==", habit_id));
+        const habitentries_q = query(collection(db, "users", uid, "habitEntries"), where("habit", "==", habit_id));
         const habitentriesSnapshot = await getDocs(habitentries_q);
 
         habitentriesSnapshot.forEach(async (docu) => {
-            await deleteDoc(doc(db, "habitEntries", docu.id));
+            await deleteDoc(doc(db, "users", uid, "habitEntries", docu.id));
         })
 
         // delete habit itself
-        await deleteDoc(doc(db, "habits", habit_id));
+        await deleteDoc(doc(db, "users", uid, "habits", habit_id));
     }
 }

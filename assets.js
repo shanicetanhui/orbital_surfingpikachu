@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { init, fakedata, display, update_habit, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit } from './db';
+import { init, fakedata, display, update_habit, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit, add_user } from './db';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions, Switch, Alert, Image, Pressable, ScrollView, ImageBackground } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
@@ -502,6 +502,8 @@ export const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     read_initialData(setData);
+    console.log("UID");
+    console.log(navigation);
   }, [refresh]);
 
   // modal -> popups like in 'add new habit/section'
@@ -1029,8 +1031,8 @@ export const DetailsScreen = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.fullscreen}>
-      <ScrollView>
         <ImageBackground source={require('./assets/bg4.png')} style={styles.imageBackground}>
+      <ScrollView>
 
           {/* text */}
           <View style={styles.detailsScreenContainer}>
@@ -1269,8 +1271,8 @@ export const DetailsScreen = ({ route }) => {
             </View>
           </Modal>
 
-        </ImageBackground>
       </ScrollView>
+        </ImageBackground>
     </SafeAreaView>
   );
 };
