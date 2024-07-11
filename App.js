@@ -1,32 +1,32 @@
-import React from 'react';
-import { HomeScreen, DetailsScreen, Stack, TabNavigator, Test} from './assets'
-import "./firebaseConfig"
+import React, { useState, useEffect } from 'react';
+import { HomeScreen, DetailsScreen, Stack, TabNavigator, Test, LoginScreen, SignupScreen } from './assets'
+import { auth } from "./firebaseConfig"
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import AppLoading from 'expo-app-loading';
 
 function App() {
+
+  const [loggedInUser, setLoggedInUser] = useState(null);
+  const [isSignup, setIsSignup] = useState(false); // Track whether the user is in signup mode
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      setLoggedInUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+
   console.log("top level");
+  console.log(auth);
 
-  // const [fontsLoaded] = useFonts({
-  //   'Kolletkif': require('./assets/Roboto/Roboto-LightItalic.ttf'),
-  // });
-
-//  if (!fontsLoaded) {
-  //  return <AppLoading />;
-  //}
-
-  // await auth.authStateReady()
-  // const currentUser = auth.currentUser
-
-  if (true) {
-
+  // if (false) {
+  if (loggedInUser) {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Back">
         {/* Three tabs, home, profile and details */}
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-        {/*<Stack.Screen name="Profile" component={ProfileScreen} />*/}
         <Stack.Screen name="Details" component={DetailsScreen} />
         <Stack.Screen
           name="Back"
@@ -37,11 +37,12 @@ function App() {
     </NavigationContainer>
     // <Test></Test>
   );
-}
+} 
+else if (isSignup) {
+  return <SignupScreen setIsSignup={setIsSignup} setLoggedInUser={setLoggedInUser} auth={auth} />;
+} 
 else {
-  return (
-    <Test>testing</Test>
-  )
+  return <LoginScreen setIsSignup={setIsSignup} setLoggedInUser={setLoggedInUser} auth={auth} />;
 }
 }
 

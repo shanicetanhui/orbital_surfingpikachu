@@ -7,9 +7,8 @@ import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, T
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
 import { Picker } from '@react-native-picker/picker';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { Timestamp } from 'firebase/firestore';
-//import DatePicker from 'react-native-date-picker';
-// import DatePicker from 'react-datepicker';
 import * as Notifications from 'expo-notifications';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -29,9 +28,9 @@ const styles = StyleSheet.create({
     // paddingTop: 16,
     paddingBottom: 16,
   },
-  text: {
-    fontFamily: 'Kollektif',
-  },
+  // text: {
+  //   fontFamily: 'Kollektif',
+  // },
   item: {
     padding: 20,
     marginVertical: 8,
@@ -47,18 +46,18 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontFamily: 'Kollektif',
+    // fontFamily: 'Kollektif',
   },
   headerTitle: {
     fontSize: 32,
     fontWeight: 'bold',
-    fontFamily: 'Kollektif',
+    // fontFamily: 'Kollektif',
   },
   headerSubtitle: {
     fontSize: 16,
     marginTop: 8,
     color: 'gray',
-    fontFamily: 'Kollektif',
+    // fontFamily: 'Kollektif',
   },
   detailsContainer: {
     marginTop: 10,
@@ -74,7 +73,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     fontSize: 16,
     color: 'gray',
-    fontFamily: 'Kollektif',
+    // fontFamily: 'Kollektif',
   },
   additionalDetailsContainer: {
     padding: 10,
@@ -82,7 +81,7 @@ const styles = StyleSheet.create({
   additionalDetailsTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    fontFamily: 'Kollektif',
+    // fontFamily: 'Kollektif',
   },
   buttonContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
@@ -111,8 +110,8 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingHorizontal: 10,
     alignSelf: 'center', // Aligns the TextInput itself to the center horizontally
-    fontFamily: 'Roboto', // Ensure consistent font family
-    backgroundColor: 'white',
+    // fontFamily: 'Roboto', // Ensure consistent font family
+    // backgroundColor: 'white',
   },
   modalView: {
     width: '80%',
@@ -160,7 +159,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: 'center',
     fontSize: 18,
-    fontFamily: 'Kollektif',
+    // fontFamily: 'Kollektif',
   },
   button: {
     backgroundColor: '#2196F3',
@@ -172,7 +171,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     textAlign: 'center',
-    fontFamily: 'Kollektif',
+    // fontFamily: 'Kollektif',
   },
   buttonClose: {
     backgroundColor: '#f44336',
@@ -186,7 +185,7 @@ const styles = StyleSheet.create({
   counterText: {
     fontSize: 24,
     marginHorizontal: 20,
-    fontFamily: 'Kollektif',
+    // fontFamily: 'Kollektif',
   },
   addButton: {
     backgroundColor: 'lightgrey', // Set background color to grey
@@ -238,20 +237,20 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 15,
     fontWeight: 'bold',
-    fontFamily: 'Kollektif',
+    // fontFamily: 'Kollektif',
   },
   gotoDetailsText: {
     fontSize: 18,
     textAlign: 'center',
     color: 'blue',
-    fontFamily: 'Kollektif',
+    // fontFamily: 'Kollektif',
   },
   notAvailText: {
     fontSize: 8,
     color: 'grey',
     textAlign: 'center',
     textAlignVertical: 'center',
-    fontFamily: 'Kollektif',
+    // fontFamily: 'Kollektif',
   },
   profileImageContainer: {
     alignItems: 'center',
@@ -275,47 +274,54 @@ const styles = StyleSheet.create({
   },
   usernameContainer: {
     padding: 10,
-    fontFamily: 'center',
+    // fontFamily: 'center',
   },
   switchContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 10,
-    fontFamily: 'center',
+    // fontFamily: 'center',
   },
   // PICKERSTYLES 
   picker: {
     height: 40,
-    borderColor: 'grey',
-    borderWidth: 1,
-    borderRadius: 5,
-    width: '95%',
+    width: '100%',
     marginVertical: 10,
     alignSelf: 'center',
-    fontFamily: 'Roboto',
+    // fontFamily: 'Roboto',
     color: 'grey',
     alignItems: 'center',
-  },
-  pickerContainer: {
-    width: '95%',
     borderColor: 'grey',
     borderWidth: 1, 
     borderRadius: 5,
     alignSelf: 'center',
+  },
+  picker2: {
+    height: 40,
+    width: '95%',
+    marginVertical: 10,
+    alignSelf: 'center',
+    // fontFamily: 'Roboto',
+    color: 'grey',
+    alignItems: 'center',
+    borderColor: 'grey',
+    borderWidth: 1, 
+    borderRadius: 5,
+    alignSelf: 'center',
+  },
+  pickerContainer: {
+    width: '95%',
+    alignSelf: 'center',
     marginVertical: 10,
   },
   pickerItem: {
-    fontFamily: 'Roboto', 
+    // fontFamily: 'Roboto', 
     fontSize: 12, 
-    backgroundColor: 'white',
-    borderColor: 'grey',
-    borderWidth: 1,
-    borderRadius: 5,
+    color: 'black',
   },
-});
 
-// const image = {}
+});
 
 // front end purposes
 const initialData = [
@@ -382,7 +388,93 @@ export const Test = () => {
   )
 }
 
-export const LoginScreen = () => {}
+const login = (auth, email, password, setLoggedInUser) => {
+  signInWithEmailAndPassword(auth, email, password)
+    .then(userCredential => {
+      const user = userCredential.user;
+      setLoggedInUser(user);
+    })
+    .catch(error => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.error(errorCode, errorMessage);
+    });
+};
+
+export const LoginScreen = ({ setIsSignup, setLoggedInUser, auth }) => {
+  const [email, onChangeEmail] = useState("");
+  const [password, onChangePassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleLogin = () => {
+    login(auth, email, password, setLoggedInUser);
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text>Email</Text>
+      <TextInput
+        style={styles.input}
+        onChangeText={onChangeEmail}
+        value={email}
+      />
+      <Text>Password</Text>
+      <TextInput
+        style={styles.input}
+        onChangeText={onChangePassword}
+        value={password}
+        secureTextEntry={true}
+      />
+      <Button title="Log in" onPress={handleLogin} />
+      {errorMessage ? <Text>{errorMessage}</Text> : null}
+      <Button title="Go to sign up page" onPress={() => setIsSignup(true)} />
+    </View>
+  );
+};
+
+const signup = (auth, email, password, setLoggedInUser) => {
+  createUserWithEmailAndPassword(auth, email, password)
+    .then(userCredential => {
+      const user = userCredential.user;
+      setLoggedInUser(user);
+    })
+    .catch(error => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.error(errorCode, errorMessage);
+    });
+};
+
+export const SignupScreen = ({ setIsSignup, setLoggedInUser, auth }) => {
+  const [email, onChangeEmail] = useState("");
+  const [password, onChangePassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleSignup = () => {
+    signup(auth, email, password, setLoggedInUser);
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text>Email</Text>
+      <TextInput
+        style={styles.input}
+        onChangeText={onChangeEmail}
+        value={email}
+      />
+      <Text>Password</Text>
+      <TextInput
+        style={styles.input}
+        onChangeText={onChangePassword}
+        value={password}
+        secureTextEntry={true}
+      />
+      <Button title="Sign Up" onPress={handleSignup} />
+      {errorMessage ? <Text>{errorMessage}</Text> : null}
+      <Button title="go to log in page" onPress={() => setIsSignup(false)} />
+    </View>
+  );
+};
 
 // home screen
 export const HomeScreen = ({ navigation }) => {
@@ -505,8 +597,8 @@ export const HomeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.fullscreen}>
-      <ScrollView>
-        <ImageBackground source={require('./assets/bg3.png')} style={styles.imageBackground}>
+      {/* <ScrollView> */}
+        <ImageBackground source={require('./assets/bg4.png')} style={styles.imageBackground}>
           {/* <Test></Test> */}
           <SectionList
             sections={data}
@@ -676,7 +768,7 @@ export const HomeScreen = ({ navigation }) => {
           </Modal>
 
         </ImageBackground>
-      </ScrollView>
+      {/* </ScrollView> */}
     </SafeAreaView>
   );
 };
@@ -938,7 +1030,7 @@ export const DetailsScreen = ({ route }) => {
   return (
     <SafeAreaView style={styles.fullscreen}>
       <ScrollView>
-        <ImageBackground source={require('./assets/bg3.png')} style={styles.imageBackground}>
+        <ImageBackground source={require('./assets/bg4.png')} style={styles.imageBackground}>
 
           {/* text */}
           <View style={styles.detailsScreenContainer}>
@@ -1186,7 +1278,7 @@ export const DetailsScreen = ({ route }) => {
 // blank screen
 export const BlankScreen = () => (
   <SafeAreaView style={styles.fullscreen}>
-    <ImageBackground source={require('./assets/bg3.png')} style={styles.imageBackground}>
+    <ImageBackground source={require('./assets/bg4.png')} style={styles.imageBackground}>
       <Text style={styles.text}>Blank Screen</Text>
     </ImageBackground>
   </SafeAreaView>
@@ -1238,7 +1330,7 @@ export const SettingsScreen = () => {
 
   return (
     <SafeAreaView style={styles.fullscreen}>
-      <ImageBackground source={require('./assets/bg3.png')} style={styles.imageBackground}>
+      <ImageBackground source={require('./assets/bg4.png')} style={styles.imageBackground}>
         {/* Profile Image */}
         <View style={styles.profileImageContainer}>
           {image && <Image source={{ uri: image }} style={styles.image} />}
@@ -1284,7 +1376,7 @@ export const SettingsScreen = () => {
           <Picker
             selectedValue={school}
             onValueChange={(itemValue) => setSchool(itemValue)}
-            style={[styles.picker, { borderColor: 'grey', borderWidth: 1 }]}
+            style={[styles.picker2, { borderColor: 'grey', borderWidth: 1 }]}
           >
             <Picker.Item label="Select your school" value="" style={styles.pickerItem} />
             <Picker.Item label="School 1" value="school1" style={styles.pickerItem} />
@@ -1344,8 +1436,8 @@ export const SettingsScreen = () => {
 const colors = {
   background: '#f8f8f8', //light grey
   tab: '#ff6347', //orange
-  accent: '#000000', //black
-  primary: '#ffffff' //white
+  accent: '#ffffff', //black
+  primary: '#000000' //white
 };
 
 export const Stack = createNativeStackNavigator();
