@@ -333,8 +333,8 @@ const initialData = [
 ];
 
 // read fake data (for now) into front-end initialData
-async function read_initialData(setData) {
-  const rows = await read_habits();
+async function read_initialData(setData, uid) {
+  const rows = await read_habits(uid);
   const newData = [...initialData];
   rows.forEach((row) => {
     newData[0].data.push(
@@ -437,6 +437,8 @@ const signup = (auth, email, password, setLoggedInUser) => {
     .then(userCredential => {
       const user = userCredential.user;
       setLoggedInUser(user);
+      // console.log(user.uid);
+      add_user(user.uid);
     })
     .catch(error => {
       const errorCode = error.code;
@@ -477,7 +479,13 @@ export const SignupScreen = ({ setIsSignup, setLoggedInUser, auth }) => {
 };
 
 // home screen
-export const HomeScreen = ({ navigation }) => {
+export const HomeScreen = ({ navigation, route }) => {
+  // const { uid } = route.params || {};
+  const uid = "Rrw7w0gg9CNugNXAQdyH0FXuXDS2";
+  
+  console.log("home screen");
+  console.log(navigation);
+  console.log(route);
 
   // Hooks for variables
   const [refresh, setRefresh] = useState(false);
@@ -501,9 +509,9 @@ export const HomeScreen = ({ navigation }) => {
   const [selectedColor, setSelectedColor] = useState('rgba(252, 223, 202, 0.7)');
 
   useEffect(() => {
-    read_initialData(setData);
-    console.log("UID");
-    console.log(navigation);
+    read_initialData(setData, uid);
+    // console.log("UID");
+    // console.log(uid);
   }, [refresh]);
 
   // modal -> popups like in 'add new habit/section'
@@ -516,7 +524,7 @@ export const HomeScreen = ({ navigation }) => {
     if (newItemName.trim() !== '' && dailyGoal.trim() !== '') {
       const newItem = { title: newItemName, color: selectedColor, details: [`Daily goal: ${dailyGoal}`], goal: dailyGoal };
       console.log("adding new item")
-      add_habit(newItem.title, newItem.color, newItem.goal);
+      add_habit(newItem.title, newItem.color, newItem.goal, uid);
       // console.log(read_habits());
       setData((prevData) => {
         const updatedData = prevData.map((section) => {
@@ -554,15 +562,15 @@ export const HomeScreen = ({ navigation }) => {
       }));
       setData(updatedData);
       console.log("calling delete_habit");
-      delete_habit(itemToDelete.title);
+      delete_habit(itemToDelete.title, uid);
       setDeleteModalVisible(false);
       setItemToDelete(null);
     }
   };
 
   const handleEdit = async () => {
-    await update_habit(editedData.old_title, editedData.title, editedData.goal, editedData.color);
-    const rows = await read_habits();
+    await update_habit(editedData.old_title, editedData.title, editedData.goal, editedData.color, uid);
+    const rows = await read_habits(uid);
     const newData = [
       {
         title: 'Habits',
@@ -585,7 +593,7 @@ export const HomeScreen = ({ navigation }) => {
     setEditedData({
       title: item.title,
       old_title: item.title,
-      details: [...item.details],
+      // details: [...item.details],
       goal: item.goal,
       color: item.color
     });
@@ -778,6 +786,7 @@ export const HomeScreen = ({ navigation }) => {
 // details screen
 export const DetailsScreen = ({ route }) => {
   const { item, additionalDetails } = route.params;
+  const uid = "Rrw7w0gg9CNugNXAQdyH0FXuXDS2";
 
   // Hooks for habitData and counter
   const [habitData, setHabitData] = useState([]);
@@ -836,7 +845,7 @@ export const DetailsScreen = ({ route }) => {
   const handleAddSubmit = async () => {
     new_date = new Date(addedData.year, addedData.month, addedData.day);
     console.log(new_date);
-    add_entry(item.title, new_date, addedData.num);
+    add_entry(item.title, new_date, addedData.num, uid);
     setAddModalVisible(false);
     setRefresh(prev => !prev);  // Toggle the refresh state
   }
@@ -845,12 +854,12 @@ export const DetailsScreen = ({ route }) => {
   const handleEditSubmit = () => {
     // Handle the submission logic here
     const new_date = new Date(editedData.year, editedData.month, editedData.day);
-    update_entry(editedData.habit_id, editedData.old_date, new_date, editedData.num)
+    update_entry(editedData.habit_id, editedData.old_date, new_date, editedData.num, uid)
     setEditModalVisible(false);
   };
 
   const handleDataDelete = async (entry) => {
-    delete_habit_entry(entry.habit, entry.day);
+    delete_habit_entry(entry.habit, entry.day, uid);
     console.log("deleted");
     setRefresh(prev => !prev);  // Toggle the refresh state
 
@@ -906,7 +915,7 @@ export const DetailsScreen = ({ route }) => {
   const fetchHabits = async () => {
     try {
       // fetch all entries for the current habit
-      const data = await fetch_entries_habit(item.title);
+      const data = await fetch_entries_habit(item.title, uid);
       data.sort((a, b) => a.day - b.day);
       setHabitData(data);
       // habitDataRef.current = data;
@@ -920,7 +929,7 @@ export const DetailsScreen = ({ route }) => {
       // if there is an entry for today, grab today's number for counter
       // if there isn't an entry, set the counter to 0
       if (!entry) {
-        await add_entry(item.title, day, 0);
+        await add_entry(item.title, day, 0, uid);
         setRefresh(prev => !prev);  // Toggle the refresh state
       } else {
         setCounter(entry.num);
@@ -1009,7 +1018,7 @@ export const DetailsScreen = ({ route }) => {
   const incrementCounter = async () => {
     const newCounter = counter + 1;
     setCounter(newCounter);
-    await create_or_update(item.title, day, newCounter);
+    await create_or_update(item.title, day, newCounter, uid);
     setRefresh(prev => !prev);  // Toggle the refresh state
   };
 
@@ -1020,7 +1029,7 @@ export const DetailsScreen = ({ route }) => {
     }
     else {
       setCounter(newCounter);
-      await create_or_update(item.title, day, newCounter);
+      await create_or_update(item.title, day, newCounter, uid);
       setRefresh(prev => !prev);  // Toggle the refresh state
     }
   };
@@ -1134,6 +1143,7 @@ export const DetailsScreen = ({ route }) => {
           {habitData.map((entry) => {
             // { habitDataRef.current.map((entry) => {
             return (
+              // <View style={styles.item} id={entry.day}>
               <View style={styles.item}>
                 <Text>
                   {date_display_format(entry.day)} - {entry.num} -
@@ -1287,7 +1297,9 @@ export const BlankScreen = () => (
 );
 
 // settings screen
-export const SettingsScreen = () => {
+export const SettingsScreen = ({navigation, route}) => {
+  console.log(navigation);
+  console.log(route);
   // PROFILE IMAGE
   const [image, setImage] = useState(null);
 
@@ -1295,7 +1307,7 @@ export const SettingsScreen = () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect: [1,1],
       quality: 1,
     });
 
@@ -1305,6 +1317,8 @@ export const SettingsScreen = () => {
       setImage(result.assets[0].uri);
     }
   };
+
+  
 
   // USERNAME
   const usernameInputRef = useRef(null);
@@ -1333,6 +1347,7 @@ export const SettingsScreen = () => {
   return (
     <SafeAreaView style={styles.fullscreen}>
       <ImageBackground source={require('./assets/bg4.png')} style={styles.imageBackground}>
+        <ScrollView>
         {/* Profile Image */}
         <View style={styles.profileImageContainer}>
           {image && <Image source={{ uri: image }} style={styles.image} />}
@@ -1429,6 +1444,12 @@ export const SettingsScreen = () => {
           </Pressable>
         </View>
 
+        {/* Log out */}
+        <Pressable style={styles.imagebutton} onPress={pickImage}>
+            <Text style={styles.buttonText}>Log out</Text>
+          </Pressable>
+
+        </ScrollView>
       </ImageBackground>
     </SafeAreaView>
   );

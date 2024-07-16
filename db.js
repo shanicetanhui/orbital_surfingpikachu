@@ -1,6 +1,5 @@
 import { db } from "./firebaseConfig";
 import { collection, doc, getDocs, setDoc, query, where, addDoc, updateDoc, deleteDoc, Timestamp } from "firebase/firestore";
-// import { UserContext } from './UserContext';
 
 // debug purposes. called in <Test> component
 export async function display() {
@@ -47,7 +46,9 @@ export function date_display_format(date_object) {
 
 // create a document under the collection 'habits'
 export async function add_habit(name, color, goal, uid) {
-    console.log("ADDED HABIT");
+    console.log("ADDING HABIT");
+    console.log(db);
+    console.log(uid);
     // const desc = 'Daily goal';
     await addDoc(collection(db, "users", uid, "habits"), {
         display_name: name,
@@ -67,12 +68,19 @@ export async function add_entry(habit, day, num, uid) {
         habit: habit_id,
         num: num
     }); 
-
 }
 
 // create document under the collection 'users'
 export async function add_user(uid) {
-    await setDoc(collection(db, "users", uid));
+    console.log("adding user");
+    await setDoc(doc(db, "users", uid), {age: 0, dark_mode: false, msg: "Consistency breeds success.", username: "default username"});
+    console.log("adding default habit now");
+    await addDoc(collection(db, "users", uid, "habits"), {
+        display_name: "Water",
+        description: "Daily goal: 8",
+        color: "rgba(252, 223, 202, 0.7)",
+        goal: 8
+    })
 }
 
 // READ
@@ -175,7 +183,7 @@ export async function create_or_update(habit, day, newnum, uid) {
         console.log(habit);
     }
     else {
-        var entry_id = await fetch_entry_id(habit_id, day);
+        var entry_id = await fetch_entry_id(habit_id, day, uid);
         if (entry_id==='') { // entry doesn't exist, must create
             console.log("creating entry");
             await addDoc(collection(db, "users", uid, "habitEntries"), {
@@ -205,7 +213,7 @@ export async function update_habit(habit_name, new_habit_name, new_goal, new_col
 
 // for past entry
 export async function update_entry(habit, day, newday, newnum, uid) {
-    const doc_id = await fetch_entry_id(habit, day);
+    const doc_id = await fetch_entry_id(habit, day, uid);
     if (doc_id==='') {
         console.log("cannot UPDATE past entry of ", habit, " ", day, " doesnt exist");
     } else {
@@ -217,7 +225,7 @@ export async function update_entry(habit, day, newday, newnum, uid) {
 
 // delete entry
 export async function delete_habit_entry(habit_id, day, uid) {
-    const doc_id = await fetch_entry_id(habit_id, day);
+    const doc_id = await fetch_entry_id(habit_id, day, uid);
     if (doc_id==='') {
         console.log("cannot DELETE entry of ", habit, " ", day, " doesnt exist");
     } else {

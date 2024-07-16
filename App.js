@@ -1,6 +1,5 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { HomeScreen, DetailsScreen, Stack, TabNavigator, Test, LoginScreen, SignupScreen } from './assets'
-import { UserContext, UserProvider } from './UserContext';
 import { auth } from "./firebaseConfig"
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
@@ -8,8 +7,8 @@ import AppLoading from 'expo-app-loading';
 
 function App() {
 
-  const { loggedInUser, setLoggedInUser } = useContext(UserContext);
   const [isSignup, setIsSignup] = useState(false); // Track whether the user is in signup mode
+  const [loggedInUser, setLoggedInUser] = useState(null);
 
   // useEffect(() => {
   //   const unsubscribe = auth.onAuthStateChanged(user => {
@@ -33,7 +32,13 @@ function App() {
             name="Home" 
             component={HomeScreen} 
             options={{ headerShown: false }}
-            // initialParams = {{ uid: loggedInUser.uid }}
+            // initialParams={{ uid: loggedInUser.uid, changeLogin: setLoggedInUser }} // Pass uid as initialParams
+            // options={({route, navigation}) => ({
+              //   uid: loggedInUser.uid, 
+              //   changeLogin: setLoggedInUser
+              // })}
+            // options={{ headerShown: false, uid: loggedInUser.uid, changeLogin: setLoggedInUser }}
+
           />
           <Stack.Screen 
             name="Details" 
@@ -58,10 +63,12 @@ function App() {
   }
 }
 
-export default function Main() {
-  return (
-    <UserProvider>
-      <App />
-    </UserProvider>
-  );
-}
+export default App ;
+
+// export default function Main() {
+//   return (
+//     <UserProvider>
+//       <App />
+//     </UserProvider>
+//   );
+// }
