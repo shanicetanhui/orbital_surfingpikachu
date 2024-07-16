@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { UserContext, UserProvider} from "./UserContext";
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -479,13 +480,15 @@ export const SignupScreen = ({ setIsSignup, setLoggedInUser, auth }) => {
 };
 
 // home screen
-export const HomeScreen = ({ navigation, route }) => {
+export const HomeScreen = ({ navigation }) => {
   // const { uid } = route.params || {};
-  const uid = "Rrw7w0gg9CNugNXAQdyH0FXuXDS2";
+  const { loggedInUser } = useContext(UserContext);
+  const uid = loggedInUser.uid;
   
   console.log("home screen");
-  console.log(navigation);
-  console.log(route);
+  console.log(loggedInUser);
+  // console.log(navigation);
+  // console.log(route);
 
   // Hooks for variables
   const [refresh, setRefresh] = useState(false);
@@ -786,7 +789,8 @@ export const HomeScreen = ({ navigation, route }) => {
 // details screen
 export const DetailsScreen = ({ route }) => {
   const { item, additionalDetails } = route.params;
-  const uid = "Rrw7w0gg9CNugNXAQdyH0FXuXDS2";
+  const { loggedInUser, setLoggedInUser } = useContext(UserContext);
+  const uid = loggedInUser.uid;
 
   // Hooks for habitData and counter
   const [habitData, setHabitData] = useState([]);
@@ -1297,9 +1301,9 @@ export const BlankScreen = () => (
 );
 
 // settings screen
-export const SettingsScreen = ({navigation, route}) => {
-  console.log(navigation);
-  console.log(route);
+export const SettingsScreen = () => {
+  const { loggedInUser, setLoggedInUser } = useContext(UserContext);
+
   // PROFILE IMAGE
   const [image, setImage] = useState(null);
 
@@ -1317,8 +1321,6 @@ export const SettingsScreen = ({navigation, route}) => {
       setImage(result.assets[0].uri);
     }
   };
-
-  
 
   // USERNAME
   const usernameInputRef = useRef(null);
@@ -1445,7 +1447,9 @@ export const SettingsScreen = ({navigation, route}) => {
         </View>
 
         {/* Log out */}
-        <Pressable style={styles.imagebutton} onPress={pickImage}>
+        <Pressable style={styles.imagebutton} onPress={() => {
+          setLoggedInUser(null)
+          }}>
             <Text style={styles.buttonText}>Log out</Text>
           </Pressable>
 
