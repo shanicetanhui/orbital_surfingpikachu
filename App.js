@@ -1,37 +1,43 @@
-import React from 'react';
-import { HomeScreen, DetailsScreen, Stack, TabNavigator} from './assets'
+import React, {useState, useEffect } from 'react';
+import { HomeScreen, DetailsScreen, Stack, TabNavigator, styles} from './assets'
+import { View, useColorScheme } from 'react-native';
 import "./firebaseConfig"
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import AppLoading from 'expo-app-loading';
+import { EventRegister } from 'react-native-event-listeners'
+import { list } from 'firebase/storage';
+import theme from './theme/theme';
+import themeContext from './theme/themeContext';
+
 
 function App() {
-  console.log("top level");
 
-  const [fontsLoaded] = useFonts({
-    'Kolletkif': require('./assets/Roboto/Roboto-LightItalic.ttf'),
-  });
+  const [darkMode, setDarkMode] = useState(false);
 
-//  if (!fontsLoaded) {
-  //  return <AppLoading />;
-  //}
+  useEffect(() => {
+    const listener = EventRegister.addEventListener('ChangeTheme', (data) =>{
+      setDarkMode(data);
+    })
+    return ()=> {
+      EventRegister.removeAllListeners(listener);
+    };
+  }, [darkMode])
 
   return (
-
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Back">
-        {/* Three tabs, home, profile and details */}
-        <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-        {/*<Stack.Screen name="Profile" component={ProfileScreen} />*/}
-        <Stack.Screen name="Details" component={DetailsScreen} />
-        <Stack.Screen
-          name="Back"
-          component={TabNavigator}
-          options={{ headerShown: false }} // Hide header for back screen
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
-    // <Test></Test>
+    <themeContext.Provider value={darkMode === true ? theme.dark : theme.light}>
+        <NavigationContainer theme={darkMode === true ? DarkTheme : DefaultTheme}>
+          <Stack.Navigator initialRouteName="Back">
+            <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Details" component={DetailsScreen} />
+            <Stack.Screen
+              name="Back"
+              component={TabNavigator}
+              options={{ headerShown: false }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+    </themeContext.Provider>
   );
 }
 
