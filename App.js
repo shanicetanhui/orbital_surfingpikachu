@@ -1,24 +1,30 @@
-import React, { useState, useContext } from 'react';
-import { HomeScreen, DetailsScreen, Stack, TabNavigator, Test, LoginScreen, SignupScreen } from './assets'
+import React, { useState, useContext, useEffect } from 'react';
+import { HomeScreen, DetailsScreen, Stack, TabNavigator, Test, LoginScreen, SignupScreen, styles} from './assets'
+import { View, useColorScheme } from 'react-native';
 import { auth } from "./firebaseConfig"
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { UserContext, UserProvider} from "./UserContext";
 import { useFonts } from 'expo-font';
 import AppLoading from 'expo-app-loading';
+import { EventRegister } from 'react-native-event-listeners'
+import { list } from 'firebase/storage';
+import theme from './theme/theme';
+import themeContext from './theme/themeContext';
+
 
 function App() {
-
   const [isSignup, setIsSignup] = useState(false); // Track whether the user is in signup mode
-  
-  // const [loggedInUser, setLoggedInUser] = useState(null);
   const { loggedInUser, setLoggedInUser } = useContext(UserContext);
 
-  // useEffect(() => {
-  //   const unsubscribe = auth.onAuthStateChanged(user => {
-  //     setLoggedInUser(user);
-  //   });
-  //   return () => unsubscribe();
-  // }, []);
+  const [darkMode, setDarkMode] = useState(false);
+  useEffect(() => {
+    const listener = EventRegister.addEventListener('ChangeTheme', (data) =>{
+      setDarkMode(data);
+    })
+    return ()=> {
+      EventRegister.removeAllListeners(listener);
+    };
+  }, [darkMode])
 
   console.log("top level");
   console.log(auth);
@@ -28,33 +34,28 @@ function App() {
     console.log("loggedinuser");
     console.log(loggedInUser.uid);
     return (
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName="Back">
-          {/* Three tabs, home, profile and details */}
-          <Stack.Screen 
-            name="Home" 
-            component={HomeScreen} 
-            options={{ headerShown: false }}
-            initialParams={{ uid: loggedInUser.uid, changeLogin: setLoggedInUser }} // Pass uid as initialParams
-            // options={({route, navigation}) => ({
-              //   uid: loggedInUser.uid, 
-              //   changeLogin: setLoggedInUser
-              // })}
-            // options={{ headerShown: false, uid: loggedInUser.uid, changeLogin: setLoggedInUser }}
-          />
-          <Stack.Screen 
-            name="Details" 
-            component={DetailsScreen} 
-            // initialParams = {{ "uid": loggedInUser.uid }}
-          />
-          <Stack.Screen
-            name="Back"
-            component={TabNavigator}
-            options={{ headerShown: false }} // Hide header for back screen
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-      // <Test></Test>
+      <themeContext.Provider value={darkMode === true ? theme.dark : theme.light}>
+        <NavigationContainer theme={darkMode === true ? DarkTheme : DefaultTheme}>
+          <Stack.Navigator initialRouteName="Back">
+            {/* Three tabs, home, profile and details */}
+            <Stack.Screen 
+              name="Home" 
+              component={HomeScreen} 
+              options={{ headerShown: false }}
+              initialParams={{ uid: loggedInUser.uid, changeLogin: setLoggedInUser }} // Pass uid as initialParams
+            />
+            <Stack.Screen 
+              name="Details" 
+              component={DetailsScreen} 
+            />
+            <Stack.Screen
+              name="Back"
+              component={TabNavigator}
+              options={{ headerShown: false }} // Hide header for back screen
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </themeContext.Provider>
     );
   } 
   else if (isSignup) {
