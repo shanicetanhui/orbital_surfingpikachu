@@ -37,9 +37,6 @@ export function date_display_format(date_object) {
     return `${dayString}/${monthString}`;
 }
 
-// const { loggedInUser } = useContext(UserContext); // Use the context directly
-// const uid = loggedInUser.uid ;
-
 // console.log(uid);
 
 // CREATE
@@ -169,6 +166,11 @@ export async function fetch_habit_id(habit, uid) {
     return habit_id;
 }
 
+export async function fetch_user_settings(uid) {
+    const userSettings = await getDoc(doc(db, "users", uid));
+    console.log(userSettings.data());
+}
+
 // UPDATE
 
 // today's entry
@@ -253,3 +255,5 @@ export async function delete_habit(habit, uid) {
         await deleteDoc(doc(db, "users", uid, "habits", habit_id));
     }
 }
+
+export async function delete_user(uid) {}

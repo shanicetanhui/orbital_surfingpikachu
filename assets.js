@@ -3,7 +3,7 @@ import { UserContext, UserProvider} from "./UserContext";
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator, DarkTheme } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { init, fakedata, display, update_habit, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit, add_user } from './db';
+import { init, fakedata, display, update_habit, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit, add_user, fetch_user_settings } from './db';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions, Switch, Alert, Image, Pressable, ScrollView, ImageBackground, useColorScheme } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
@@ -1279,6 +1279,12 @@ export const BlankScreen = () => {
 export const SettingsScreen = () => {
 
   const { loggedInUser, setLoggedInUser } = useContext(UserContext);
+  const uid = loggedInUser.uid;
+  
+  useEffect(()  => {
+    console.log("SETTINGS");
+    fetch_user_settings(uid);
+  }, [])
 
   const theme = useContext(themeContext)
   const [darkMode, setDarkMode] = useState(false)
