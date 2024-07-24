@@ -320,10 +320,14 @@ const styles = StyleSheet.create({
    // color: theme.color,
   },
   bubble: {
-    padding: 2,
+    padding: 20,
     justifyContent: 'center',
     fontSize: 16,
     backgroundColor: 'rgba(252, 223, 202, 0.7)',
+    borderRadius: 20,
+    marginHorizontal: 16,
+    marginVertical: 8,
+
   },
 });
 
