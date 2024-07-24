@@ -319,7 +319,12 @@ const styles = StyleSheet.create({
     fontSize: 12, 
    // color: theme.color,
   },
-
+  bubble: {
+    padding: 2,
+    justifyContent: 'center',
+    fontSize: 16,
+    backgroundColor: 'rgba(252, 223, 202, 0.7)',
+  },
 });
 
 // front end purposes
@@ -1261,15 +1266,123 @@ export const DetailsScreen = ({ route }) => {
   );
 };
 
-// blank screen
-export const BlankScreen = () => {
-  const theme = useContext(themeContext)
-  const [darkMode, setDarkMode] = useState(false)
+// // blank screen
+// export const BlankScreen = () => {
+//   const theme = useContext(themeContext)
+//   const [darkMode, setDarkMode] = useState(false)
+
+//   return (
+//     <SafeAreaView style={styles.fullscreen}>
+// <ImageBackground source={theme.backgroundImage} style={styles.imageBackground}>
+//         <Text style={[styles.text, { color:theme.color}]}>Blank Screen</Text>
+//       </ImageBackground>
+//     </SafeAreaView>
+//   );
+// };
+
+// locations screen
+export const LocationsScreen = () => {
+  const theme = useContext(themeContext);
+  const InputRef = useRef(null);
+  const [input, setInput] = useState('');
+
+  const handleSubmit = () => {
+    // Handle the submission logic here
+    console.log('Submitted:', input);
+    // Reset input field after submission
+    setInput('');
+  };
 
   return (
     <SafeAreaView style={styles.fullscreen}>
-<ImageBackground source={theme.backgroundImage} style={styles.imageBackground}>
-        <Text style={[styles.text, { color:theme.color}]}>Blank Screen</Text>
+      <ImageBackground source={theme.backgroundImage} style={styles.imageBackground}>
+        <View style={styles.usernameContainer}>
+          <Text style={[styles.title, { color: theme.color }]}>Fruit Stall Locations</Text>
+          
+          <View style={styles.bubble}>
+            <Text style={[styles.title, { color: theme.color }]}>UTown:</Text>
+            <View style={styles.detailsContainer}>
+              <Text style={[styles.text, { color: theme.color }]}>
+                Fine Food Canteen, Flavours@Utown, Fairprice Xpress NUS, Octobox
+              </Text>
+            </View>
+          </View>
+          
+          <View style={styles.bubble}>
+            <Text style={[styles.title, { color: theme.color }]}>Engineering:</Text>
+            <View style={styles.detailsContainer}>
+              <Text style={[styles.text, { color: theme.color }]}>
+                WuYang Canteen@E2, Techno Edge Canteen, Arise and Shine
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.bubble}>
+            <Text style={[styles.title, { color: theme.color }]}>YIH:</Text>
+            <View style={styles.detailsContainer}>
+              <Text style={[styles.text, { color: theme.color }]}>
+                temporarily closed
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.bubble}>
+            <Text style={[styles.title, { color: theme.color }]}>Computing:</Text>
+            <View style={styles.detailsContainer}>
+              <Text style={[styles.text, { color: theme.color }]}>
+                Terrace, Cool Spot
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.bubble}>
+            <Text style={[styles.title, { color: theme.color }]}>FASS:</Text>
+            <View style={styles.detailsContainer}>
+              <Text style={[styles.text, { color: theme.color }]}>
+                The Deck
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.bubble}>
+            <Text style={[styles.title, { color: theme.color }]}>Science:</Text>
+            <View style={styles.detailsContainer}>
+              <Text style={[styles.text, { color: theme.color }]}>
+                Frontier
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.bubble}>
+            <Text style={[styles.title, { color: theme.color }]}>Kent Ridge:</Text>
+            <View style={styles.detailsContainer}>
+              <Text style={[styles.text, { color: theme.color }]}>
+                SF Farm Mart, FairPrice NUH
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.bubble}>
+            <Text style={[styles.title, { color: theme.color }]}>PGP:</Text>
+            <View style={styles.detailsContainer}>
+              <Text style={[styles.text, { color: theme.color }]}>
+                PGPR Food Court
+              </Text>
+            </View>
+          </View>
+
+          <TextInput
+            ref={InputRef}
+            style={styles.input}
+            value={input}
+            placeholder='Add fruit stall locations here!'
+            placeholderTextColor='grey'
+            onChangeText={setInput}
+          />
+          <Pressable style={styles.button} onPress={handleSubmit}>
+            <Text style={styles.buttonText}>Submit</Text>
+          </Pressable>
+        </View>
       </ImageBackground>
     </SafeAreaView>
   );
@@ -1479,8 +1592,8 @@ export function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Blank"
-        component={BlankScreen}
+        name="Locations"
+        component={LocationsScreen}
         options={{
           tabBarIcon: ({ size, color }) => (
             <AntDesign name="cloud" size={size} color={color} />
