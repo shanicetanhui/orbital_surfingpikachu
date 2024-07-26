@@ -51,7 +51,8 @@ export async function add_habit(name, color, goal, uid) {
         display_name: name,
         description: `Daily goal: ${goal.toString()}`,
         color: color,
-        goal: goal
+        goal: goal,
+        streak: 0
     })
 }
 
@@ -70,13 +71,19 @@ export async function add_entry(habit, day, num, uid) {
 // create document under the collection 'users'
 export async function add_user(uid) {
     console.log("adding user");
-    await setDoc(doc(db, "users", uid), {age: 0, dark_mode: false, msg: "Consistency breeds success.", username: "default username"});
+    await setDoc(doc(db, "users", uid), {
+        age: 0, 
+        dark_mode: false,
+        msg: "Consistency breeds success.",
+        username: "default username"}
+    );
     console.log("adding default habit now");
     await addDoc(collection(db, "users", uid, "habits"), {
         display_name: "Water",
         description: "Daily goal: 8",
         color: "rgba(252, 223, 202, 0.7)",
-        goal: 8
+        goal: 8,
+        streak: 0
     })
 }
 

@@ -535,20 +535,23 @@ export const HomeScreen = ({ navigation }) => {
   const addNewItem = () => {
     if (newItemName.trim() !== '' && dailyGoal.trim() !== '') {
       const newItem = { title: newItemName, color: selectedColor, details: [`Daily goal: ${dailyGoal}`], goal: dailyGoal };
-      console.log("adding new item")
-      add_habit(newItem.title, newItem.color, newItem.goal, uid);
-      setData((prevData) => {
-        const updatedData = prevData.map((section) => {
-          if (section.title === currentSection) {
-            return { ...section, data: [...section.data, newItem] };
-          }
-          return section;
+      if (data[0].data.find(item => item.title === newItemName)) {
+        alert(`A habit by the name ${newItemName} already exists, please choose another name`);
+      } else {
+        console.log("adding new item")
+        add_habit(newItem.title, newItem.color, newItem.goal, uid);
+        setData((prevData) => {
+          const updatedData = prevData.map((section) => {
+            if (section.title === currentSection) {
+              return { ...section, data: [...section.data, newItem] };
+            }
+            return section;
+          });
+          return updatedData;
         });
-        return updatedData;
-      });
-      setNewItemName('');
-      setDailyGoal('');
-      setAddModalVisible(false);
+        setNewItemName('');
+        setDailyGoal('');
+        setAddModalVisible(false);}
     }
   };
 
@@ -1263,7 +1266,6 @@ export const DetailsScreen = ({ route }) => {
           <Button style={styles.buttonText} title="Cancel" onPress={() => setEditModalVisible(false)} /> */}
             </View>
           </Modal>
-
         </ImageBackground>
       </ScrollView>
     </SafeAreaView>
@@ -1300,9 +1302,9 @@ export const LocationsScreen = () => {
   return (
     <SafeAreaView style={styles.fullscreen}>
       <ImageBackground source={theme.backgroundImage} style={styles.imageBackground}>
+        <ScrollView>
         <View style={styles.usernameContainer}>
           <Text style={[styles.title, { color: theme.color }]}>Fruit Stall Locations</Text>
-          
           <View style={styles.bubble}>
             <Text style={[styles.title, { color: theme.color }]}>UTown:</Text>
             <View style={styles.detailsContainer}>
@@ -1387,6 +1389,7 @@ export const LocationsScreen = () => {
             <Text style={styles.buttonText}>Submit</Text>
           </Pressable>
         </View>
+        </ScrollView>
       </ImageBackground>
     </SafeAreaView>
   );
