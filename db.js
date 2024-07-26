@@ -44,14 +44,15 @@ export function date_display_format(date_object) {
 // create a document under the collection 'habits'
 export async function add_habit(name, color, goal, uid) {
     console.log("ADDING HABIT");
-    console.log(db);
+    // console.log(db);
     console.log(uid);
+    console.log(typeof(Number(goal)));
     // const desc = 'Daily goal';
     await addDoc(collection(db, "users", uid, "habits"), {
         display_name: name,
         description: `Daily goal: ${goal.toString()}`,
         color: color,
-        goal: goal,
+        goal: Number(goal),
         streak: 0
     })
 }
@@ -162,20 +163,28 @@ export async function fetch_habit_id(habit, uid) {
     const q = query(collection(db, "users", uid, "habits"), where("display_name", "==", habit));
     const querySnapshot = await getDocs(q);
     var habit_id = '';
-    // console.log("inside fetch habit id, going to return");
-    // console.log(querySnapshot);
     querySnapshot.forEach((doc) => {
-        // console.log(doc.data());
-        // console.log(doc.id);
         habit_id = doc.id;
     })
-    // console.log(habit_id);
+    if (habit_id==='') {console.log("inside fetch habit id. no habit id :(");}
+    console.log("returning habit_id");
     return habit_id;
 }
 
 export async function fetch_user_settings(uid) {
-    const userSettings = await getDoc(doc(db, "users", uid));
-    console.log(userSettings.data());
+    console.log("inside fetch user settings");
+    const docRef = doc(db, "users", uid);
+    const userSettings = await getDoc(docRef);
+    console.log(userSettings);
+    // console.log("fetch user settings");
+    // console.log(userSettings.data());
+
+    if (userSettings.exists()) {
+        console.log("Document data:", userSettings.data());
+    } else {
+        // docSnap.data() will be undefined in this case
+        console.log("No such document!");
+    }
 }
 
 // UPDATE
@@ -227,6 +236,49 @@ export async function update_entry(habit, day, newday, newnum, uid) {
         console.log("cannot UPDATE past entry of ", habit, " ", day, " doesnt exist");
     } else {
         await updateDoc(doc(db, "users", uid, "habitEntries", doc_id), {num: newnum, day:newday});
+    }
+}
+
+export async function update_streaks(habit, uid, goal) {
+    console.log("streak update for habit:", habit);
+    try {
+        const habit_id = await fetch_habit_id(habit, uid);
+        if (!habit_id) {
+            console.log('No habit id found for:', habit);
+            return;
+        }
+        console.log("Habit ID:", habit_id);
+
+        const entries = await fetch_entries_habit(habit, uid);
+        console.log("Fetched entries:", entries);
+
+        // Sort entries by date
+        entries.sort((a, b) => b.day - a.day);
+
+        let streak = 0;
+        
+        let currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
+
+        for (let entry of entries) {
+            let entryDate = new Date(entry.day);
+            entryDate.setHours(0, 0, 0, 0);
+
+            if (entry.num >= goal && 
+                (currentDate - entryDate) / (1000 * 60 * 60 * 24) <= 1) {
+                streak++;
+                currentDate = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000);
+            } else {
+                break;
+            }
+        }
+
+        console.log("Calculated new streak:", streak);
+
+        await updateDoc(doc(db, "users", uid, "habits", habit_id), {streak: streak});
+        console.log("Streak updated in database");
+    } catch (error) {
+        console.error("Error in update_streaks:", error);
     }
 }
 

@@ -3,7 +3,7 @@ import { UserContext, UserProvider} from "./UserContext";
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator, DarkTheme } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { init, fakedata, display, update_habit, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit, add_user, fetch_user_settings } from './db';
+import { init, fakedata, display, update_habit, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit, add_user, fetch_user_settings, update_streaks } from './db';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions, Switch, Alert, Image, Pressable, ScrollView, ImageBackground, useColorScheme } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
@@ -493,7 +493,7 @@ export const HomeScreen = ({ navigation }) => {
   const uid = loggedInUser.uid;
   
   console.log("home screen");
-  console.log(loggedInUser);
+  console.log(uid);
   // console.log(navigation);
   // console.log(route);
 
@@ -656,6 +656,7 @@ export const HomeScreen = ({ navigation }) => {
           )}
         />
 
+        {/* add modal */}
         <Modal
           animationType="slide"
           transparent={true}
@@ -679,6 +680,7 @@ export const HomeScreen = ({ navigation }) => {
               value={dailyGoal}
               keyboardType="numeric"
               onChangeText={text => setDailyGoal(text)}
+              
             />
             <Text style={[styles.modalText, { color:theme.color}]}>Select item color:</Text>
             <ColorPicker
@@ -697,6 +699,7 @@ export const HomeScreen = ({ navigation }) => {
           </View>
         </Modal>
 
+        {/* delete modal */}
         <Modal
           transparent={true}
           animationType="slide"
@@ -714,6 +717,7 @@ export const HomeScreen = ({ navigation }) => {
           </View>
         </Modal>
 
+          {/* edit modal */}
         <Modal
           transparent={true}
           animationType="slide"
@@ -735,7 +739,7 @@ export const HomeScreen = ({ navigation }) => {
                 placeholder="Goal"
                 value={editedData.goal.toString()}
                 placeholderTextColor={'grey'}
-                onChangeText={(text) => setEditedData({ ...editedData, goal: parseInt(text) })}
+                onChangeText={(text) => setEditedData({ ...editedData, goal: isNaN(parseInt(text)) ?  '' : parseInt(text)})}
               />
               <View style={styles.modalButtons}>
                 <Button title="Cancel" onPress={() => setEditModalVisible(false)} />
@@ -816,24 +820,27 @@ export const DetailsScreen = ({ route }) => {
   const handleAddSubmit = async () => {
     new_date = new Date(addedData.year, addedData.month, addedData.day);
     console.log(new_date);
-    add_entry(item.title, new_date, addedData.num, uid);
+    await add_entry(item.title, new_date, Number(addedData.num), uid);
+    await update_streaks(item.title, uid, item.goal);
     setAddModalVisible(false);
     setRefresh(prev => !prev);  // Toggle the refresh state
   }
 
   // Function to handle submission of edited data
-  const handleEditSubmit = () => {
+  const handleEditSubmit = async () => {
     // Handle the submission logic here
     const new_date = new Date(editedData.year, editedData.month, editedData.day);
-    update_entry(editedData.habit_id, editedData.old_date, new_date, editedData.num, uid)
+    await update_entry(editedData.habit_id, editedData.old_date, new_date, editedData.num, uid);
+    await update_streaks(item.title, uid, item.goal);
+    // update_streaks(item.title, uid, item.goal);
     setEditModalVisible(false);
   };
 
   const handleDataDelete = async (entry) => {
-    delete_habit_entry(entry.habit, entry.day, uid);
+    await delete_habit_entry(entry.habit, entry.day, uid);
     console.log("deleted");
+    await update_streaks(item.title, uid, item.goal);
     setRefresh(prev => !prev);  // Toggle the refresh state
-
   }
 
   // DATA VISUALISATION
@@ -947,6 +954,8 @@ export const DetailsScreen = ({ route }) => {
           return;
         }
       }
+
+      await update_streaks(item.title, uid, item.goal);
     })();
   }, []);
 
@@ -998,6 +1007,7 @@ export const DetailsScreen = ({ route }) => {
     const newCounter = counter + 1;
     setCounter(newCounter);
     await create_or_update(item.title, day, newCounter, uid);
+    await update_streaks(item.title, uid, item.goal);
     setRefresh(prev => !prev);  // Toggle the refresh state
   };
 
@@ -1009,6 +1019,7 @@ export const DetailsScreen = ({ route }) => {
     else {
       setCounter(newCounter);
       await create_or_update(item.title, day, newCounter, uid);
+      await update_streaks(item.title, uid, item.goal);
       setRefresh(prev => !prev);  // Toggle the refresh state
     }
   };
@@ -1126,7 +1137,7 @@ export const DetailsScreen = ({ route }) => {
           {habitData.map((entry) => {
             // { habitDataRef.current.map((entry) => {
             return (
-              <View style={[styles.item, {color:theme.color}]}>
+              <View style={[styles.item, {color:theme.color}]} key={entry.day.toString()}>
                 <Text style={{color: theme.color}}>
                   {date_display_format(entry.day)} - {entry.num} -
                   <Button title="edit" onPress={() => openEditModal(entry)} />
@@ -1136,8 +1147,18 @@ export const DetailsScreen = ({ route }) => {
             )
           })
           }
+          <View style={styles.additionalDetailsContainer}>
+          <Button 
+            style={{ backgroundColor: theme.color }} 
+            onPress={() => {
+              update_streaks(item.title, uid, item.goal);
+            }}
+            title='update stroks'
+            >
+          </Button>
           </View>
 
+          </View>
           <Modal
             transparent={true}
             animationType="slide"
