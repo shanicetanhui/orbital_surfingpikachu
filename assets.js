@@ -343,6 +343,9 @@ const initialData = [
 // read fake data (for now) into front-end initialData
 async function read_initialData(setData, uid) {
   const rows = await read_habits(uid);
+  // console.log("rows");
+  // console.log(rows);
+  // console.log("rows ===")
   const newData = [...initialData];
   rows.forEach((row) => {
     newData[0].data.push(
@@ -521,7 +524,9 @@ export const HomeScreen = ({ navigation }) => {
   const [selectedColor, setSelectedColor] = useState('rgba(252, 223, 202, 0.7)');
 
   useEffect(() => {
+    console.log("use effect ===");
     read_initialData(setData, uid);
+    // console.log(data);
     // console.log("UID");
     // console.log(uid);
   }, [refresh]);
@@ -581,11 +586,16 @@ export const HomeScreen = ({ navigation }) => {
     ];
     rows.forEach((row) => {
       newData[0].data.push(
-        { title: row.display_name, details: [row.description], goal: row.goal, color: row.color }
+        { title: row.display_name, 
+          details: [row.description], 
+          goal: row.goal, 
+          color: row.color, 
+          streak: row.streak }
       )
     });
     console.log("read initial data");
-    console.log(newData);
+    console.log(rows);
+    console.log("===");
     setData(newData);
     setEditModalVisible(false);
   }
@@ -612,9 +622,11 @@ export const HomeScreen = ({ navigation }) => {
               <Text style={[styles.title, { color:theme.color}]}>{item.title}</Text>
               {item.details && (
                 <View style={styles.detailsContainer}>
-                  {item.details.map((detail, index) => (
+                  {/* {item.details.map((detail, index) => (
                     <Text key={index} style={[styles.detail, { color:theme.color}]}>{detail}</Text>
-                  ))}
+                  ))} */}
+                  <Text style={[styles.detail, { color:theme.color}]}>Daily goal: {item.goal}</Text>
+                  <Text style={[styles.detail, { color:theme.color}]}>Streak: {item.streak}</Text>
                   <TouchableOpacity
                     onPress={() => {
                       setItemToDelete(item);
@@ -1036,9 +1048,11 @@ export const DetailsScreen = ({ route }) => {
           <View style={styles.detailsScreenContainer}>
             <View style={styles.additionalDetailsContainer}>
               <Text style={[styles.additionalDetailsTitle, { color:theme.color}]}>{item.title}</Text>
-              {item.details && item.details.map((detail, index) => (
+              {/* {item.details && item.details.map((detail, index) => (
                 <Text key={index} style={styles.detail}> {detail}</Text>
-              ))}
+              ))} */}
+              <Text style={styles.detail}> Daily goal: {item.goal}</Text>
+              <Text style={styles.detail}> Streak: {item.streak}</Text>
             </View>
           </View>
 
