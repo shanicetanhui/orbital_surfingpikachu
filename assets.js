@@ -373,7 +373,7 @@ async function read_initialData(setData, uid) {
   const newData = [...initialData];
   rows.forEach((row) => {
     newData[0].data.push(
-      { title: row.display_name, details: [row.description], goal: row.goal, color: row.color }
+      { title: row.display_name, details: [row.description], goal: row.goal, color: row.color, streak: row.streak }
     )
   });
   console.log("read initial data");
@@ -631,7 +631,7 @@ export const HomeScreen = ({ navigation }) => {
     // console.log(data);
     // console.log("UID");
     // console.log(uid);
-  }, [refresh]);
+  }, [refresh, uid]);
 
   // modal -> popups like in 'add new habit/section'
   const openModal = (sectionTitle) => {
