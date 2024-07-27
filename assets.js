@@ -3,7 +3,7 @@ import { UserContext, UserProvider} from "./UserContext";
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator, DarkTheme } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { init, fakedata, display, update_habit, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit, add_user, fetch_user_settings, update_streaks } from './db';
+import { init, fakedata, display, update_habit, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit, add_user, fetch_user_settings, update_user_settings, update_streaks } from './db';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions, Switch, Alert, Image, Pressable, ScrollView, ImageBackground, useColorScheme } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
@@ -1537,29 +1537,209 @@ export const LocationsScreen = () => {
 };
 
 // settings screen
-export const SettingsScreen = () => {
+// export const SettingsScreen = () => {
 
+//   const { loggedInUser, setLoggedInUser } = useContext(UserContext);
+//   const uid = loggedInUser.uid;
+
+//   const [data, setData] = useState({});
+  
+//   useEffect(()  => {
+//     console.log("SETTINGS. ITS TIME");
+//     read_initialUser(setData, uid);
+//   }, [])
+
+//   const theme = useContext(themeContext)
+//   const [darkMode, setDarkMode] = useState(false)
+
+//   // PROFILE IMAGE
+//   const [image, setImage] = useState(null);
+
+//   const pickImage = async () => {
+//     let result = await ImagePicker.launchImageLibraryAsync({
+//       mediaTypes: ImagePicker.MediaTypeOptions.All,
+//       allowsEditing: true,
+//       aspect: [1,1],
+//       quality: 1,
+//     });
+
+//     console.log(result);
+
+//     if (!result.canceled) {
+//       setImage(result.assets[0].uri);
+//     }
+//   };
+
+//   // USERNAME
+//   const usernameInputRef = useRef(null);
+//   const [username, setUsername] = useState('');
+
+//   // AGE
+//   const ageInputRef = useRef(null);
+//   const [age, setAge] = useState('');
+
+//   // SCHOOL
+//   // const [school, setSchool] = useState('');
+
+//   // MOTIVATIONALMESSAGE
+//   const msgInputRef = useRef(null);
+//   const [msg, setMsg] = useState('');
+
+//   // DARKMODE   
+//   const [isEnabled, setIsEnabled] = useState(false);
+//   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+
+//   // FEEDBACK
+//   const feedbackInputRef = useRef(null);
+//   const [feedback, setFeedback] = useState('');
+
+//   return (
+//     <SafeAreaView style={styles.fullscreen}>
+//        <ImageBackground source={theme.backgroundImage} style={styles.imageBackground}>
+//         {/* Profile Image */}
+//         <View style={styles.profileImageContainer}>
+//           {image && <Image source={{ uri: image }} style={styles.image} />}
+//           <Pressable style={styles.imagebutton} onPress={pickImage}>
+//             <Text style={[styles.buttonText, {color:theme.color}]}>Change your Profile Picture</Text>
+//           </Pressable>
+//         </View>
+
+//         <Button 
+//             style={{ backgroundColor: theme.color }} 
+//             onPress={() => {
+//               console.log("see data");
+//               console.log(data);
+//             }}
+//             title='see user data'
+//             >
+//           </Button>
+
+//         {/* Username */}
+//         <View style={styles.usernameContainer}>
+//           <Pressable onPress={() => usernameInputRef?.current?.focus()}>
+//           <Text style={{ color: theme.color }}> Username:</Text>
+//             <TextInput
+//               ref={usernameInputRef}
+//               style={styles.input}
+//               onChangeText={(event) => setUsername(event)}
+//               value={username}
+//               placeholder='Edit your username here'
+//               placeholderTextColor='grey'
+//             />
+//           </Pressable>
+//         </View>
+
+//         {/* Age */}
+//         <View style={styles.usernameContainer}>
+//           <Pressable onPress={() => ageInputRef?.current?.focus()}>
+//           <Text style={{ color: theme.color }}> Age:</Text>
+//             <TextInput
+//               ref={ageInputRef}
+//               style={styles.input}
+//               onChangeText={(event) => setAge(event)}
+//               value={age}
+//               keyboardType={'numeric'}
+//               placeholder='Edit your age here'
+//               placeholderTextColor='grey'
+//             />
+//           </Pressable>
+//         </View>
+
+//         {/* School Picker */}
+//         {/* <View style={styles.usernameContainer}>
+//         <Text style={{ color: theme.color }}> School:</Text>
+//           <Picker
+//             selectedValue={school}
+//             onValueChange={(itemValue) => setSchool(itemValue)}
+//             style={[styles.picker2, { borderColor: 'grey', borderWidth: 1 }, {backgroundColor:theme.background}]}
+//           >
+//             <Picker.Item label="Select your school" value="" style={[styles.pickerItem, {backgroundColor:theme.background}]} />
+//             <Picker.Item label="School 1" value="school1" style={[styles.pickerItem, {backgroundColor:theme.background}]} />
+//             <Picker.Item label="School 2" value="school2" style={[styles.pickerItem, {backgroundColor:theme.background}]} />
+//             <Picker.Item label="School 3" value="school3" style={[styles.pickerItem, {backgroundColor:theme.background}]} />
+//           </Picker>
+//         </View> */}
+
+//         {/* Motivational Message */}
+//         <View style={styles.usernameContainer}>
+//           <Pressable onPress={() => msgInputRef?.current?.focus()}>
+//           <Text style={{ color: theme.color }}> Add a motivational message for your future self:</Text>
+//             <TextInput
+//               ref={msgInputRef}
+//               style={styles.input}
+//               onChangeText={(event) => setMsg(event)}
+//               value={msg}
+//               placeholder='Consistency breeds success.'
+//               placeholderTextColor='grey'
+//             />
+//           </Pressable>
+//         </View>
+
+//         {/* Dark Mode */}
+//         <View style={styles.switchContainer}>
+//         <Text style={{ color: theme.color }}> Dark Mode</Text>
+//           <Switch
+//             trackColor={{ false: "#767577", true: "#81b0ff" }}
+//             thumbColor={darkMode ? "#f5dd4b" : "#f4f3f4"}
+//             ios_backgroundColor="#3e3e3e"
+//             value={darkMode}
+//             onValueChange={(value) => { 
+//               setDarkMode(value);
+//               EventRegister.emit('ChangeTheme', value)
+//             }}
+//           />
+//         </View>
+
+//         {/* Send Feedback (need backend to 'send' feedback to admins) */}
+//         <View style={styles.usernameContainer}>
+//           <Pressable onPress={() => feedbackInputRef?.current?.focus()}>
+//           <Text style={{ color: theme.color }}> Report an issue:</Text>
+//             <TextInput
+//               ref={feedbackInputRef}
+//               style={styles.input}
+//               onChangeText={(event) => setFeedback(event)}
+//               value={feedback}
+//               placeholder='Bug'
+//               placeholderTextColor='grey'
+//             />
+//           </Pressable>
+//         </View>
+
+//         {/* Log out */}
+//         <Pressable style={styles.imagebutton} onPress={() => {
+//           setLoggedInUser(null)
+//           }}>
+//             <Text style={styles.buttonText}>Log out</Text>
+//           </Pressable>
+
+//         </ImageBackground>
+//       </SafeAreaView>
+//   );
+// };
+
+// settings screen
+export const SettingsScreen = () => {
   const { loggedInUser, setLoggedInUser } = useContext(UserContext);
   const uid = loggedInUser.uid;
 
   const [data, setData] = useState({});
   
-  useEffect(()  => {
-    console.log("SETTINGS. ITS TIME");
-    read_initialUser(setData, uid);
-  }, [])
+  // Initialize states with default values
+  const [username, setUsername] = useState('');
+  const [age, setAge] = useState('');
+  const [msg, setMsg] = useState('');
+  const [darkMode, setDarkMode] = useState(false);
 
-  const theme = useContext(themeContext)
-  const [darkMode, setDarkMode] = useState(false)
-
-  // PROFILE IMAGE
+  const theme = useContext(themeContext);
+  
+  // Profile Image
   const [image, setImage] = useState(null);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
-      aspect: [1,1],
+      aspect: [1, 1],
       quality: 1,
     });
 
@@ -1570,54 +1750,71 @@ export const SettingsScreen = () => {
     }
   };
 
-  // USERNAME
+  // Refs for text inputs
   const usernameInputRef = useRef(null);
-  const [username, setUsername] = useState('');
-
-  // AGE
   const ageInputRef = useRef(null);
-  const [age, setAge] = useState('');
-
-  // SCHOOL
-  // const [school, setSchool] = useState('');
-
-  // MOTIVATIONALMESSAGE
   const msgInputRef = useRef(null);
-  const [msg, setMsg] = useState('');
-
-  // DARKMODE   
-  const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
-
-  // FEEDBACK
   const feedbackInputRef = useRef(null);
+
+  // Feedback state
   const [feedback, setFeedback] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      console.log('SETTINGS: Fetching data');
+      const fetchedData = await fetch_user_settings(uid); // Fetch data
+      if (fetchedData) {
+        setData(fetchedData);
+        setUsername(fetchedData.username);
+        setAge(fetchedData.age.toString()); // Convert age to string
+        setMsg(fetchedData.msg);
+        setDarkMode(fetchedData.dark_mode);
+      }
+    };
+    fetchData();
+  }, [uid]); // Depend on uid to avoid unnecessary fetches
+  // }, []); // Depend on uid to avoid unnecessary fetches
+
+  const toggleSwitch = () => setDarkMode(previousState => !previousState);
+
+  // Function to handle the update button press
+  const handleUpdateSettings = async () => {
+    try {
+      const result = await update_user_settings(uid, parseInt(age, 10), darkMode, msg, username);
+      if (result) {
+        Alert.alert('Success', 'User settings updated successfully!');
+      }
+    } catch (error) {
+      console.error('Error updating user settings:', error);
+      Alert.alert('Error', 'Failed to update user settings.');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.fullscreen}>
-       <ImageBackground source={theme.backgroundImage} style={styles.imageBackground}>
+      <ImageBackground source={theme.backgroundImage} style={styles.imageBackground}>
         {/* Profile Image */}
         <View style={styles.profileImageContainer}>
           {image && <Image source={{ uri: image }} style={styles.image} />}
           <Pressable style={styles.imagebutton} onPress={pickImage}>
-            <Text style={[styles.buttonText, {color:theme.color}]}>Change your Profile Picture</Text>
+            <Text style={[styles.buttonText, { color: theme.color }]}>Change your Profile Picture</Text>
           </Pressable>
         </View>
 
-        <Button 
-            style={{ backgroundColor: theme.color }} 
-            onPress={() => {
-              console.log("see data");
-              console.log(data);
-            }}
-            title='see user data'
-            >
-          </Button>
+        <Button
+          style={{ backgroundColor: theme.color }}
+          onPress={() => {
+            console.log("see data");
+            console.log(data);
+          }}
+          title='see user data'
+        >
+        </Button>
 
         {/* Username */}
         <View style={styles.usernameContainer}>
           <Pressable onPress={() => usernameInputRef?.current?.focus()}>
-          <Text style={{ color: theme.color }}> Username:</Text>
+            <Text style={{ color: theme.color }}> Username:</Text>
             <TextInput
               ref={usernameInputRef}
               style={styles.input}
@@ -1632,7 +1829,7 @@ export const SettingsScreen = () => {
         {/* Age */}
         <View style={styles.usernameContainer}>
           <Pressable onPress={() => ageInputRef?.current?.focus()}>
-          <Text style={{ color: theme.color }}> Age:</Text>
+            <Text style={{ color: theme.color }}> Age:</Text>
             <TextInput
               ref={ageInputRef}
               style={styles.input}
@@ -1645,25 +1842,10 @@ export const SettingsScreen = () => {
           </Pressable>
         </View>
 
-        {/* School Picker */}
-        {/* <View style={styles.usernameContainer}>
-        <Text style={{ color: theme.color }}> School:</Text>
-          <Picker
-            selectedValue={school}
-            onValueChange={(itemValue) => setSchool(itemValue)}
-            style={[styles.picker2, { borderColor: 'grey', borderWidth: 1 }, {backgroundColor:theme.background}]}
-          >
-            <Picker.Item label="Select your school" value="" style={[styles.pickerItem, {backgroundColor:theme.background}]} />
-            <Picker.Item label="School 1" value="school1" style={[styles.pickerItem, {backgroundColor:theme.background}]} />
-            <Picker.Item label="School 2" value="school2" style={[styles.pickerItem, {backgroundColor:theme.background}]} />
-            <Picker.Item label="School 3" value="school3" style={[styles.pickerItem, {backgroundColor:theme.background}]} />
-          </Picker>
-        </View> */}
-
         {/* Motivational Message */}
         <View style={styles.usernameContainer}>
           <Pressable onPress={() => msgInputRef?.current?.focus()}>
-          <Text style={{ color: theme.color }}> Add a motivational message for your future self:</Text>
+            <Text style={{ color: theme.color }}> Add a motivational message for your future self:</Text>
             <TextInput
               ref={msgInputRef}
               style={styles.input}
@@ -1677,23 +1859,28 @@ export const SettingsScreen = () => {
 
         {/* Dark Mode */}
         <View style={styles.switchContainer}>
-        <Text style={{ color: theme.color }}> Dark Mode</Text>
+          <Text style={{ color: theme.color }}> Dark Mode</Text>
           <Switch
             trackColor={{ false: "#767577", true: "#81b0ff" }}
             thumbColor={darkMode ? "#f5dd4b" : "#f4f3f4"}
             ios_backgroundColor="#3e3e3e"
             value={darkMode}
-            onValueChange={(value) => { 
+            onValueChange={(value) => {
               setDarkMode(value);
-              EventRegister.emit('ChangeTheme', value)
+              EventRegister.emit('ChangeTheme', value);
             }}
           />
+        </View>
+
+        {/* Update Settings Button */}
+        <View style={styles.usernameContainer}>
+          <Button title="Update Settings" onPress={handleUpdateSettings} />
         </View>
 
         {/* Send Feedback (need backend to 'send' feedback to admins) */}
         <View style={styles.usernameContainer}>
           <Pressable onPress={() => feedbackInputRef?.current?.focus()}>
-          <Text style={{ color: theme.color }}> Report an issue:</Text>
+            <Text style={{ color: theme.color }}> Report an issue:</Text>
             <TextInput
               ref={feedbackInputRef}
               style={styles.input}
@@ -1707,13 +1894,12 @@ export const SettingsScreen = () => {
 
         {/* Log out */}
         <Pressable style={styles.imagebutton} onPress={() => {
-          setLoggedInUser(null)
-          }}>
-            <Text style={styles.buttonText}>Log out</Text>
-          </Pressable>
-
-        </ImageBackground>
-      </SafeAreaView>
+          setLoggedInUser(null);
+        }}>
+          <Text style={styles.buttonText}>Log out</Text>
+        </Pressable>
+      </ImageBackground>
+    </SafeAreaView>
   );
 };
 

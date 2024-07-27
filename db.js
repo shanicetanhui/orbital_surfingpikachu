@@ -283,6 +283,11 @@ export async function update_streaks(habit, uid, goal) {
     }
 }
 
+export async function update_user_settings(uid, new_age, new_dark_mode, new_msg, new_username) {
+    console.log("UPDATE USER SETTINGS");
+    await updateDoc(doc(db, "users", uid), {age: new_age, dark_mode: new_dark_mode, msg: new_msg, username: new_username});
+}
+
 // DELETE
 
 // delete entry
