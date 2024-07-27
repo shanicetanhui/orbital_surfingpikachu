@@ -1,5 +1,5 @@
 import { db } from "./firebaseConfig";
-import { collection, doc, getDocs, setDoc, query, where, addDoc, updateDoc, deleteDoc, Timestamp } from "firebase/firestore";
+import { collection, doc, getDocs, getDoc, setDoc, query, where, addDoc, updateDoc, deleteDoc, Timestamp } from "firebase/firestore";
 
 // debug purposes. called in <Test> component
 export async function display() {
@@ -175,12 +175,13 @@ export async function fetch_user_settings(uid) {
     console.log("inside fetch user settings");
     const docRef = doc(db, "users", uid);
     const userSettings = await getDoc(docRef);
-    console.log(userSettings);
+    // console.log(userSettings);
     // console.log("fetch user settings");
     // console.log(userSettings.data());
-
     if (userSettings.exists()) {
+        console.log("user settings are as follows");
         console.log("Document data:", userSettings.data());
+        return userSettings.data() ;
     } else {
         // docSnap.data() will be undefined in this case
         console.log("No such document!");

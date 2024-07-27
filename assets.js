@@ -381,6 +381,15 @@ async function read_initialData(setData, uid) {
   setData(newData);
 }
 
+async function read_initialUser(setData, uid) {
+  console.log("initial user data");
+  const data = await fetch_user_settings(uid);
+  setData(data);
+  console.log('inside read initial');
+  console.log(data);
+  // return data;
+}
+
 // colour picker for habit
 // TODO: preview colours?
 const ColorPicker = ({ selectedColor, onColorChange }) => {
@@ -498,6 +507,7 @@ export const LoginScreen = ({ setIsSignup, setLoggedInUser, auth }) => {
         secureTextEntry={true}
       />
       <Button title="Log in" onPress={handleLogin} />
+      <Text/>
       {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
       <Button title="Go to sign up page" onPress={() => setIsSignup(true)} />
     </View>
@@ -583,6 +593,7 @@ export const SignupScreen = ({ setIsSignup, setLoggedInUser, auth }) => {
         secureTextEntry={true}
       />
       <Button title="Sign Up" onPress={handleSignup} />
+      <Text/>
       {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
       <Button title="go to log in page" onPress={() => setIsSignup(false)} />
     </View>
@@ -948,6 +959,7 @@ export const DetailsScreen = ({ route }) => {
     await update_streaks(item.title, uid, item.goal);
     // update_streaks(item.title, uid, item.goal);
     setEditModalVisible(false);
+    setRefresh(prev => !prev);  // Toggle the refresh state
   };
 
   const handleDataDelete = async (entry) => {
@@ -1268,6 +1280,7 @@ export const DetailsScreen = ({ route }) => {
             style={{ backgroundColor: theme.color }} 
             onPress={() => {
               update_streaks(item.title, uid, item.goal);
+              setRefresh(prev => !prev);  // Toggle the refresh state
             }}
             title='update stroks'
             >
@@ -1409,7 +1422,7 @@ export const DetailsScreen = ({ route }) => {
   );
 };
 
-// // blank screen
+// blank screen
 // export const BlankScreen = () => {
 //   const theme = useContext(themeContext)
 //   const [darkMode, setDarkMode] = useState(false)
@@ -1422,6 +1435,7 @@ export const DetailsScreen = ({ route }) => {
 //     </SafeAreaView>
 //   );
 // };
+
 
 // locations screen
 export const LocationsScreen = () => {
@@ -1439,78 +1453,69 @@ export const LocationsScreen = () => {
   return (
     <SafeAreaView style={styles.fullscreen}>
       <ImageBackground source={theme.backgroundImage} style={styles.imageBackground}>
-        <ScrollView>
         <View style={styles.usernameContainer}>
           <Text style={[styles.title, { color: theme.color }]}>Fruit Stall Locations</Text>
+          
           <View style={styles.bubble}>
             <Text style={[styles.title, { color: theme.color }]}>UTown:</Text>
             <View style={styles.detailsContainer}>
-              <Text style={[styles.text, { color: theme.color }]}>
-                Fine Food Canteen, Flavours@Utown, Fairprice Xpress NUS, Octobox
-              </Text>
+              <Text style={[styles.text, { color: theme.color }]}>Fine Food Canteen</Text>
+              <Text style={[styles.text, { color: theme.color }]}>Flavours@Utown</Text>
+              <Text style={[styles.text, { color: theme.color }]}>Fairprice Xpress NUS</Text>
+              <Text style={[styles.text, { color: theme.color }]}>Octobox</Text>
             </View>
           </View>
           
           <View style={styles.bubble}>
             <Text style={[styles.title, { color: theme.color }]}>Engineering:</Text>
             <View style={styles.detailsContainer}>
-              <Text style={[styles.text, { color: theme.color }]}>
-                WuYang Canteen@E2, Techno Edge Canteen, Arise and Shine
-              </Text>
+              <Text style={[styles.text, { color: theme.color }]}>WuYang Canteen@E2</Text>
+              <Text style={[styles.text, { color: theme.color }]}>Techno Edge Canteen</Text>
+              <Text style={[styles.text, { color: theme.color }]}>Arise and Shine</Text>
             </View>
           </View>
 
           <View style={styles.bubble}>
             <Text style={[styles.title, { color: theme.color }]}>YIH:</Text>
             <View style={styles.detailsContainer}>
-              <Text style={[styles.text, { color: theme.color }]}>
-                temporarily closed
-              </Text>
+              <Text style={[styles.text, { color: theme.color }]}>temporarily closed</Text>
             </View>
           </View>
 
           <View style={styles.bubble}>
             <Text style={[styles.title, { color: theme.color }]}>Computing:</Text>
             <View style={styles.detailsContainer}>
-              <Text style={[styles.text, { color: theme.color }]}>
-                Terrace, Cool Spot
-              </Text>
+              <Text style={[styles.text, { color: theme.color }]}>Terrace</Text>
+              <Text style={[styles.text, { color: theme.color }]}>Cool Spot</Text>
             </View>
           </View>
 
           <View style={styles.bubble}>
             <Text style={[styles.title, { color: theme.color }]}>FASS:</Text>
             <View style={styles.detailsContainer}>
-              <Text style={[styles.text, { color: theme.color }]}>
-                The Deck
-              </Text>
+              <Text style={[styles.text, { color: theme.color }]}>The Deck</Text>
             </View>
           </View>
 
           <View style={styles.bubble}>
             <Text style={[styles.title, { color: theme.color }]}>Science:</Text>
             <View style={styles.detailsContainer}>
-              <Text style={[styles.text, { color: theme.color }]}>
-                Frontier
-              </Text>
+              <Text style={[styles.text, { color: theme.color }]}>Frontier</Text>
             </View>
           </View>
 
           <View style={styles.bubble}>
             <Text style={[styles.title, { color: theme.color }]}>Kent Ridge:</Text>
             <View style={styles.detailsContainer}>
-              <Text style={[styles.text, { color: theme.color }]}>
-                SF Farm Mart, FairPrice NUH
-              </Text>
+              <Text style={[styles.text, { color: theme.color }]}>SF Farm Mart</Text>
+              <Text style={[styles.text, { color: theme.color }]}>FairPrice NUH</Text>
             </View>
           </View>
 
           <View style={styles.bubble}>
             <Text style={[styles.title, { color: theme.color }]}>PGP:</Text>
             <View style={styles.detailsContainer}>
-              <Text style={[styles.text, { color: theme.color }]}>
-                PGPR Food Court
-              </Text>
+              <Text style={[styles.text, { color: theme.color }]}>PGPR Food Court</Text>
             </View>
           </View>
 
@@ -1526,7 +1531,6 @@ export const LocationsScreen = () => {
             <Text style={styles.buttonText}>Submit</Text>
           </Pressable>
         </View>
-        </ScrollView>
       </ImageBackground>
     </SafeAreaView>
   );
@@ -1537,10 +1541,12 @@ export const SettingsScreen = () => {
 
   const { loggedInUser, setLoggedInUser } = useContext(UserContext);
   const uid = loggedInUser.uid;
+
+  const [data, setData] = useState({});
   
   useEffect(()  => {
-    console.log("SETTINGS");
-    fetch_user_settings(uid);
+    console.log("SETTINGS. ITS TIME");
+    read_initialUser(setData, uid);
   }, [])
 
   const theme = useContext(themeContext)
@@ -1573,7 +1579,7 @@ export const SettingsScreen = () => {
   const [age, setAge] = useState('');
 
   // SCHOOL
-  const [school, setSchool] = useState('');
+  // const [school, setSchool] = useState('');
 
   // MOTIVATIONALMESSAGE
   const msgInputRef = useRef(null);
@@ -1597,6 +1603,16 @@ export const SettingsScreen = () => {
             <Text style={[styles.buttonText, {color:theme.color}]}>Change your Profile Picture</Text>
           </Pressable>
         </View>
+
+        <Button 
+            style={{ backgroundColor: theme.color }} 
+            onPress={() => {
+              console.log("see data");
+              console.log(data);
+            }}
+            title='see user data'
+            >
+          </Button>
 
         {/* Username */}
         <View style={styles.usernameContainer}>
@@ -1630,7 +1646,7 @@ export const SettingsScreen = () => {
         </View>
 
         {/* School Picker */}
-        <View style={styles.usernameContainer}>
+        {/* <View style={styles.usernameContainer}>
         <Text style={{ color: theme.color }}> School:</Text>
           <Picker
             selectedValue={school}
@@ -1642,7 +1658,7 @@ export const SettingsScreen = () => {
             <Picker.Item label="School 2" value="school2" style={[styles.pickerItem, {backgroundColor:theme.background}]} />
             <Picker.Item label="School 3" value="school3" style={[styles.pickerItem, {backgroundColor:theme.background}]} />
           </Picker>
-        </View>
+        </View> */}
 
         {/* Motivational Message */}
         <View style={styles.usernameContainer}>
