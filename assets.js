@@ -329,6 +329,30 @@ const styles = StyleSheet.create({
     marginVertical: 8,
 
   },
+  //login&signup pages styles
+  login: {
+    fontSize: 18,
+    marginBottom: 5,
+    color: '#333',
+  },
+  loginContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  error: {
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
 });
 
 // front end purposes
@@ -412,6 +436,37 @@ const login = (auth, email, password, setLoggedInUser) => {
     });
 };
 
+// export const LoginScreen = ({ setIsSignup, setLoggedInUser, auth }) => {
+//   const [email, onChangeEmail] = useState("");
+//   const [password, onChangePassword] = useState("");
+//   const [errorMessage, setErrorMessage] = useState("");
+
+//   const handleLogin = () => {
+//     login(auth, email, password, setLoggedInUser);
+//   };
+
+//   return (
+//     <View style={styles.container}>
+//       <Text>Email</Text>
+//       <TextInput
+//         style={styles.input}
+//         onChangeText={onChangeEmail}
+//         value={email}
+//       />
+//       <Text>Password</Text>
+//       <TextInput
+//         style={styles.input}
+//         onChangeText={onChangePassword}
+//         value={password}
+//         secureTextEntry={true}
+//       />
+//       <Button title="Log in" onPress={handleLogin} />
+//       {errorMessage ? <Text>{errorMessage}</Text> : null}
+//       <Button title="Go to sign up page" onPress={() => setIsSignup(true)} />
+//     </View>
+//   );
+// };
+
 export const LoginScreen = ({ setIsSignup, setLoggedInUser, auth }) => {
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
@@ -422,22 +477,28 @@ export const LoginScreen = ({ setIsSignup, setLoggedInUser, auth }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text>Email</Text>
+    <View style={styles.loginContainer}>
+      {/* <Image source={app_icon} style={styles.logo} /> */}
+      <Text style={styles.title}>Welcome Back!</Text>
+      <Text style={styles.login}>Email</Text>
       <TextInput
         style={styles.input}
         onChangeText={onChangeEmail}
         value={email}
+        placeholder="Enter your email"
+        placeholderTextColor="gray"
       />
-      <Text>Password</Text>
+      <Text style={styles.login}>Password</Text>
       <TextInput
         style={styles.input}
         onChangeText={onChangePassword}
         value={password}
+        placeholder="Enter your password"
+        placeholderTextColor="gray"
         secureTextEntry={true}
       />
       <Button title="Log in" onPress={handleLogin} />
-      {errorMessage ? <Text>{errorMessage}</Text> : null}
+      {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
       <Button title="Go to sign up page" onPress={() => setIsSignup(true)} />
     </View>
   );
@@ -458,6 +519,37 @@ const signup = (auth, email, password, setLoggedInUser) => {
     });
 };
 
+// export const SignupScreen = ({ setIsSignup, setLoggedInUser, auth }) => {
+//   const [email, onChangeEmail] = useState("");
+//   const [password, onChangePassword] = useState("");
+//   const [errorMessage, setErrorMessage] = useState("");
+
+//   const handleSignup = () => {
+//     signup(auth, email, password, setLoggedInUser);
+//   };
+
+//   return (
+//     <View style={styles.container}>
+//       <Text>Email</Text>
+//       <TextInput
+//         style={styles.input}
+//         onChangeText={onChangeEmail}
+//         value={email}
+//       />
+//       <Text>Password</Text>
+//       <TextInput
+//         style={styles.input}
+//         onChangeText={onChangePassword}
+//         value={password}
+//         secureTextEntry={true}
+//       />
+//       <Button title="Sign Up" onPress={handleSignup} />
+//       {errorMessage ? <Text>{errorMessage}</Text> : null}
+//       <Button title="go to log in page" onPress={() => setIsSignup(false)} />
+//     </View>
+//   );
+// };
+
 export const SignupScreen = ({ setIsSignup, setLoggedInUser, auth }) => {
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
@@ -468,24 +560,34 @@ export const SignupScreen = ({ setIsSignup, setLoggedInUser, auth }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text>Email</Text>
+    <SafeAreaView style={styles.fullscreen}>
+      <ImageBackground source={theme.backgroundImage} style={styles.imageBackground}>
+    <View style={styles.loginContainer}>
+      {/* <Image source={app_icon} style={styles.logo} /> */}
+      <Text style={styles.title}>Create an Account</Text>
+      <Text style={styles.login}>Email</Text>
       <TextInput
         style={styles.input}
         onChangeText={onChangeEmail}
         value={email}
+        placeholder="Enter your email"
+        placeholderTextColor="gray"
       />
-      <Text>Password</Text>
+      <Text style={styles.login}>Password</Text>
       <TextInput
         style={styles.input}
         onChangeText={onChangePassword}
         value={password}
+        placeholder="Enter your password"
+        placeholderTextColor="gray"
         secureTextEntry={true}
       />
       <Button title="Sign Up" onPress={handleSignup} />
-      {errorMessage ? <Text>{errorMessage}</Text> : null}
+      {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
       <Button title="go to log in page" onPress={() => setIsSignup(false)} />
     </View>
+    </ImageBackground>
+    </SafeAreaView>
   );
 };
 

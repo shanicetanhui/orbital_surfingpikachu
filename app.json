@@ -25,7 +25,8 @@
         "NOTIFICATIONS",
         "RECEIVE_BOOT_COMPLETED"
       ],
-      "package": "com.surfingpikachu.unihealth"
+      "package": "com.surfingpikachu.unihealth",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/app_icon.png",
@@ -49,9 +50,7 @@
       }
     },
     "owner": "surfingpikachu",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "exposdk:47.0.0",
     "updates": {
       "url": "https://u.expo.dev/c5bea227-984e-411f-92b8-a9fcd29ffe70"
     }

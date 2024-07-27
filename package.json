@@ -38,7 +38,6 @@
     "react-datepicker": "^7.2.0",
     "react-dom": "18.2.0",
     "react-native": "^0.74.2",
-    "react-native-appearance": "^0.3.4",
     "react-native-chart-kit": "^6.12.0",
     "react-native-date-picker": "^5.0.4",
     "react-native-event-listeners": "^1.0.7",
@@ -60,7 +59,9 @@
     "transformIgnorePatterns": [
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|firebaseConfig|)"
     ],
-    "setupFiles": ["./jestSetupFile.js"]
+    "setupFiles": [
+      "./jestSetupFile.js"
+    ]
   },
   "private": true
 }
