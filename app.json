@@ -4,7 +4,7 @@
     "slug": "unihealth",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/app_icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -12,20 +12,24 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.surfingpikachu.unihealth"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/app_icon-icon.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "NOTIFICATIONS",
+        "RECEIVE_BOOT_COMPLETED"
       ],
-      "package": "com.surfingpikachu.unihealth"
+      "package": "com.surfingpikachu.unihealth",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
-      "favicon": "./assets/favicon.png",
+      "favicon": "./assets/app_icon.png",
       "output": "server",
       "bundler": "metro"
     },
@@ -46,9 +50,7 @@
       }
     },
     "owner": "surfingpikachu",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "exposdk:47.0.0",
     "updates": {
       "url": "https://u.expo.dev/c5bea227-984e-411f-92b8-a9fcd29ffe70"
     }

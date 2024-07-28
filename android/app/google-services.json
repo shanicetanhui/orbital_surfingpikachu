@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "514012527971",
+    "firebase_url": "https://unihealth-3e9df-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "unihealth-3e9df",
+    "storage_bucket": "unihealth-3e9df.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:514012527971:android:2ce68d4ff8442330aee756",
+        "android_client_info": {
+          "package_name": "com.surfingpikachu.unihealth"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDg51kJa9OCW2D6w9yHKL012wx8aXH_zGg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
