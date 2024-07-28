@@ -8,13 +8,14 @@ import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, T
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
 import { Picker } from '@react-native-picker/picker';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { Timestamp } from 'firebase/firestore';
 import * as Notifications from 'expo-notifications';
 import * as ImagePicker from 'expo-image-picker';
 import { EventRegister } from 'react-native-event-listeners'
 import theme from './theme/theme';
 import themeContext from './theme/themeContext';
+// import { experimentNameAutocorrect } from 'firebase-tools/lib/experiments';
 
 // stylesheet
 const styles = StyleSheet.create({
@@ -528,14 +529,16 @@ export const LoginScreen = ({ setIsSignup, setLoggedInUser, auth }) => {
   );
 };
 
-const signup = (auth, email, password, setLoggedInUser) => {
+const signup = async (auth, email, password, setLoggedInUser) => {
   createUserWithEmailAndPassword(auth, email, password)
-    .then(userCredential => {
-      const user = userCredential.user;
-      setLoggedInUser(user);
-      // console.log(user.uid);
-      add_user(user.uid);
-    })
+      .then(async (userCredential) => {
+        const user = userCredential.user;
+        await sendEmailVerification(userCredential.user);
+        setLoggedInUser(user);
+        // console.log(user.uid);
+        add_user(user.uid);
+      })
+    // })
     .catch(error => {
       const errorCode = error.code;
       const errorMessage = error.message;
@@ -624,6 +627,7 @@ export const HomeScreen = ({ navigation }) => {
   
   console.log("home screen");
   console.log(uid);
+  
   // console.log(navigation);
   // console.log(route);
 
@@ -632,7 +636,7 @@ export const HomeScreen = ({ navigation }) => {
 
   // Hooks for variables
   const [refresh, setRefresh] = useState(false);
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState([]);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -653,6 +657,7 @@ export const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     console.log("use effect ===");
+    setData([]);
     read_initialData(setData, uid);
     console.log(data);
   }, [refresh, uid]);
@@ -1488,6 +1493,7 @@ export const LocationsScreen = () => {
   return (
     <SafeAreaView style={styles.fullscreen}>
       <ImageBackground source={theme.backgroundImage} style={styles.imageBackground}>
+        <ScrollView>
         <View style={styles.usernameContainer}>
           <Text style={[styles.title, { color: theme.color }]}>Fruit Stall Locations</Text>
           
@@ -1566,6 +1572,7 @@ export const LocationsScreen = () => {
             <Text style={styles.buttonText}>Submit</Text>
           </Pressable>
         </View>
+        </ScrollView>
       </ImageBackground>
     </SafeAreaView>
   );
@@ -1836,7 +1843,7 @@ export const SettingsScreen = () => {
           </Pressable>
         </View>
 
-        <Button
+        {/* <Button
           style={{ backgroundColor: theme.color }}
           onPress={() => {
             console.log("see data");
@@ -1844,7 +1851,7 @@ export const SettingsScreen = () => {
           }}
           title='see user data'
         >
-        </Button>
+        </Button> */}
 
         {/* Username */}
         <View style={styles.usernameContainer}>
@@ -1908,9 +1915,12 @@ export const SettingsScreen = () => {
         </View>
 
         {/* Update Settings Button */}
-        <View style={styles.usernameContainer}>
+        {/* <View style={styles.usernameContainer}>
           <Button title="Update Settings" onPress={handleUpdateSettings} />
-        </View>
+        </View> */}
+        <Pressable style={styles.imagebutton} onPress={handleUpdateSettings}>
+          <Text style={styles.buttonText}>Update settings</Text>
+        </Pressable>
 
         {/* Send Feedback (need backend to 'send' feedback to admins) */}
         <View style={styles.usernameContainer}>
