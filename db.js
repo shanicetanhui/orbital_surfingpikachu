@@ -188,6 +188,17 @@ export async function fetch_user_settings(uid) {
     }
 }
 
+export async function fetch_habit_metadata(habit, uid) {
+    console.log("fetch matadata");
+    const habit_id = await fetch_habit_id(habit, uid);
+    const docRef = doc(db, "users", uid, "habits", habit_id);
+    const habit_info = await getDoc(docRef);
+    return ({
+        streak: habit_info.data().streak,
+        goal: habit_info.data().goal
+    });
+}
+
 // UPDATE
 
 // today's entry

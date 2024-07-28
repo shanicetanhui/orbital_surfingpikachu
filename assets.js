@@ -3,7 +3,7 @@ import { UserContext, UserProvider} from "./UserContext";
 import { AntDesign } from '@expo/vector-icons';
 import { createNativeStackNavigator, DarkTheme } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { init, fakedata, display, update_habit, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit, add_user, fetch_user_settings, update_user_settings, update_streaks } from './db';
+import { init, fakedata, display, update_habit, delete_habit_entry, add_entry, update_entry, date_display_format, read_habits, add_habit, fetch_entries_habit, today_date, create_or_update, delete_habit, add_user, fetch_user_settings, update_user_settings, update_streaks, fetch_habit_metadata } from './db';
 import { StyleSheet, StatusBar, SafeAreaView, SectionList, View, Text, Button, TextInput, Modal, TouchableOpacity, Dimensions, Switch, Alert, Image, Pressable, ScrollView, ImageBackground, useColorScheme } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LineChart, BarChart, PieChart, ProgressChart, ContributionGraph, StackedBarChart } from "react-native-chart-kit";
@@ -372,10 +372,20 @@ async function read_initialData(setData, uid) {
   // console.log("rows ===")
   const newData = [...initialData];
   rows.forEach((row) => {
-    newData[0].data.push(
-      { title: row.display_name, details: [row.description], goal: row.goal, color: row.color, streak: row.streak }
-    )
-  });
+    // Check if an object with the same title already exists in newData[0].data
+    const exists = newData[0].data.some((item) => item.title === row.display_name);
+  
+    // Only add if no object with the same title exists
+    if (!exists) {
+      newData[0].data.push({
+        title: row.display_name,
+        details: [row.description],
+        goal: row.goal,
+        color: row.color,
+        streak: row.streak,
+      });
+    }
+  });  
   console.log("read initial data");
   console.log(newData);
   setData(newData);
@@ -444,6 +454,10 @@ const login = (auth, email, password, setLoggedInUser) => {
       console.error(errorCode, errorMessage);
     });
 };
+
+const logout = (setLoggedInUser) => {
+  setLoggedInUser(null);
+}
 
 // export const LoginScreen = ({ setIsSignup, setLoggedInUser, auth }) => {
 //   const [email, onChangeEmail] = useState("");
@@ -629,7 +643,8 @@ export const HomeScreen = ({ navigation }) => {
     old_title: '',
     details: [],
     goal: '',
-    color: ''
+    color: '',
+    streak: ''
   });
   const [newItemName, setNewItemName] = useState('');
   const [dailyGoal, setDailyGoal] = useState('');
@@ -639,9 +654,7 @@ export const HomeScreen = ({ navigation }) => {
   useEffect(() => {
     console.log("use effect ===");
     read_initialData(setData, uid);
-    // console.log(data);
-    // console.log("UID");
-    // console.log(uid);
+    console.log(data);
   }, [refresh, uid]);
 
   // modal -> popups like in 'add new habit/section'
@@ -739,7 +752,8 @@ export const HomeScreen = ({ navigation }) => {
                     <Text key={index} style={[styles.detail, { color:theme.color}]}>{detail}</Text>
                   ))} */}
                   <Text style={[styles.detail, { color:theme.color}]}>Daily goal: {item.goal}</Text>
-                  <Text style={[styles.detail, { color:theme.color}]}>Streak: {item.streak}</Text>
+                  <Text style={[styles.detail, { color:theme.color}]}>Streak: {item.streak==0 ? 0 : item.streak}</Text>
+                  {/* <Text style={[styles.detail, { color:theme.color}]}>Streak: {toString(item.streak)}</Text> */}
                   <TouchableOpacity
                     onPress={() => {
                       setItemToDelete(item);
@@ -890,6 +904,10 @@ export const DetailsScreen = ({ route }) => {
 
   // Hooks for habitData and counter
   const [habitData, setHabitData] = useState([]);
+  const [habitMetaData, setHabitMetaData] = useState({
+    streak: '',
+    goal: ''
+  })
   const [refresh, setRefresh] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [addModalVisible, setAddModalVisible] = useState(false);
@@ -947,6 +965,8 @@ export const DetailsScreen = ({ route }) => {
     console.log(new_date);
     await add_entry(item.title, new_date, Number(addedData.num), uid);
     await update_streaks(item.title, uid, item.goal);
+    console.log("after update streak");
+    // updateStreakDisplay();
     setAddModalVisible(false);
     setRefresh(prev => !prev);  // Toggle the refresh state
   }
@@ -957,7 +977,9 @@ export const DetailsScreen = ({ route }) => {
     const new_date = new Date(editedData.year, editedData.month, editedData.day);
     await update_entry(editedData.habit_id, editedData.old_date, new_date, editedData.num, uid);
     await update_streaks(item.title, uid, item.goal);
+    console.log("after update streak");
     // update_streaks(item.title, uid, item.goal);
+    // updateStreakDisplay();
     setEditModalVisible(false);
     setRefresh(prev => !prev);  // Toggle the refresh state
   };
@@ -966,6 +988,8 @@ export const DetailsScreen = ({ route }) => {
     await delete_habit_entry(entry.habit, entry.day, uid);
     console.log("deleted");
     await update_streaks(item.title, uid, item.goal);
+    console.log("after update streak");
+    // updateStreakDisplay();
     setRefresh(prev => !prev);  // Toggle the refresh state
   }
 
@@ -1044,9 +1068,18 @@ export const DetailsScreen = ({ route }) => {
     }
   };
 
+  const fetchHabitMetaData = async () => {
+    const meta = await fetch_habit_metadata(item.title, uid);
+    console.log("metadata from useeffect!!! === ");
+    console.log(meta);
+    setHabitMetaData(meta);
+  }
+
   // calls fetchHabits on load
   useEffect(() => {
+    console.log("use effect on refresh");
     fetchHabits();
+    fetchHabitMetaData();
   }, [refresh]);
 
   useEffect(() => {
@@ -1134,6 +1167,7 @@ export const DetailsScreen = ({ route }) => {
     setCounter(newCounter);
     await create_or_update(item.title, day, newCounter, uid);
     await update_streaks(item.title, uid, item.goal);
+    // updateStreakDisplay();
     setRefresh(prev => !prev);  // Toggle the refresh state
   };
 
@@ -1146,6 +1180,7 @@ export const DetailsScreen = ({ route }) => {
       setCounter(newCounter);
       await create_or_update(item.title, day, newCounter, uid);
       await update_streaks(item.title, uid, item.goal);
+      // updateStreakDisplay();
       setRefresh(prev => !prev);  // Toggle the refresh state
     }
   };
@@ -1165,8 +1200,8 @@ export const DetailsScreen = ({ route }) => {
               {/* {item.details && item.details.map((detail, index) => (
                 <Text key={index} style={styles.detail}> {detail}</Text>
               ))} */}
-              <Text style={styles.detail}> Daily goal: {item.goal}</Text>
-              <Text style={styles.detail}> Streak: {item.streak}</Text>
+              <Text style={styles.detail}> Daily goal: {habitMetaData.goal}</Text>
+              <Text style={styles.detail}> Streak: { habitMetaData.streak==0 ? 0 : habitMetaData.streak}</Text>
             </View>
           </View>
 
@@ -1279,7 +1314,7 @@ export const DetailsScreen = ({ route }) => {
           <Button 
             style={{ backgroundColor: theme.color }} 
             onPress={() => {
-              update_streaks(item.title, uid, item.goal);
+              // await update_streaks(item.title, uid, item.goal);
               setRefresh(prev => !prev);  // Toggle the refresh state
             }}
             title='update stroks'
@@ -1894,7 +1929,7 @@ export const SettingsScreen = () => {
 
         {/* Log out */}
         <Pressable style={styles.imagebutton} onPress={() => {
-          setLoggedInUser(null);
+          logout(setLoggedInUser)
         }}>
           <Text style={styles.buttonText}>Log out</Text>
         </Pressable>
